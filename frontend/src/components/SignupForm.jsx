@@ -1,11 +1,16 @@
 // src/components/SignupForm.jsx
+
 import React, { useState } from 'react';
-import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; 
+import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; // Adjust path if needed
+import { shallow } from 'zustand/shallow';
+// Import icons if needed for password or other fields
+// import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const SignupForm = () => {
-  const [username, setUsername] = useState(''); // <-- Changed from fullName
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // const [showPassword, setShowPassword] = useState(false); // Add if using password toggle
 
   const register = useAuthStore((state) => state.register);
   const isLoading = useAuthStore((state) => state.isLoading);
@@ -14,39 +19,49 @@ const SignupForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    clearError();
-    // Pass username, email, password to the register function
-    // This structure should match what your backend controller expects in req.body
-    await register({ username, email, password }); // <-- Changed from fullName
+    if (error) clearError();
+    // Ensure data structure matches backend/store expectation
+    await register({ username, email, password });
+    // Handle result (e.g., redirect) in parent or via store listener
   };
 
   return (
-    // Removed the outer div, form itself handles structure
-    <form onSubmit={handleSubmit} className="pt-4 space-y-3"> {/* Adjusted spacing */}
+    // Use consistent spacing
+    <form onSubmit={handleSubmit} className="space-y-6">
 
-      {/* Removed SocialLogins */}
-
-      {/* Username Input */}
-      <div className="form-control w-full">
+      {/* Username Field */}
+      <div>
+        <label
+          htmlFor="signup-username"
+          className="label pb-1 pt-0 text-sm font-medium text-base-content/80"
+        >
+          Username
+        </label>
         <input
-          id="signup-username" // <-- Changed id
+          id="signup-username"
           type="text"
-          placeholder="Username" // <-- Changed placeholder
-          className="input input-bordered input-primary w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" // <-- Consistent styling
-          value={username} // <-- Changed value binding
-          onChange={(e) => setUsername(e.target.value)} // <-- Changed state setter
-          required // Keep required as it's likely mandatory
+          placeholder="Choose a username"
+          className="input input-bordered w-full focus:border-primary-focus focus:outline-none focus:ring-1 focus:ring-primary"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
           disabled={isLoading}
         />
       </div>
 
-      {/* Email Input (remains the same) */}
-      <div className="form-control w-full">
+      {/* Email Field */}
+      <div>
+        <label
+          htmlFor="signup-email"
+          className="label pb-1 pt-0 text-sm font-medium text-base-content/80"
+        >
+          Email Address
+        </label>
         <input
           id="signup-email"
           type="email"
-          placeholder="Email Address"
-          className="input input-bordered input-primary w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          placeholder="you@example.com"
+          className="input input-bordered w-full focus:border-primary-focus focus:outline-none focus:ring-1 focus:ring-primary"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -54,37 +69,74 @@ const SignupForm = () => {
         />
       </div>
 
-      {/* Password Input (remains the same) */}
-      <div className="form-control w-full">
+      {/* Password Field */}
+      <div>
+        <label
+          htmlFor="signup-password"
+          className="label pb-1 pt-0 text-sm font-medium text-base-content/80"
+        >
+          Password
+        </label>
+        {/* Optional: Add password visibility toggle similar to LoginForm if desired */}
         <input
           id="signup-password"
-          type="password"
-          placeholder="Create Password"
-          className="input input-bordered input-primary w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          type="password" // Keep as password
+          placeholder="Create a strong password"
+          className="input input-bordered w-full focus:border-primary-focus focus:outline-none focus:ring-1 focus:ring-primary"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          minLength={6} // Or your backend requirement
+          minLength={8} // Example requirement
           disabled={isLoading}
         />
+         {/* Optional: Password requirement hints */}
+         <p className="mt-2 text-xs text-base-content/60">
+            Must be at least 8 characters long.
+         </p>
       </div>
 
-      {/* Country Select Placeholder (remains the same, optional) */}
-      <div className="form-control w-full">
-         <select className="select select-bordered select-primary w-full font-normal" defaultValue="United Kingdom" disabled={isLoading}>
-            <option>🇬🇧 United Kingdom</option> <option>🇺🇸 United States</option>
-            {/* Add more relevant options */}
-         </select>
+       {/* Terms Checkbox */}
+       <div className="form-control pt-2"> {/* Add some top padding */}
+          <label className="label cursor-pointer justify-start gap-3">
+            <input
+              type="checkbox"
+              required
+              className="checkbox checkbox-primary checkbox-sm" // Use theme color
+              disabled={isLoading}
+            />
+            <span className="label-text text-sm text-base-content/80">
+              I agree to the <a href="#" className="link link-hover">Terms of Service</a>
+            </span>
+          </label>
+       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="alert alert-error text-sm p-3 shadow-md">
+           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Submit Button */}
+      <div> {/* Wrap button */}
+        <button
+          type="submit"
+          className="btn btn-primary w-full normal-case text-base" // Consistent button style
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <span className="loading loading-spinner loading-sm"></span>
+              <span className="ml-2">Creating Account...</span>
+            </>
+          ) : (
+            'Create Account'
+          )}
+        </button>
       </div>
-
-      {/* Terms Text (remains the same) */}
-      <p className="text-xs text-base-content/70 !mt-3 text-center px-4"> By continuing, you agree to our <a href="#" className="link link-primary font-medium">Terms</a> and <a href="#" className="link link-primary font-medium">Policy</a>.</p>
-
-      {/* Error Display (remains the same) */}
-      {error && <div className="alert alert-error text-xs p-2 !mt-3"> <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> <span>{error}</span> </div>}
-
-      {/* Submit Button (remains the same) */}
-      <button type="submit" className={`btn btn-accent w-full !mt-5 rounded-md normal-case text-accent-content ${isLoading ? 'loading' : ''}`} disabled={isLoading}> {isLoading ? <span className="loading loading-spinner loading-sm"></span> : 'Create Account'} </button>
     </form>
   );
 };

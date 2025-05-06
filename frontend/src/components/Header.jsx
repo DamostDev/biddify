@@ -1,27 +1,35 @@
+// src/components/Header.jsx
+
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; // Import useLocation
 import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; // Adjust path
+import { shallow } from 'zustand/shallow';
 
 const Header = () => {
- // Inside Header.jsx
-const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-const user = useAuthStore((state) => state.user);
-const isLoading = useAuthStore((state) => state.isLoading);
-const openAuthModal = useAuthStore((state) => state.openAuthModal);
-const logout = useAuthStore((state) => state.logout);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+  const logout = useAuthStore((state) => state.logout);
 
+  const location = useLocation(); // Get current location
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+
+  // --- Return null if on an auth page ---
+  if (isAuthPage) {
+    return null;
+  }
+  // --- Otherwise, return the normal header ---
   return (
-    // Use navbar with theme colors, add subtle border or shadow
     <header className="sticky top-0 z-30 w-full border-b border-base-300 bg-base-100/80 backdrop-blur transition-shadow duration-100 [transform:translateZ(0)] shadow-sm">
       <div className="navbar max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex-1">
           <Link to="/" className="btn btn-ghost text-xl font-bold normal-case text-primary hover:bg-primary/10">
-            {/* Example New Logo Name */}
-            ASTONISH<span className="text-accent font-light">MART</span>
+            BIDDIFY
           </Link>
         </div>
-        <div className="flex-none gap-3"> {/* Increased gap */}
-          {isLoading && !user && (
+        <div className="flex-none gap-3">
+          {isLoading && !isAuthenticated && (
             <span className="loading loading-spinner loading-sm mr-2 text-primary"></span>
           )}
           {!isLoading && (
@@ -29,34 +37,31 @@ const logout = useAuthStore((state) => state.logout);
               <button className="btn btn-ghost btn-sm hidden md:inline-flex">Become a Seller</button>
               {isAuthenticated && user ? (
                 <div className="dropdown dropdown-end">
-                  <label tabIndex={0} className="btn btn-ghost btn-circle avatar online"> {/* Added 'online' indicator */}
-                    <div className="w-9 rounded-full ring-1 ring-offset-1 ring-accent"> {/* Adjusted size/ring */}
+                  <label tabIndex={0} className="btn btn-ghost btn-circle avatar online">
+                    <div className="w-9 rounded-full ring-1 ring-offset-1 ring-accent">
                        {user.profile_picture_url ? (
                         <img src={user.profile_picture_url} alt={user.username || 'Avatar'} />
                       ) : (
-                        <span className="text-lg font-semibold text-accent-content bg-accent/30 flex items-center justify-center h-full w-full">
+                        <span className="flex h-full w-full items-center justify-center bg-accent/30 text-lg font-semibold text-accent-content">
                           {user.username?.charAt(0).toUpperCase() || user.fullName?.charAt(0).toUpperCase() || 'A'}
                         </span>
                       )}
                     </div>
                   </label>
-                  <ul tabIndex={0} className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52 z-[1]"> {/* Ensure dropdown is above content */}
+                  <ul tabIndex={0} className="menu dropdown-content menu-sm z-[1] mt-3 w-52 rounded-box bg-base-100 p-2 shadow">
                     <li><Link to="/dashboard" className="justify-between">Dashboard <span className="badge badge-sm badge-info">NEW</span></Link></li>
                     <li><a>Settings</a></li>
-                    <li className="mt-1 border-t border-base-300"><button onClick={logout} className="text-error">Logout</button></li>
+                    <li className="mt-1 border-t border-base-300"><button onClick={logout} className="w-full text-left text-error">Logout</button></li>
                   </ul>
                 </div>
               ) : (
                 <>
-                  {/* Use theme buttons with different styles */}
-                  <button
-                    className="btn btn-outline btn-primary btn-sm rounded-md"
-                    onClick={() => openAuthModal('login')}
-                  > Login </button>
-                  <button
-                    className="btn btn-primary btn-sm rounded-md ml-2" // Primary button for signup
-                    onClick={() => openAuthModal('signup')}
-                  > Sign up </button>
+                  <Link to="/login" className="btn btn-outline btn-primary btn-sm rounded-md">
+                    Login
+                  </Link>
+                  <Link to="/signup" className="btn btn-primary btn-sm ml-2 rounded-md">
+                    Sign up
+                  </Link>
                 </>
               )}
             </>
@@ -66,4 +71,5 @@ const logout = useAuthStore((state) => state.logout);
     </header>
   );
 };
+
 export default Header;
