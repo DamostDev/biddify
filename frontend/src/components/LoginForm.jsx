@@ -1,8 +1,6 @@
-// src/components/LoginForm.jsx
-
 import React, { useState } from 'react';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; // Adjust path if needed
+import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; 
 // No need to import shallow anymore for this component
 // import { shallow } from 'zustand/shallow';
 // import { useNavigate } from 'react-router-dom'; // Uncomment if you handle redirect here

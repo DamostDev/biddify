@@ -4,7 +4,8 @@ import Header from './components/Header'; // Adjust path
 import HomePage from './pages/HomePage'; // Adjust path
 import LoginPage from './pages/LoginPage'; // Adjust path
 import SignupPage from './pages/SignupPage'; // Adjust path
-import ProtectedRoute from './components/ProtectedRoute'; // Adjust path
+import ProtectedRoute from './components/ProtectedRoute'; 
+import PublicOnlyRoute from './components/PublicOnlyRoute';
 // import DashboardPage from './pages/DashboardPage'; // Adjust path
 // import NotFoundPage from './pages/NotFoundPage'; // Adjust path
 // import AuthModal from './components/AuthModal'; // We might not need this rendered here anymore
@@ -30,8 +31,10 @@ function App() {
             <Route path="/" element={<HomePage />} />
 
             {/* Authentication Pages */}
+            <Route element={<PublicOnlyRoute />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+          </Route>
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>

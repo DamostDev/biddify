@@ -12,6 +12,8 @@ import productRoutes from './routes/product.route.js';
 import streamRoutes from './routes/stream.route.js';
 import auctionRoutes from './routes/auction.route.js'; 
 import bidRoutes from './routes/bid.route.js';
+import orderRoutes from './routes/order.route.js';     
+import userRoutes from './routes/user.route.js'; 
 
 
 dotenv.config(); 
@@ -45,7 +47,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/streams', streamRoutes);
 app.use('/api/auctions', auctionRoutes); 
 app.use('/api/bids', bidRoutes); 
-
+app.use('/api/orders', orderRoutes);        
+app.use('/api/users', userRoutes);  
 
 
 app.listen(5005, () => {
