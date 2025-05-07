@@ -1,7 +1,7 @@
 // src/components/PublicOnlyRoute.jsx
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; // Adjust path
+import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; 
 
 const PublicOnlyRoute = () => {
   // Select only the state needed for the component's direct logic

@@ -1,57 +1,48 @@
+// src/App.jsx
 import React from 'react';
-import {  Routes, Route } from 'react-router-dom'; // Use BrowserRouter
-import Header from './components/Header'; // Adjust path
-import HomePage from './pages/HomePage'; // Adjust path
-import LoginPage from './pages/LoginPage'; // Adjust path
-import SignupPage from './pages/SignupPage'; // Adjust path
-import ProtectedRoute from './components/ProtectedRoute'; 
+import { Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import ProtectedRoute from './components/ProtectedRoute';
 import PublicOnlyRoute from './components/PublicOnlyRoute';
-// import DashboardPage from './pages/DashboardPage'; // Adjust path
-// import NotFoundPage from './pages/NotFoundPage'; // Adjust path
-// import AuthModal from './components/AuthModal'; // We might not need this rendered here anymore
+import DashboardPage from './pages/DashboardPage';
+import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; // For initial loading
 
 function App() {
-  // Use effect to check auth status if needed, handled by ProtectedRoute usually
+  const initialAuthLoading = useAuthStore((state) => state.isLoading);
+  const initialAuthDone = useAuthStore((state) => !state.isLoading && state.user !== undefined); // A bit more specific: loading is done AND we know about user (null or object)
+
+  // The authStore.js already calls loadUser() on initialization.
+  // This check is for the very first paint of the app.
+  // Once loadUser completes, initialAuthLoading will become false.
+  if (initialAuthLoading && !initialAuthDone) { // Only show global loader if truly in initial indeterminate state
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-base-200" data-theme="corporate">
+        <span className="loading loading-ball loading-lg text-primary"></span> {/* Different spinner example */}
+        <p className="mt-4 text-xl text-base-content/80">Loading Biddify...</p>
+      </div>
+    );
+  }
 
   return (
-    // Router should be the top-level component
     <>
-      {/* Apply data-theme to html or body instead, or wrap conditionally */}
-      {/* Using fragment here as Router handles the main structure */}
-      <>
-        {/* Conditionally render Header? Maybe not on Login/Signup pages? */}
-        {/* You might want a different layout for auth pages */}
-        {/* Example: Render Header everywhere EXCEPT auth pages */}
-        {/* {location.pathname !== '/login' && location.pathname !== '/signup' && <Header />} */}
-        {/* For simplicity, let's keep it for now */}
-        <Header />
-
-        <div className="min-h-screen flex flex-col" data-theme="corporate"> {/* Keep theme */}
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-
-            {/* Authentication Pages */}
-            <Route element={<PublicOnlyRoute />}>
+      <Header />
+      <div className="min-h-screen flex flex-col" data-theme="corporate">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route element={<PublicOnlyRoute />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
           </Route>
-
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
-              {/* <Route path="/dashboard" element={<DashboardPage />} /> */}
-              {/* Add other protected routes here */}
-            </Route>
-
-            {/* Optional: Not Found Page */}
-            {/* <Route path="*" element={<NotFoundPage />} /> */}
-          </Routes>
-
-          {/* AuthModal is removed from here. It won't pop up automatically. */}
-          {/* If you need it for other flows (e.g., password reset modal), */}
-          {/* trigger it manually from specific buttons/links. */}
-          {/* <AuthModal /> */}
-        </div>
-      </>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            {/* Add other protected routes here: /profile, /create-product, etc. */}
+          </Route>
+          {/* <Route path="*" element={<NotFoundPage />} /> */}
+        </Routes>
+      </div>
     </>
   );
 }

@@ -2,3 +2,23 @@
 @plugin "daisyui" {
   themes: lofi --default;
 }
+body {
+  @apply bg-base-200 text-base-content; /* Or bg-base-100 depending on overall theme */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar (optional, for aesthetics) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-base-300/50 rounded;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-neutral/50 rounded;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-neutral/70;
+}

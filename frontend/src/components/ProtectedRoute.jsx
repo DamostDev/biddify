@@ -5,10 +5,8 @@ import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/aut
 const ProtectedRoute = () => {
   // Select the necessary state from the Zustand store
   // Using a selector can be slightly more performant if the store grows
-  const { isAuthenticated, isLoading } = useAuthStore(state => ({
-      isAuthenticated: state.isAuthenticated,
-      isLoading: state.isLoading
-  }));
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const isLoading = useAuthStore(state => state.isLoading);
 
   const location = useLocation(); // Get the current location the user tried to access
 
