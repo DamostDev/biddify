@@ -1,4 +1,4 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: corporate --default, bumblebee, emerald,corporate;
+  themes: lofi --default;
 }

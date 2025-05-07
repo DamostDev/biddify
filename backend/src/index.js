@@ -4,11 +4,20 @@ import sequelize from "./lib/connectPG.js";
 import authRoutes from "./routes/auth.route.js";
 import dotenv from "dotenv";
 import cookieParser from 'cookie-parser';
+import path from 'path'; // Needed for serving static files
+import { fileURLToPath } from 'url'; 
 
+import categoryRoutes from './routes/category.route.js'; 
+import productRoutes from './routes/product.route.js'; 
+import streamRoutes from './routes/stream.route.js';
+import auctionRoutes from './routes/auction.route.js'; 
+import bidRoutes from './routes/bid.route.js';
 
 
 dotenv.config(); 
 
+const __filename = fileURLToPath(import.meta.url); 
+const __dirname = path.dirname(__filename); 
 
 
 const app = express();
@@ -27,8 +36,15 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(cookieParser());
 
-app.use("/api/auth",authRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
+
+app.use("/api/auth",authRoutes);
+app.use('/api/categories', categoryRoutes); 
+app.use('/api/products', productRoutes);
+app.use('/api/streams', streamRoutes);
+app.use('/api/auctions', auctionRoutes); 
+app.use('/api/bids', bidRoutes); 
 
 
 
