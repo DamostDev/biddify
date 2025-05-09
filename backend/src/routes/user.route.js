@@ -1,3 +1,4 @@
+// src/routes/user.route.js
 import express from 'express';
 import {
   followUser,
@@ -5,27 +6,38 @@ import {
   getFollowing,
   getFollowers,
   checkFollowingStatus
-} from '../controllers/userFollow.controller.js'; // Note: controller name might be better as user.controller.js if it has more user actions
+} from '../controllers/userFollow.controller.js';
+
+// Import new user controllers
+import {
+  getUserProfile,
+  updateUserProfile,
+  changePassword
+} from '../controllers/user.controller.js'; // Assuming you named it user.controller.js
+
 import { protect } from '../middleware/authMiddleware.js';
-// Import other user controllers if you have them, e.g., getUserProfile, updateUserProfile
+import { uploadAvatar } from '../middleware/uploadMiddleware.js'; // Import multer middleware
 
 const router = express.Router();
 
-// User Profile routes (example)
-// router.get('/:userId/profile', getUserProfile);
-// router.put('/profile', protect, updateUserProfile);
+// --- Profile Routes ---
+router.get('/profile', protect, getUserProfile); // Get current logged-in user's profile
+router.put(
+  '/profile',
+  protect,
+  uploadAvatar.single('profile_picture'), // 'profile_picture' is the field name from FormData
+  updateUserProfile
+);
+router.put('/change-password', protect, changePassword);
 
-
-// Follow routes - actions are on the user being followed/unfollowed
+// --- Follow Routes (existing) ---
 router.post('/:userIdToFollow/follow', protect, followUser);
 router.post('/:userIdToUnfollow/unfollow', protect, unfollowUser);
-
-// Get lists
-router.get('/:userId/following', getFollowing); // Public
-router.get('/:userId/followers', getFollowers); // Public
-
-// Check status
+router.get('/:userId/following', getFollowing);
+router.get('/:userId/followers', getFollowers);
 router.get('/:userId/is-following', protect, checkFollowingStatus);
 
+// Optional: Get public profile of another user
+// router.get('/:userId/public-profile', getPublicUserProfile); // You'd need a new controller for this
 
 export default router;

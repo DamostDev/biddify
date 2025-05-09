@@ -38,8 +38,8 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(cookieParser());
 
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-
+const publicUploadsPath = path.join(__dirname, '..', 'public/uploads'); // Go UP one level from src
+app.use('/uploads', express.static(publicUploadsPath));
 
 app.use("/api/auth",authRoutes);
 app.use('/api/categories', categoryRoutes); 

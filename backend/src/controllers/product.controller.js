@@ -100,7 +100,7 @@ export const getProductById = async (req, res) => {
         { model: ProductImage, as: 'images', attributes: ['image_id', 'image_url', 'is_primary'], order: [['is_primary', 'DESC'], ['created_at', 'ASC']] }
       ],
     });
-
+     
     if (!product || !product.is_active) { // Also check if product is active
       return res.status(404).json({ message: 'Product not found or not active' });
     }

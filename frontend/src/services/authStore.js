@@ -15,6 +15,8 @@ const useAuthStore = create((set, get) => ({
   isLoading: true, // Start true to indicate initial user check is pending
   /** Stores the last authentication error message, or null if no error. */
   error: null,
+  isUserPanelOpen: false,      // For the right-hand user panel
+  isMobileMenuOpen: false,
   /** Boolean flag controlling the visibility of the authentication modal. */
   isAuthModalOpen: false,
   /** String indicating which view ('signup' or 'login') the modal should display. */
@@ -61,6 +63,7 @@ const useAuthStore = create((set, get) => ({
     }
     // No finally block needed here as state is set in both try and catch
   },
+  
 
   /**
    * Registers a new user using the authService.
@@ -125,7 +128,11 @@ const useAuthStore = create((set, get) => ({
       return { success: false, message: errorMessage };
     }
   },
+  toggleUserPanel: () => set((state) => ({ isUserPanelOpen: !state.isUserPanelOpen })),
+  closeUserPanel: () => set({ isUserPanelOpen: false }),
 
+  toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen })),
+  closeMobileMenu: () => set({ isMobileMenuOpen: false }),
   /**
    * Logs the user out by calling the authService logout function.
    * Clears the user and authentication state regardless of API call success/failure.
