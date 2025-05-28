@@ -1,11 +1,12 @@
 // src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Added Link for public homepage CTA
+import { Link } from 'react-router-dom';
 import useAuthStore from '../services/authStore';
 import HomeSidebar from '../components/home/HomeSidebar';
 import StreamCarousel from '../components/home/StreamCarousel';
 import CategoryPreview from '../components/home/CategoryPreview';
-import { FiZap, FiClock, FiTrendingUp, FiFilm } from 'react-icons/fi'; // Example icons
+// Updated icon imports
+import { FiZap, FiClock, FiTrendingUp, FiFilm, FiPlayCircle, FiGift, FiUsers, FiSearch, FiChevronDown } from 'react-icons/fi';
 
 // --- MOCK API Service Functions & Placeholder Data (REPLACE WITH ACTUAL) ---
 const placeholderStreamData = (count = 4, type = 'live', baseSeed = 'stream') => Array(count).fill(null).map((_, i) => ({
@@ -40,8 +41,7 @@ const LoggedInHomePage = () => {
   const [liveStreams, setLiveStreams] = useState([]);
   const [upcomingSportsCards, setUpcomingSportsCards] = useState([]);
   const [categories, setCategories] = useState([]);
-
-  const [isLoadingGlobal, setIsLoadingGlobal] = useState(true); // One overall loading state for simplicity of skeletons
+  const [isLoadingGlobal, setIsLoadingGlobal] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -49,17 +49,29 @@ const LoggedInHomePage = () => {
       setIsLoadingGlobal(true);
       setError(null);
       try {
-        const [liveData, upcomingData, categoryData] = await Promise.all([
-          getLiveStreams({ limit: 12 }), // Fetch enough for multiple rows
-          getUpcomingStreams({ category: 'sports-cards', limit: 8 }),
+        const [liveData, upcomingData, categoryData] = await Promise.allSettled([
+          getLiveStreams({ limit: 8 }),
+          getUpcomingStreams({ category: 'sports-cards', limit: 6 }),
           getSuggestedCategories()
         ]);
-        setLiveStreams(liveData || []);
-        setUpcomingSportsCards(upcomingData || []);
-        setCategories(categoryData || []);
-      } catch (err) {
-        console.error("Error fetching homepage data:", err);
-        setError('Failed to load homepage content. Please try again.');
+
+        if (liveData.status === 'fulfilled') setLiveStreams(liveData.value || []);
+        else console.error("Error fetching live streams:", liveData.reason);
+
+        if (upcomingData.status === 'fulfilled') setUpcomingSportsCards(upcomingData.value || []);
+        else console.error("Error fetching upcoming streams:", upcomingData.reason);
+
+        if (categoryData.status === 'fulfilled') setCategories(categoryData.value || []);
+        else console.error("Error fetching categories:", categoryData.reason);
+
+        if ([liveData, upcomingData, categoryData].some(res => res.status === 'rejected')) {
+            setError('Some content could not be loaded. Please try refreshing.');
+        }
+
+      } catch (err)
+      {
+        console.error("Critical error in fetchAllData:", err);
+        setError('Failed to load homepage content. Please try refreshing.');
       } finally {
         setIsLoadingGlobal(false);
       }
@@ -67,35 +79,37 @@ const LoggedInHomePage = () => {
     fetchAllData();
   }, []);
 
-  if (error) { /* ... error display ... */ }
+  if (error && !isLoadingGlobal) {
+    return <div className="flex-1 flex items-center justify-center p-4 text-error">{error}</div>;
+  }
+
+  const liveStreamsForYou = liveStreams.slice(0, 4);
+  const liveStreamsLiveNow = liveStreams.slice(4, 8);
 
   return (
-    <div className="flex flex-col lg:flex-row bg-white min-h-screen">
+    <div className="flex flex-col lg:flex-row bg-white min-h-screen"> {/* Outer container still bg-white */}
       <HomeSidebar />
-      <main className="flex-1 overflow-y-auto py-5 px-3 sm:px-4 lg:px-6 space-y-6 sm:space-y-8">
-        {/* For You - typically personalized, here showing first row of general live */}
+      {/* Main content area now has bg-white */}
+      <main className="flex-1 overflow-y-auto bg-white py-8 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 space-y-10 sm:space-y-12">
         <StreamCarousel
             title="For You"
-            streams={liveStreams.slice(0, 6)} // Adjust count as needed
+            streams={liveStreamsForYou}
             isLoading={isLoadingGlobal}
             icon={<FiZap className="text-red-500" />}
-            viewAllLink="/foryou" // Link to a dedicated "For You" page
+            viewAllLink="/foryou"
         />
-        {/* Second row of live streams or another category */}
         <StreamCarousel
-            title="Live Now" // Or a specific category like "Collectibles Live"
-            streams={liveStreams.slice(6, 12)} // Adjust count as needed
+            title="Live Now"
+            streams={liveStreamsLiveNow}
             isLoading={isLoadingGlobal}
-            icon={<FiFilm className="text-purple-500"/>} // Example different icon
+            icon={<FiFilm className="text-purple-500"/>}
             viewAllLink="/live"
         />
-
         <CategoryPreview
             title="Categories You Might Like"
             categories={categories}
             isLoading={isLoadingGlobal}
         />
-
         <StreamCarousel
             title="Upcoming in Sports Cards"
             streams={upcomingSportsCards}
@@ -109,6 +123,112 @@ const LoggedInHomePage = () => {
   );
 };
 
+// Helper component for Feature Cards
+const FeatureCard = ({ icon, title, description }) => (
+  <div className="card bg-base-200 shadow-xl hover:shadow-2xl transition-all duration-300 ease-in-out group transform hover:-translate-y-1">
+    <figure className="px-10 pt-10">
+      {/* Clone icon to add group hover effects if desired, or pass classes directly to icon */}
+      {React.cloneElement(icon, { className: `${icon.props.className || ''} w-12 h-12 group-hover:scale-110 group-hover:rotate-[-3deg] transition-transform duration-300` })}
+    </figure>
+    <div className="card-body items-center text-center">
+      <h3 className="card-title text-xl font-bold mb-2 text-base-content group-hover:text-primary transition-colors">{title}</h3>
+      <p className="text-base-content/80 leading-relaxed">{description}</p>
+    </div>
+  </div>
+);
+
+
+// Enhanced Public Homepage
+const PublicHomePage = () => (
+  <div className="flex flex-col min-h-screen bg-base-100">
+    <main className="flex-grow">
+      {/* Hero Section */}
+      <section className="relative flex flex-col items-center justify-center text-center overflow-hidden bg-gradient-to-br from-base-200 to-base-100 p-4 pt-20 md:pt-24 min-h-screen">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-5 bg-[radial-gradient(theme(colors.base-300)_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+        
+        <div className="relative z-[1] max-w-4xl">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent animate-[fade-in-down_0.6s_ease-out_forwards]">
+            Discover Unique Finds. Live.
+          </h1>
+          <p className="text-lg md:text-xl text-base-content/80 mb-10 max-w-2xl mx-auto animate-[fade-in-up_0.6s_ease-out_0.2s_forwards]">
+            Your premier destination for live auctions, interactive shopping, and vibrant community connection. Dive into streams and uncover treasures.
+          </p>
+          <Link
+            to="/browse"
+            className="btn btn-lg btn-primary rounded-full shadow-lg hover:shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out animate-[fade-in-up_0.6s_ease-out_0.4s_forwards]"
+          >
+            Start Exploring Now <FiZap className="inline ml-2 h-5 w-5" />
+          </Link>
+        </div>
+
+        {/* Scroll down indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-0 md:opacity-70 hidden md:block animate-[fade-in-up_0.6s_ease-out_0.8s_forwards]">
+          <a href="#features" aria-label="Scroll to features" className="animate-bounce block p-2">
+            <FiChevronDown className="w-8 h-8 text-base-content/50" />
+          </a>
+        </div>
+      </section>
+
+      {/* Feature Highlights Section */}
+      <section id="features" className="py-16 md:py-24 bg-base-100">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-base-content">
+            What Awaits You?
+          </h2>
+          <p className="text-center text-lg text-base-content/70 mb-12 md:mb-16 max-w-2xl mx-auto">
+              Explore a dynamic marketplace buzzing with excitement, unique products, and passionate communities.
+          </p>
+          <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+            <FeatureCard
+              icon={<FiPlayCircle className="text-primary" />}
+              title="Thrilling Live Streams"
+              description="Engage with sellers in real-time, ask questions, and snag exclusive deals as they happen."
+            />
+            <FeatureCard
+              icon={<FiGift className="text-secondary" />}
+              title="Discover Unique Treasures"
+              description="From rare collectibles to handmade crafts and trending fashion, find items you won't see anywhere else."
+            />
+            <FeatureCard
+              icon={<FiUsers className="text-accent" />}
+              title="Vibrant Community"
+              description="Connect with fellow enthusiasts, share your passion, and be part of a supportive shopping community."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action Section */}
+      <section className="py-16 md:py-24 bg-gradient-to-br from-base-200 to-base-100">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-base-content">
+            Ready to Dive In?
+          </h2>
+          <p className="text-lg md:text-xl text-base-content/80 mb-10 max-w-2xl mx-auto">
+            Join thousands of users exploring, bidding, and discovering amazing products live. Your next favorite find is waiting!
+          </p>
+          <Link
+            to="/browse"
+            className="btn btn-lg btn-primary rounded-full shadow-lg hover:shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out"
+          >
+            Explore All Streams <FiSearch className="inline ml-2 h-5 w-5" />
+          </Link>
+        </div>
+      </section>
+    </main>
+
+    {/* Footer */}
+    <footer className="p-6 footer footer-center bg-base-300 text-base-content">
+      <aside>
+        <p>Copyright © {new Date().getFullYear()} - Your Awesome App. All rights reserved.</p>
+        <p className="text-xs opacity-70">Discover. Connect. Shop Live.</p>
+      </aside>
+    </footer>
+  </div>
+);
+
+
 // Main HomePage component that decides what to show
 const HomePage = () => {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
@@ -121,22 +241,7 @@ const HomePage = () => {
       </div>
     );
   }
-  return isAuthenticated ? <LoggedInHomePage /> : ( /* ... Your Public Homepage JSX ... */
-     <main className="flex-grow flex flex-col items-center justify-center p-4 pt-20 md:pt-24 text-center overflow-hidden relative bg-gradient-to-br from-base-200 to-base-100">
-        <div className="absolute inset-0 opacity-5 bg-[radial-gradient(theme(colors.base-300)_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
-        <div className="relative z-[1] max-w-4xl">
-            <h1 className="text-5xl md:text-7xl font-bold mb-4 leading-tight bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-                Discover Unique Finds. Live.
-            </h1>
-            <p className="text-lg md:text-xl text-base-content/80 mb-10 max-w-2xl mx-auto">
-                Your new destination for live auctions, shopping, and community connection. Dive into streams and find treasures.
-            </p>
-             <Link to="/browse" className="btn btn-lg btn-primary rounded-full shadow-lg hover:scale-105 transition-transform duration-300">
-                Start Exploring Now <FiZap className="inline ml-2 h-5 w-5"/>
-             </Link>
-        </div>
-   </main>
-  );
+  return isAuthenticated ? <LoggedInHomePage /> : <PublicHomePage />;
 };
 
 export default HomePage;

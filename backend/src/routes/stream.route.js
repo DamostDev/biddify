@@ -12,6 +12,9 @@ import {
   deleteStream,
   startStream,
   endStream,
+  goLiveStreamer,
+  joinLiveStreamViewer,
+  endLiveStream
 } from '../controllers/stream.controller.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -68,6 +71,9 @@ router.route('/:id')
 
 router.post('/:id/start', protect, startStream);
 router.post('/:id/end', protect, endStream);
+router.post('/:id/go-live', protect, goLiveStreamer);
+router.get('/:id/join-live', protect, joinLiveStreamViewer);
+router.post('/:id/end-live', protect, endLiveStream);
 
 // You might add routes for:
 // - Getting stream key (owner only): GET /:id/key

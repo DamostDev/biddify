@@ -43,7 +43,7 @@ const ProductTable = ({ products, onEdit, onDelete }) => {
                       <div className="font-semibold text-sm text-base-content hover:text-primary transition-colors">
                         <Link to={`/dashboard/inventory/edit/${product.product_id}`} state={{ product }}>{product.title}</Link>
                       </div>
-                      <div className={`text-xs opacity-70 ${product.is_active ? 'text-success' : 'text-error'}`}>
+                      <div className={`text-xs  opacity-70 ${product.is_active ? 'badge badge-sm badge-secondary badge-outline' : 'badge badge-outline badge-error'}`}>
                         {product.is_active ? 'Active' : (product.is_draft ? 'Draft' : 'Inactive')} {/* Add is_draft logic */}
                       </div>
                     </div>
@@ -66,8 +66,8 @@ const ProductTable = ({ products, onEdit, onDelete }) => {
                   <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-ghost btn-xs m-1">Actions ▼</label>
                     <ul tabIndex={0} className="dropdown-content z-[1] menu menu-xs p-1 shadow bg-base-100 rounded-box w-32">
-                      <li><button onClick={() => onEdit(product)} className="w-full text-left hover:bg-base-200 p-1.5 rounded text-info"><FiEdit className="inline mr-1"/> Edit</button></li>
-                      <li><button onClick={() => onDelete(product)} className="w-full text-left hover:bg-base-200 p-1.5 rounded text-error"><FiTrash2 className="inline mr-1"/> Delete</button></li>
+                      <li><button onClick={() => onEdit(product)} className="w-full text-left hover:bg-base-200 p-1.5 rounded "><FiEdit className="inline mr-1"/> Edit</button></li>
+                      <li><button onClick={() => onDelete(product)} className="w-full text-left hover:bg-base-200 p-1.5 rounded "><FiTrash2 className="inline mr-1"/> Delete</button></li>
                     </ul>
                   </div>
                 </td>

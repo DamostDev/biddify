@@ -4,11 +4,12 @@ import { Link } from 'react-router-dom';
 import { FiUsers, FiClock } from 'react-icons/fi';
 
 const StreamCardSkeleton = () => (
-  <div className="animate-pulse group">
-    <div className="aspect-[4/5] sm:aspect-[3/4] bg-neutral-200 rounded-lg mb-2"></div>
-    <div className="px-0.5">
-      <div className="h-3.5 bg-neutral-200 rounded w-5/6 mb-1"></div>
-      <div className="h-2.5 bg-neutral-200 rounded w-1/2 mb-1.5"></div>
+  // Mimic overall card structure with combined rounding and explicit background/shadow for skeleton
+  <div className="animate-pulse group rounded-xl bg-white shadow-sm"> {/* Added bg-white and a light shadow for base */}
+    <div className="aspect-[4/5] sm:aspect-[3/4] bg-neutral-200 rounded-t-xl"></div> {/* Image part with top rounding */}
+    <div className="px-1 pt-2 pb-1.5"> {/* Text part wrapper, with padding similar to actual card */}
+      <div className="h-3.5 bg-neutral-200 rounded w-5/6 mb-1.5"></div> {/* Adjusted margin */}
+      <div className="h-2.5 bg-neutral-200 rounded w-1/2 mb-2"></div> {/* Adjusted margin */}
       <div className="flex items-center">
         <div className="w-5 h-5 bg-neutral-200 rounded-full mr-1.5"></div>
         <div className="h-2.5 bg-neutral-200 rounded w-1/3"></div>
@@ -24,31 +25,32 @@ const StreamCard = ({ stream, type = 'live' }) => {
 
   return (
     <Link
-      to={`/stream/${stream.id}`} // Ensure stream.id is unique and suitable for a URL
-      className="block group rounded-lg overflow-hidden transition-all duration-200 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+      to={`/stream/${stream.id}`}
+      // Link defines overall rounded shape for shadow/focus, but overflow is handled by inner divs
+      className="block group rounded-xl transition-all duration-300 ease-in-out hover:shadow-xl focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
     >
-      <div className="relative aspect-[4/5] sm:aspect-[3/4] bg-neutral-300">
+      {/* Image container: top rounding and overflow clipping */}
+      <div className="relative aspect-[4/5] sm:aspect-[3/4] bg-neutral-300 rounded-t-xl overflow-hidden">
         <img
           src={stream.thumbnailUrl || `https://picsum.photos/seed/${stream.id}/300/375`}
           alt={stream.title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-80 group-hover:opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-100"></div>
 
+        {/* --- Unified Top Badge Logic --- */}
         {isUpcoming ? (
-          <div className="absolute top-1.5 left-1.5 badge badge-xs font-semibold bg-black/70 border-none text-white px-1.5 py-0.5 h-auto gap-0.5 leading-none">
-            <FiClock size={10} className="opacity-80 mr-0.5"/> {stream.startTime || 'Soon'}
+          <div className="absolute top-2.5 left-2.5 text-[10px] sm:text-xs font-semibold bg-sky-600 text-white px-2 py-1 rounded-md flex items-center gap-1 leading-none shadow-sm">
+            <FiClock size={12} className="opacity-90 mr-0.5"/> {stream.startTime || 'Soon'}
           </div>
         ) : (
-          <div className="absolute top-1.5 left-1.5 badge badge-xs font-bold bg-red-600 border-red-600 text-white px-1.5 py-0.5 h-auto gap-0.5 leading-none">
-            <div className="w-1 h-1 bg-white rounded-full animate-pulse mr-0.5"></div>
-            LIVE
-          </div>
-        )}
-
-        {!isUpcoming && stream.viewerCount !== null && (
-          <div className="absolute top-1.5 right-1.5 badge badge-xs font-semibold bg-black/70 border-none text-white px-1.5 py-0.5 h-auto gap-0.5 leading-none">
-            <FiUsers size={10} className="opacity-80 mr-0.5"/> {stream.viewerCount}
+          <div
+            className="absolute top-2.5 left-2.5 text-[10px] sm:text-[11px] font-bold bg-red-600 text-white
+                       px-2 py-[3px] sm:py-1 rounded-[4px] flex items-center gap-1 leading-none shadow-md tracking-wide uppercase"
+          >
+            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+            <span>LIVE</span>
+            {stream.viewerCount !== null && <span className="font-normal normal-case ml-0.5">· {stream.viewerCount}</span>}
           </div>
         )}
 
@@ -60,7 +62,8 @@ const StreamCard = ({ stream, type = 'live' }) => {
         </div>
       </div>
 
-      <div className="pt-1.5 pb-0.5 px-0.5 sm:px-1 bg-white group-hover:bg-neutral-50 transition-colors">
+      {/* User Info container: bottom rounding */}
+      <div className="pt-2 pb-1.5 px-1 sm:px-1.5 bg-white group-hover:bg-slate-50 transition-colors rounded-b-xl">
         <div className="flex items-center">
           <div className="avatar mr-1.5 shrink-0">
             <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-neutral-focus text-neutral-content flex items-center justify-center text-[10px] sm:text-xs">
@@ -72,7 +75,7 @@ const StreamCard = ({ stream, type = 'live' }) => {
         {stream.tags && stream.tags.length > 0 && (
           <div className="mt-1 space-x-1 flex flex-wrap">
             {stream.tags.slice(0, 2).map(tag => (
-              <span key={tag} className="badge badge-xs bg-neutral-100 text-neutral-500 border-neutral-200 font-normal py-0.5 px-1 text-[9px] sm:text-[10px]">
+              <span key={tag} className="badge badge-xs bg-slate-100 text-slate-600 border-slate-200 font-medium py-1 px-1.5 text-[10px] rounded">
                 {tag}
               </span>
             ))}

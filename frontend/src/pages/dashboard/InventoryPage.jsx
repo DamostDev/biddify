@@ -134,7 +134,7 @@ const InventoryPage = () => {
             <button className="btn btn-ghost btn-sm btn-square p-0 md:hidden"> {/* Hamburger for user menu/notifications on mobile for dashboard */}
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-5 h-5 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
-             <Link to="/dashboard/inventory/create" className="btn btn-primary btn-sm md:btn-md normal-case flex-grow md:flex-none bg-yellow-400 hover:bg-yellow-500 text-black border-yellow-400">
+             <Link to="/dashboard/inventory/create" className="btn btn-primary btn-sm md:btn-md normal-case flex-grow md:flex-none bg-primary hover:primary-focus ">
                 Create Product
             </Link>
             {/* User avatar icon - for mobile, could trigger right panel */}

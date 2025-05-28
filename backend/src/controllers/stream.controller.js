@@ -1,6 +1,8 @@
 import { Stream, User, Category, sequelize } from '../models/index.js';
 import { Op } from 'sequelize';
 import crypto from 'crypto'; // For generating stream keys
+import { v4 as uuidv4 } from 'uuid'; // For unique identifiers
+import { generateLiveKitToken } from '../lib/livekitService.js';
 
 const getBaseUrl = (req) => `${req.protocol}://${req.get('host')}`;
 
@@ -12,6 +14,155 @@ const generateStreamKey = () => {
 // @desc    Create a new stream
 // @route   POST /api/streams
 // @access  Protected
+export const goLiveStreamer = async (req, res) => {
+  const stream_id = parseInt(req.params.id);
+  const user_id = req.user.user_id; // From 'protect' middleware
+
+  try {
+      const stream = await Stream.findByPk(stream_id, { include: [User] });
+
+      if (!stream) {
+          return res.status(404).json({ message: "Stream not found." });
+      }
+      if (stream.user_id !== user_id) {
+          return res.status(403).json({ message: "You are not authorized to start this stream." });
+      }
+
+      // If already live with a room name, just return the token for that room
+      let roomName = stream.livekitRoomName;
+      if (!roomName || stream.status !== 'live') { // Generate new room name if not live or no name
+          roomName = `biddify-stream-${stream.stream_id}-${uuidv4().slice(0, 8)}`;
+          stream.livekitRoomName = roomName;
+      }
+
+      stream.status = 'live';
+      if (!stream.start_time || stream.status !== 'live') { // Only set start_time if it's truly starting now
+          stream.start_time = new Date();
+      }
+      await stream.save();
+
+      const participantIdentity = `user-${user_id}-streamer-${stream_id}`;
+      const participantName = stream.User ? stream.User.username : `Streamer-${user_id}`;
+      const participantMetadata = { role: 'streamer', streamId: stream.stream_id };
+
+      const token = generateLiveKitToken(
+          roomName,
+          participantIdentity,
+          participantName,
+          true,  // canPublish
+          true,  // canSubscribe (streamer often wants to see their own preview)
+          participantMetadata
+      );
+
+      res.json({
+          token,
+          livekitUrl: process.env.LIVEKIT_URL,
+          roomName: roomName,
+          streamDetails: stream, // Send updated stream details
+          participantIdentity
+      });
+
+  } catch (error) {
+      console.error("🔴 Error in goLiveStreamer:", error);
+      if (error.message.includes("LiveKit API credentials")) {
+          return res.status(500).json({ message: "LiveKit configuration error on server." });
+      }
+      res.status(500).json({ message: "Failed to start live stream.", error: error.message });
+  }
+};
+export const joinLiveStreamViewer = async (req, res) => {
+  const stream_id = parseInt(req.params.id);
+  const user_id = req.user?.user_id; // Optional: Viewer might be guest or logged-in
+
+  try {
+      const stream = await Stream.findOne({
+          where: { stream_id: stream_id, status: 'live' },
+          include: [{model: User, attributes: ['username']}]
+      });
+
+      if (!stream || !stream.livekitRoomName) {
+          return res.status(404).json({ message: "Live stream not found or not active." });
+      }
+
+      // Generate unique identity for viewer
+      const baseIdentity = user_id ? `user-${user_id}` : `guest-${uuidv4()}`;
+      const participantIdentity = `${baseIdentity}-viewer-${stream_id}`;
+      const participantName = user_id
+          ? (await User.findByPk(user_id))?.username || `User-${user_id}`
+          : `Guest-${uuidv4().substring(0, 6)}`;
+      const participantMetadata = { role: 'viewer', streamId: stream.stream_id };
+
+      const token = generateLiveKitToken(
+          stream.livekitRoomName,
+          participantIdentity,
+          participantName,
+          false, // canPublish = false for viewers
+          true,  // canSubscribe = true
+          participantMetadata
+      );
+
+      res.json({
+          token,
+          livekitUrl: process.env.LIVEKIT_URL,
+          roomName: stream.livekitRoomName,
+          streamDetails: stream,
+          participantIdentity
+      });
+
+  } catch (error) {
+      console.error("🔴 Error in joinLiveStreamViewer:", error);
+      if (error.message.includes("LiveKit API credentials")) {
+          return res.status(500).json({ message: "LiveKit configuration error on server." });
+      }
+      res.status(500).json({ message: "Failed to join live stream.", error: error.message });
+  }
+};
+export const endLiveStream = async (req, res) => {
+  const stream_id = parseInt(req.params.id);
+  const user_id = req.user.user_id;
+
+  try {
+      const stream = await Stream.findByPk(stream_id);
+      if (!stream) {
+          return res.status(404).json({ message: 'Stream not found' });
+      }
+      if (stream.user_id !== user_id) {
+          return res.status(403).json({ message: 'Not authorized to end this stream' });
+      }
+      // if (stream.status !== 'live') { // Allow ending even if somehow stuck, but was live
+      //     return res.status(400).json({ message: 'Stream is not currently live or already ended.' });
+      // }
+
+      stream.status = 'ended';
+      stream.end_time = new Date();
+      // Consider what to do with livekitRoomName. Clearing it means a new room next time.
+      // stream.livekitRoomName = null; // Or keep for record
+      await stream.save();
+
+      // Optional: If you want to explicitly delete the room from LiveKit server
+      // (rooms are auto-deleted after a period of inactivity anyway)
+      // const { RoomServiceClient } = await import('livekit-server-sdk'); // Dynamic import for ESM
+      // const roomService = new RoomServiceClient(process.env.LIVEKIT_URL, process.env.LIVEKIT_API_KEY, process.env.LIVEKIT_API_SECRET);
+      // if (stream.livekitRoomName) {
+      //   try {
+      //     await roomService.deleteRoom(stream.livekitRoomName);
+      //     console.log(`LiveKit room ${stream.livekitRoomName} deleted.`);
+      //   } catch (lkError) {
+      //     console.warn(`Could not delete LiveKit room ${stream.livekitRoomName}:`, lkError.message);
+      //   }
+      // }
+
+      // TODO: Handle ending active auctions associated with this stream (important!)
+      // This should be part of your auction logic, perhaps triggered by a stream status change.
+      // For now, just log a reminder:
+      console.log(`Stream ${stream_id} ended. Ensure active auctions are handled.`);
+
+      res.status(200).json({ message: 'Stream ended successfully.', stream });
+  } catch (error) {
+      console.error("🔴 Error ending stream:", error);
+      res.status(500).json({ message: 'Server error ending stream', error: error.message });
+  }
+};
 export const createStream = async (req, res) => {
   const { title, description, category_id, is_private = false, thumbnail_url_manual } = req.body;
   // 'thumbnail_url_manual' is if user provides a URL directly, otherwise we might handle uploads

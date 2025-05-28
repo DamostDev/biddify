@@ -2,6 +2,7 @@ import { DataTypes } from 'sequelize';
 import sequelize from '../lib/connectPG.js'; 
 import bcrypt from 'bcrypt'; 
 
+
 const User = sequelize.define('User', {
   // --- Your Existing Attributes ---
   user_id: {
@@ -31,6 +32,11 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(255),
     allowNull: false
   },
+  livekitRoomName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true, // Room names should be unique per active stream
+},
   profile_picture_url: {
     type: DataTypes.STRING(255)
   },

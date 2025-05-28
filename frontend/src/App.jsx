@@ -24,7 +24,7 @@ function App() {
   // The authStore.js already calls loadUser() on initialization.
   if (isTrulyInitialLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-base-200" data-theme="corporate">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-base-200" >
         <span className="loading loading-ball loading-lg text-primary"></span>
         <p className="mt-4 text-xl text-base-content/80">Loading Biddify...</p>
       </div>
@@ -38,7 +38,7 @@ function App() {
 
       {/* Apply data-theme to the main container or html/body in index.html for global theming */}
       {/* The StreamPage will likely have its own dark theme (bg-black etc.) */}
-      <div className={`flex flex-col min-h-screen ${isStreamPage ? 'bg-neutral-900' : 'bg-white data-theme-corporate'}`}>
+      <div className={`flex flex-col min-h-screen ${isStreamPage ? 'bg-neutral-900' : 'data-theme-winter'}`}>
         {/* Removed 'data-theme' from here if StreamPage controls its own theme fully */}
         {/* main tag should wrap the Routes content */}
         <main className={`flex-grow ${isStreamPage ? '' : 'lg:pb-0 pb-14'}`}> {/* Adjust padding if Header/Footer is hidden */}
