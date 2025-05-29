@@ -5,7 +5,7 @@ import 'dotenv/config';
 const sequelize = new Sequelize(process.env.NEONCONNECT, {
   dialect: 'postgres',
   dialectModule: pg, // Required for Neon
-  logging: false, // Disable SQL logging in console
+  logging: console.log, // Disable SQL logging in console
   pool: {
     max: 50,
     min: 0,

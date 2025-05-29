@@ -12,7 +12,6 @@ import DashboardPage from './pages/DashboardPage';
 import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; // Ensure this path is correct
 import NotFoundPage from './pages/NotFoundPage';
 import StreamPage from './pages/StreamPage'; // Your StreamPage component
-import LiveKitTest from './components/LiveKitTest';
 import MinimalStreamPage from './pages/MinimalStreamPage'; // Assuming this is your minimal stream page
 
 
@@ -60,7 +59,9 @@ function App() {
 
             {/* --- STREAM PAGE ROUTE --- */}
             {/* This can be public or protected. For now, public for testing. */}
-            <Route path="/stream/:streamId" element={<MinimalStreamPage />} />
+            <Route path="/stream/:streamId" element={<StreamPage />} />
+            <Route path="/minimal-stream/:streamId" element={<MinimalStreamPage />} />
+
             {/* 
             If you want it protected:
             <Route element={<ProtectedRoute />}>

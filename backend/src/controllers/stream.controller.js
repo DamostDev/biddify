@@ -15,77 +15,145 @@ const generateStreamKey = () => {
 // @route   POST /api/streams
 // @access  Protected
 export const goLiveStreamer = async (req, res) => {
+  console.log("--- [BACKEND] goLiveStreamer - REFETCH & UPDATE STRATEGY ---");
   const stream_id = parseInt(req.params.id);
-  const user_id = req.user.user_id; // From 'protect' middleware
+  const user_id = req.user.user_id;
+  console.log(`[BACKEND] stream_id=${stream_id}, user_id=${user_id}`);
 
   try {
-      const stream = await Stream.findByPk(stream_id, { include: [User] });
+    // Step 1: Initial fetch to check existence and ownership
+    let stream = await Stream.findByPk(stream_id, { include: [User] }); // Include User for participantName
 
-      if (!stream) {
-          return res.status(404).json({ message: "Stream not found." });
-      }
-      if (stream.user_id !== user_id) {
-          return res.status(403).json({ message: "You are not authorized to start this stream." });
-      }
+    if (!stream) {
+      console.log("[BACKEND] Initial fetch: Stream not found (404).");
+      return res.status(404).json({ message: "Stream not found." });
+    }
+    if (stream.user_id !== user_id) {
+      console.log("[BACKEND] User not authorized (403).");
+      return res.status(403).json({ message: "You are not authorized to start this stream." });
+    }
+    console.log("[BACKEND] Initial fetch successful. Current DB status:", stream.status, "DB livekitRoomName:", stream.livekitRoomName);
 
-      // If already live with a room name, just return the token for that room
-      let roomName = stream.livekitRoomName;
-      if (!roomName || stream.status !== 'live') { // Generate new room name if not live or no name
-          roomName = `biddify-stream-${stream.stream_id}-${uuidv4().slice(0, 8)}`;
-          stream.livekitRoomName = roomName;
-      }
+    // Step 2: Determine the new room name and status details
+    let roomNameToSet;
+    const updates = {};
+    let needsSave = false;
 
-      stream.status = 'live';
-      if (!stream.start_time || stream.status !== 'live') { // Only set start_time if it's truly starting now
-          stream.start_time = new Date();
-      }
-      await stream.save();
+    if (!stream.livekitRoomName || stream.status !== 'live') {
+      roomNameToSet = `biddify-stream-${stream.stream_id}-${uuidv4().slice(0, 8)}`;
+      updates.livekitRoomName = roomNameToSet;
+      console.log("[BACKEND] Generated NEW livekitRoomName:", roomNameToSet);
+      needsSave = true;
+    } else {
+      roomNameToSet = stream.livekitRoomName; // Use existing
+      console.log("[BACKEND] Using EXISTING livekitRoomName from DB:", roomNameToSet);
+    }
 
-      const participantIdentity = `user-${user_id}-streamer-${stream_id}`;
-      const participantName = stream.User ? stream.User.username : `Streamer-${user_id}`;
-      const participantMetadata = { role: 'streamer', streamId: stream.stream_id };
+    if (stream.status !== 'live') {
+      updates.status = 'live';
+      updates.startTime = stream.startTime || new Date(); // Set startTime if not already set or if status changes
+      console.log("[BACKEND] Setting status to 'live' and startTime to:", updates.startTime);
+      needsSave = true;
+    } else {
+        // If status is already 'live', but startTime was somehow null, set it.
+        if (!stream.startTime) {
+            updates.startTime = new Date();
+            console.log("[BACKEND] Status already 'live', but setting missing startTime to:", updates.startTime);
+            needsSave = true;
+        }
+    }
 
-      const token = await generateLiveKitToken( 
-        roomName,
-        participantIdentity,
-        participantName,
-        true,  // canPublish
-        true,  // canSubscribe
-        participantMetadata
-    );
-
-      console.log("Generated LiveKit Token (backend):",  token); // Add this log
-      res.json({
-          token: token, // Make SURE this is the direct string
-          livekitUrl: process.env.LIVEKIT_URL,
-          roomName: roomName,
-          streamDetails: stream,
-          participantIdentity
+    // Step 3: Perform the update if changes are needed
+    if (needsSave) {
+      console.log("[BACKEND] Changes detected. Performing update operation with values:", updates);
+      const [numberOfAffectedRows] = await Stream.update(updates, {
+        where: { stream_id: stream_id },
+        returning: false, // We will re-fetch to get the updated instance
       });
 
-  } catch (error) {
-      console.error("🔴 Error in goLiveStreamer:", error);
-      if (error.message.includes("LiveKit API credentials")) {
-          return res.status(500).json({ message: "LiveKit configuration error on server." });
+      if (numberOfAffectedRows > 0) {
+        console.log(`[BACKEND] Stream.update successful. ${numberOfAffectedRows} row(s) affected.`);
+        // Re-fetch the stream to get the absolute latest data, including applied updates
+        stream = await Stream.findByPk(stream_id, { include: [User] }); // Re-assign to 'stream'
+        if (!stream) {
+            console.error("🔴 CRITICAL: Stream not found after successful update!");
+            throw new Error("Failed to re-fetch stream after update.");
+        }
+        console.log("[BACKEND] Stream re-fetched after update. DB livekitRoomName:", stream.livekitRoomName, "DB status:", stream.status);
+      } else {
+        console.warn("[BACKEND] Stream.update reported 0 affected rows. This might be okay if values were already set, or an issue.");
+        // If update reported 0 rows but we expected changes, re-fetch to see current DB state
+        stream = await Stream.findByPk(stream_id, { include: [User] });
+         if (!stream) {
+            console.error("🔴 CRITICAL: Stream not found after 0-row update!");
+            throw new Error("Failed to re-fetch stream after 0-row update.");
+        }
+        console.log("[BACKEND] Stream re-fetched (after 0-row update). DB livekitRoomName:", stream.livekitRoomName, "DB status:", stream.status);
+        // Update roomNameToSet if it was supposed to change but didn't save
+        if (updates.livekitRoomName && stream.livekitRoomName !== updates.livekitRoomName) {
+            console.warn("🔴 WARNING: livekitRoomName was intended to be updated but re-fetch shows it didn't stick. Using intended value for token.");
+            roomNameToSet = updates.livekitRoomName; // Use the one we tried to set
+        } else {
+            roomNameToSet = stream.livekitRoomName; // Use what's actually in DB or on instance
+        }
       }
-      res.status(500).json({ message: "Failed to start live stream.", error: error.message });
+    } else {
+        console.log("[BACKEND] No changes deemed necessary for status or livekitRoomName. Proceeding with current values.");
+    }
+
+    // Step 4: Ensure roomNameToSet has a value for token generation
+    const finalRoomNameForToken = roomNameToSet || stream.livekitRoomName; // Fallback to instance if roomNameToSet is still null
+    if (!finalRoomNameForToken) {
+        console.error("🔴 CRITICAL: finalRoomNameForToken is STILL null/undefined before token generation!");
+        return res.status(500).json({ message: "Internal error: Could not determine room name for token." });
+    }
+
+    // Step 5: Generate LiveKit Token
+    const participantIdentity = `user-${user_id}-streamer-${stream_id}`;
+    const participantName = stream.User ? stream.User.username : `Streamer-${user_id}`;
+    const participantMetadata = { role: 'streamer', streamId: stream.stream_id };
+
+    console.log("[BACKEND] Generating token with Room Name:", finalRoomNameForToken, "Identity:", participantIdentity);
+    const tokenString = await generateLiveKitToken(
+        finalRoomNameForToken,
+        participantIdentity, participantName,
+        true, true, participantMetadata
+    );
+    console.log("-----> [BACKEND] Generated LiveKit Token (string):", tokenString ? "OK" : "FAILED/NULL");
+
+    // Step 6: Send Response
+    res.json({
+        token: tokenString,
+        livekitUrl: process.env.LIVEKIT_URL,
+        roomName: finalRoomNameForToken,
+        streamDetails: stream.toJSON(), // Send the latest fetched/updated stream instance
+        participantIdentity
+    });
+    console.log("--- [BACKEND] goLiveStreamer END (REFETCH & UPDATE STRATEGY) ---");
+
+  } catch (error) {
+    console.error("🔴 [BACKEND] Error in goLiveStreamer:", error);
+    res.status(500).json({ message: "Failed to start live stream.", error: error.message });
   }
 };
 export const joinLiveStreamViewer = async (req, res) => {
+  console.log("--- [BACKEND] joinLiveStreamViewer START ---");
   const stream_id = parseInt(req.params.id);
-  const user_id = req.user?.user_id; // Optional: Viewer might be guest or logged-in
+  const user_id = req.user?.user_id;
+  console.log(`[BACKEND] joinLiveStreamViewer: stream_id=${stream_id}, user_id=${user_id || 'guest'}`);
 
   try {
       const stream = await Stream.findOne({
-          where: { stream_id: stream_id, status: 'live' },
+          where: { stream_id: stream_id, status: 'live' }, // Crucial: status must be live
           include: [{model: User, attributes: ['username']}]
       });
+      console.log("[BACKEND] joinLiveStreamViewer: Found stream in DB:", stream ? stream.toJSON() : "null");
 
-      if (!stream || !stream.livekitRoomName) {
+      if (!stream || !stream.livekitRoomName) { // Crucial: livekitRoomName must be set
+          console.log("[BACKEND] joinLiveStreamViewer: Live stream not found, not active, or no room name. Stream status:", stream?.status, "Room name:", stream?.livekitRoomName);
           return res.status(404).json({ message: "Live stream not found or not active." });
       }
 
-      // Generate unique identity for viewer
       const baseIdentity = user_id ? `user-${user_id}` : `guest-${uuidv4()}`;
       const participantIdentity = `${baseIdentity}-viewer-${stream_id}`;
       const participantName = user_id
@@ -93,29 +161,26 @@ export const joinLiveStreamViewer = async (req, res) => {
           : `Guest-${uuidv4().substring(0, 6)}`;
       const participantMetadata = { role: 'viewer', streamId: stream.stream_id };
 
-   const tokenString = await generateLiveKitToken( // <--- ADD await HERE
-          roomName,
-          participantIdentity,
-          participantName,
-          true,  // canPublish
-          true,  // canSubscribe
-          participantMetadata
+      const tokenString = await generateLiveKitToken(
+          stream.livekitRoomName, // Use room name from the fetched stream
+          participantIdentity, participantName,
+          false, true, participantMetadata
       );
+      console.log("-----> [BACKEND] Generated LiveKit Token for Viewer (string):", tokenString ? "OK" : "FAILED/NULL");
 
       res.json({
-        token: token, // Make SURE this is the direct string
-        livekitUrl: process.env.LIVEKIT_URL,
-        roomName: roomName,
-        streamDetails: stream,
-        participantIdentity
-    });
+          token: tokenString,
+          livekitUrl: process.env.LIVEKIT_URL,
+          roomName: stream.livekitRoomName,
+          streamDetails: stream.toJSON(),
+          participantIdentity
+      });
+      console.log("--- [BACKEND] joinLiveStreamViewer END (SUCCESS) ---");
 
   } catch (error) {
-      console.error("🔴 Error in joinLiveStreamViewer:", error);
-      if (error.message.includes("LiveKit API credentials")) {
-          return res.status(500).json({ message: "LiveKit configuration error on server." });
-      }
-      res.status(500).json({ message: "Failed to join live stream.", error: error.message });
+      console.error("🔴 [BACKEND] Error in joinLiveStreamViewer:", error);
+      // ... (error handling)
+       res.status(500).json({ message: "Failed to join live stream.", error: error.message });
   }
 };
 export const endLiveStream = async (req, res) => {

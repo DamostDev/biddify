@@ -16,10 +16,10 @@ import StreamAuctionControls from '../components/stream/StreamAuctionControls';
 import StreamHeader from '../components/stream/StreamHeader';
 import { FiX, FiMessageSquare } from 'react-icons/fi';
 
-const StreamPage = () => {
-  const { streamId } = useParams();
-  const navigate = useNavigate();
-  const { user: currentUser, isAuthenticated } = useAuthStore();
+function StreamPage() {
+    const { streamId } = useParams();
+    const navigate = useNavigate();
+    const { user: currentUser, isAuthenticated } = useAuthStore();
 
   const [streamDataFromAPI, setStreamDataFromAPI] = useState(null);
   const [room, setRoom] = useState(null);
@@ -290,9 +290,9 @@ const StreamPage = () => {
     }
   }, [room, isCurrentUserStreamer, isLocalAudioMuted]);
 
-  const handleToggleRemoteAudioMute = useCallback(() => {
-    if (!isCurrentUserStreamer) { setIsRemoteAudioMuted(prev => !prev); }
-  }, [isCurrentUserStreamer]);
+    const handleToggleRemoteAudioMute = useCallback(() => {
+        if (!isCurrentUserStreamerRef.current) setIsRemoteAudioMuted(prev => !prev);
+    }, []);
 
   const sendChatMessageViaLiveKit = useCallback((text) => {
     if (room && room.localParticipant && text.trim()) {

@@ -64,10 +64,10 @@ const Stream = sequelize.define('Stream', {
     unique: true,
     allowNull: true, // Or false if always required
   },
-  livekit_room_name: { // <-- ADDED FIELD
+  livekitRoomName: { // camelCase for the attribute key in the JS definition
     type: DataTypes.STRING(255),
-    allowNull: true, // Will be set when stream goes live with LiveKit
-    unique: true, // A LiveKit room name should ideally be unique while active
+    allowNull: true,
+    unique: true,
   },
 }, {
   tableName: 'streams',
