@@ -64,6 +64,11 @@ const Stream = sequelize.define('Stream', {
     unique: true,
     allowNull: true, // Or false if always required
   },
+  livekit_room_name: { // <-- ADDED FIELD
+    type: DataTypes.STRING(255),
+    allowNull: true, // Will be set when stream goes live with LiveKit
+    unique: true, // A LiveKit room name should ideally be unique while active
+  },
 }, {
   tableName: 'streams',
   timestamps: false, // start_time is explicit, no created_at/updated_at in SQL schema

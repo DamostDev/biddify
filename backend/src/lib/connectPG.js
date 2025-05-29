@@ -16,8 +16,10 @@ const sequelize = new Sequelize(process.env.NEONCONNECT, {
 
 // Test the connection
 try {
+  console.log("connecting to database")
   await sequelize.authenticate();
   console.log('✅ PostgreSQL connection established');
+
 } catch (error) {
   console.error('❌ Unable to connect to PostgreSQL:', error);
 }

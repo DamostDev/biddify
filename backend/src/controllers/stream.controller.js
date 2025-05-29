@@ -45,20 +45,21 @@ export const goLiveStreamer = async (req, res) => {
       const participantName = stream.User ? stream.User.username : `Streamer-${user_id}`;
       const participantMetadata = { role: 'streamer', streamId: stream.stream_id };
 
-      const token = generateLiveKitToken(
-          roomName,
-          participantIdentity,
-          participantName,
-          true,  // canPublish
-          true,  // canSubscribe (streamer often wants to see their own preview)
-          participantMetadata
-      );
+      const token = await generateLiveKitToken( 
+        roomName,
+        participantIdentity,
+        participantName,
+        true,  // canPublish
+        true,  // canSubscribe
+        participantMetadata
+    );
 
+      console.log("Generated LiveKit Token (backend):",  token); // Add this log
       res.json({
-          token,
+          token: token, // Make SURE this is the direct string
           livekitUrl: process.env.LIVEKIT_URL,
           roomName: roomName,
-          streamDetails: stream, // Send updated stream details
+          streamDetails: stream,
           participantIdentity
       });
 
@@ -92,22 +93,22 @@ export const joinLiveStreamViewer = async (req, res) => {
           : `Guest-${uuidv4().substring(0, 6)}`;
       const participantMetadata = { role: 'viewer', streamId: stream.stream_id };
 
-      const token = generateLiveKitToken(
-          stream.livekitRoomName,
+   const tokenString = await generateLiveKitToken( // <--- ADD await HERE
+          roomName,
           participantIdentity,
           participantName,
-          false, // canPublish = false for viewers
-          true,  // canSubscribe = true
+          true,  // canPublish
+          true,  // canSubscribe
           participantMetadata
       );
 
       res.json({
-          token,
-          livekitUrl: process.env.LIVEKIT_URL,
-          roomName: stream.livekitRoomName,
-          streamDetails: stream,
-          participantIdentity
-      });
+        token: token, // Make SURE this is the direct string
+        livekitUrl: process.env.LIVEKIT_URL,
+        roomName: roomName,
+        streamDetails: stream,
+        participantIdentity
+    });
 
   } catch (error) {
       console.error("🔴 Error in joinLiveStreamViewer:", error);
