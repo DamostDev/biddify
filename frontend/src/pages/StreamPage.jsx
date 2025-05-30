@@ -1,4 +1,4 @@
-// src/pages/StreamPage.jsx
+// frontend/src/pages/StreamPage.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -20,6 +20,7 @@ function StreamPage() {
     const navigate = useNavigate();
     const { user: currentUser, isAuthenticated } = useAuthStore();
 
+    // ... (all existing state and refs remain the same)
     const [streamDataFromAPI, setStreamDataFromAPI] = useState(null);
     const [mainParticipant, setMainParticipant] = useState(null);
     const [localParticipantState, setLocalParticipantState] = useState(null);
@@ -34,10 +35,11 @@ function StreamPage() {
     const [chatMessages, setChatMessages] = useState([]);
     const [isLocalAudioMuted, setIsLocalAudioMuted] = useState(false);
     const [isRemoteAudioMuted, setIsRemoteAudioMuted] = useState(false);
-    const [activeTab, setActiveTab] = useState('chat'); // For chat/product sidebar on mobile
+    const [activeTab, setActiveTab] = useState('chat');
 
     const roomRef = useRef(null);
     const isCurrentUserStreamerRef = useRef(isCurrentUserStreamer);
+
     useEffect(() => {
         isCurrentUserStreamerRef.current = isCurrentUserStreamer;
     }, [isCurrentUserStreamer]);
@@ -49,11 +51,11 @@ function StreamPage() {
     }, []);
 
     useEffect(() => {
+        // ... (init effect remains the same)
         if (!streamId) { setError("Stream ID is missing."); setIsLoadingStreamData(false); return; }
         let isMounted = true;
         setIsLoadingStreamData(true); setStatusMessage("Fetching stream details..."); setError(null);
-        setLiveKitToken(null); setLiveKitUrl(null);
-        setStreamDataFromAPI(null);
+        setLiveKitToken(null); setLiveKitUrl(null); setStreamDataFromAPI(null);
 
         const init = async () => {
             try {
@@ -75,6 +77,7 @@ function StreamPage() {
                 if (!isMounted) return;
 
                 if (tokenResponse && tokenResponse.token && tokenResponse.livekitUrl) {
+                            console.log("[USER 2 - TOKEN] Received token:", tokenResponse.token); // Log the token
                     setLiveKitToken(tokenResponse.token);
                     setLiveKitUrl(tokenResponse.livekitUrl);
                 } else {
@@ -94,6 +97,7 @@ function StreamPage() {
     }, [streamId, currentUser, isAuthenticated]);
 
     const handleNewStreamerCandidate = useCallback((participant) => {
+        // ... (remains the same)
         if (!participant || !roomRef.current || isCurrentUserStreamerRef.current) return;
         const meta = safeParseMetadata(participant.metadata);
         if (meta.role === 'streamer' || participant.identity.includes('-streamer-')) {
@@ -102,12 +106,37 @@ function StreamPage() {
     }, [safeParseMetadata]);
 
     const handleConnectionStateChange = useCallback(async (connectionState) => {
+        // ... (remains the same)
         if (!roomRef.current) return;
         const currentRoom = roomRef.current;
+
+            console.log(`[CONNECTION STATE CHANGE] State: ${connectionState}, Current Room SID: ${currentRoom.sid}, Room Name: ${currentRoom.name}`);
+        
         setStatusMessage(`LiveKit: ${connectionState}`);
         setCanPlaybackAudio(currentRoom.canPlaybackAudio);
 
         if (connectionState === ConnectionState.Connected) {
+
+        console.log(
+            `%c[ACTUALLY CONNECTED EVENT] Room: ${currentRoom.name}, SID: ${currentRoom.sid}, LocalParticipant ID: ${currentRoom.localParticipant.identity}`,
+            'color: #28a745; font-weight: bold;'
+        );
+
+             console.log(
+        `%c[USER 2 - CONNECTED] Room: ${currentRoom.name}, SID: ${currentRoom.sid}, LocalParticipant ID: ${currentRoom.localParticipant.identity}`,
+        'color: #28a745; font-weight: bold;'
+    );
+    setStatusMessage(`LiveKit: Connected to ${currentRoom.name}`);
+    setLocalParticipantState(currentRoom.localParticipant);
+
+    // Log remote participants to see if User 1 (streamer) is visible to User 2
+    console.log('[USER 2 - CONNECTED] Remote participants now:', Array.from(currentRoom.remoteParticipants.keys()));
+    currentRoom.remoteParticipants.forEach(p => {
+        console.log(`[ACTUALLY CONNECTED EVENT] Remote P: ${p.identity}, SID: ${p.sid}, Meta: ${p.metadata}`);
+             handleNewStreamerCandidate(p);
+        console.log(`[USER 2 - CONNECTED] Remote P: ${p.identity}, SID: ${p.sid}, Meta: ${p.metadata}`);
+        handleNewStreamerCandidate(p); // Ensure this runs for existing remotes
+    });
             setLocalParticipantState(currentRoom.localParticipant);
             currentRoom.remoteParticipants.forEach(p => handleNewStreamerCandidate(p));
             if (isCurrentUserStreamerRef.current && currentRoom.localParticipant) {
@@ -120,47 +149,72 @@ function StreamPage() {
                 }
             }
         } else if (connectionState === ConnectionState.Disconnected) {
+            console.log(`[DISCONNECTED EVENT] Room SID was: ${currentRoom.sid}`);
             setLocalParticipantState(null); setMainParticipant(null);
         } else if (connectionState === ConnectionState.Failed) {
+            console.error(`[CONNECTION FAILED EVENT] Room SID was: ${currentRoom.sid}`);
             setError(prev => `${prev || ''} LiveKit connection failed.`);
         }
     }, [handleNewStreamerCandidate, isLocalAudioMuted]);
 
     const handleTrackSubscribed = useCallback((track, publication, remoteParticipant) => {
+        // ... (remains the same)
         if (!isCurrentUserStreamerRef.current) {
              handleNewStreamerCandidate(remoteParticipant);
         }
     }, [handleNewStreamerCandidate]);
 
     const handleParticipantConnectedEvent = useCallback((participant) => {
+        // ... (remains the same)
         if (!isCurrentUserStreamerRef.current) {
             handleNewStreamerCandidate(participant);
         }
     }, [handleNewStreamerCandidate]);
 
     const handleParticipantDisconnectedEvent = useCallback((participant) => {
+        // ... (remains the same)
         setMainParticipant(prevStreamer => (prevStreamer?.sid === participant.sid ? null : prevStreamer));
     }, []);
 
     const handleDataReceived = useCallback((payload, participant) => {
+            console.log(
+        `%c[USER 2 - RAW DATA RECEIVED] From SID: ${participant?.sid}, Identity: ${participant?.identity}. Payload: ${new TextDecoder().decode(payload)}`,
+        'color: orange; font-weight: bold;'
+    );
+        // ... (remains the same, with logs)
+        console.log(`[DATA RECEIVED from ${participant?.identity} by ${roomRef.current?.localParticipant?.identity}]:`, new TextDecoder().decode(payload));
+   
+        
         try {
             const messageData = JSON.parse(new TextDecoder().decode(payload));
             if (messageData.type === 'chat') {
-                setChatMessages(prev => [...prev, {
-                    id: `lk-${Date.now()}-${Math.random()}`,
-                    user: {
-                        username: messageData.username || participant?.identity.split('-')[1] || 'User',
-                        avatar: messageData.avatar,
-                        isMod: participant?.metadata ? safeParseMetadata(participant.metadata).isMod : false,
-                    },
-                    text: messageData.text,
-                    timestamp: new Date(messageData.timestamp || Date.now()),
-                }]);
+
+                console.log('[StreamPage on Receiver] Parsed chat messageData:', messageData);                setChatMessages(prevMessages => {
+                    
+                    const newMessages = [...prevMessages, {
+                        id: `msg-${participant.sid}-${Date.now()}`,
+                        user: {
+                            username: messageData.username,
+                            avatar: messageData.avatar,
+                            isMod: safeParseMetadata(participant?.metadata).role === 'moderator',
+                            identity: participant.identity,
+                        },
+                        text: messageData.text,
+                        timestamp: messageData.timestamp,
+                        highlight: messageData.highlight || false,
+                    }];
+                    console.log('[StreamPage on Receiver] Updated chatMessages state. New array length:', newMessages.length, 'New array content:', newMessages);                  return newMessages;
+                });
+            } else {
+                console.log('[StreamPage] Received data packet of unknown type:', messageData.type);
             }
-        } catch (e) { console.error('Error processing data message:', e); }
+        } catch (e) {
+            console.error('[StreamPage] Error processing received data message:', e, 'Raw payload:', new TextDecoder().decode(payload));
+        }
     }, [safeParseMetadata]);
 
     const handleAudioPlaybackChange = useCallback(() => {
+        // ... (remains the same)
         if (roomRef.current) {
             setCanPlaybackAudio(roomRef.current.canPlaybackAudio);
             if (roomRef.current.canPlaybackAudio) {
@@ -172,33 +226,46 @@ function StreamPage() {
     },[]);
 
     useEffect(() => {
-        if (!liveKitUrl || !liveKitToken || isLoadingStreamData) return;
-        if (roomRef.current) {
-            roomRef.current.disconnect(true);
-            roomRef.current = null;
+        // ... (LiveKit connection effect remains the same, with logs)
+        if (!liveKitUrl || !liveKitToken || isLoadingStreamData) {
+            console.log(`[StreamPage EFFECT - LiveKit] SKIPPING: Conditions not met. URL: ${!!liveKitUrl}, Token: ${!!liveKitToken}, isLoading: ${isLoadingStreamData}`);
+            return;
         }
-        setStatusMessage("Connecting to LiveKit...");
-        const room = new Room({ logLevel: LogLevel.debug, adaptiveStream: true, dynacast: true });
+        const room = new Room({ logLevel: LogLevel.info, adaptiveStream: true, dynacast: true });
         roomRef.current = room;
+        console.log(`[StreamPage EFFECT - LiveKit] CREATED NEW ROOM INSTANCE. SID will be assigned on connect.`);
 
+        console.log('[StreamPage EFFECT - LiveKit] Attaching LiveKit room listeners...');
         room.on(RoomEvent.ConnectionStateChanged, handleConnectionStateChange);
         room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
         room.on(RoomEvent.ParticipantConnected, handleParticipantConnectedEvent);
         room.on(RoomEvent.ParticipantDisconnected, handleParticipantDisconnectedEvent);
         room.on(RoomEvent.DataReceived, handleDataReceived);
         room.on(RoomEvent.AudioPlaybackStatusChanged, handleAudioPlaybackChange);
+        console.log('[StreamPage EFFECT - LiveKit] All listeners attached.');
 
         room.connect(liveKitUrl, liveKitToken)
+            .then(() => {
+                console.log('[StreamPage EFFECT - LiveKit] room.connect() promise resolved. Room state:', room.state, 'Room SID:', room.sid);
+            })
             .catch(err => {
+                console.error("[StreamPage EFFECT - LiveKit] room.connect() promise REJECTED:", err);
                 setError(prev => `${prev || ''} LiveKit Connection Init Failed: ${err.message}`);
                 setStatusMessage("Error: Connection Init Failed");
                 if (roomRef.current === room) {
-                    room.removeAllListeners(); room.disconnect(true); roomRef.current = null;
+                    room.removeAllListeners();
+                    room.disconnect(true);
+                    roomRef.current = null;
                 }
             });
+
         return () => {
-            if (roomRef.current === room) roomRef.current = null;
-            room.removeAllListeners(); room.disconnect(true);
+            console.log("[StreamPage EFFECT - LiveKit] CLEANUP: Disconnecting room SID:", room?.sid);
+            if (roomRef.current === room) {
+                roomRef.current = null;
+            }
+            room.removeAllListeners();
+            room.disconnect(true);
         };
     }, [
         liveKitUrl, liveKitToken, isLoadingStreamData,
@@ -206,6 +273,9 @@ function StreamPage() {
         handleParticipantDisconnectedEvent, handleDataReceived, handleAudioPlaybackChange
     ]);
 
+    // ========================================================================
+    // MOVED THESE FUNCTION DEFINITIONS *ABOVE* THE MAIN RETURN STATEMENT
+    // ========================================================================
     const handleToggleLocalAudioMute = useCallback(async () => {
         if (!roomRef.current?.localParticipant || !isCurrentUserStreamerRef.current) return;
         const newMutedState = !isLocalAudioMuted;
@@ -213,22 +283,67 @@ function StreamPage() {
             await roomRef.current.localParticipant.setMicrophoneEnabled(!newMutedState);
             setIsLocalAudioMuted(newMutedState);
         } catch (err) { console.error("Error toggling microphone:", err); }
-    }, [isLocalAudioMuted]);
+    }, [isLocalAudioMuted]); // isCurrentUserStreamerRef is a ref, no need to list as dep
 
     const handleToggleRemoteAudioMute = useCallback(() => {
+        // isCurrentUserStreamerRef is used here correctly
         if (!isCurrentUserStreamerRef.current) setIsRemoteAudioMuted(prev => !prev);
-    }, []);
+    }, []); // isCurrentUserStreamerRef is a ref, no need to list as dep
 
     const sendChatMessage = useCallback((text) => {
-        if (!roomRef.current?.localParticipant || !text.trim()) return;
+        // ... (sendChatMessage logic remains the same, with logs)
+        if (!roomRef.current?.localParticipant || !text.trim()) {
+            console.warn("[StreamPage sendChatMessage] Cannot send: No local participant or empty text.");
+            return;
+        }
+        if (!currentUser) {
+            console.warn("[StreamPage sendChatMessage] Cannot send: Current user data not available. Please log in.");
+            return;
+        }
+
         const messageData = {
-            type: 'chat', text: text.trim(),
-            username: currentUser?.username || `User-${roomRef.current.localParticipant.identity.slice(0,4)}`,
+            type: 'chat',
+            text: text.trim(),
+            username: currentUser.username,
+            avatar: currentUser.profile_picture_url,
             timestamp: new Date().toISOString(),
         };
-        roomRef.current.localParticipant.publishData(new TextEncoder().encode(JSON.stringify(messageData)), DataPacket_Kind.RELIABLE)
-            .catch(e => console.error("Failed to send chat message:", e));
+        console.log('[StreamPage sendChatMessage] Preparing to send:', messageData);
+
+        try {
+            const encodedPayload = new TextEncoder().encode(JSON.stringify(messageData));
+            console.log('[StreamPage sendChatMessage] Publishing data via LiveKit. Payload size:', encodedPayload.byteLength);
+            roomRef.current.localParticipant.publishData(encodedPayload, DataPacket_Kind.RELIABLE)
+                .then(() => {
+                    console.log('[StreamPage sendChatMessage] LiveKit publishData successful.');
+                })
+                .catch(e => {
+                    console.error("[StreamPage sendChatMessage] Failed to send chat message via LiveKit:", e);
+                });
+
+            setChatMessages(prevMessages => {
+                 const newMessages = [...prevMessages, {
+                    id: `local-${Date.now()}`,
+                    user: {
+                        username: currentUser.username,
+                        avatar: currentUser.profile_picture_url,
+                        isMod: false,
+                        identity: roomRef.current.localParticipant.identity,
+                    },
+                    text: messageData.text,
+                    timestamp: messageData.timestamp,
+                }];
+                console.log('[StreamPage sendChatMessage] Optimistic UI update for sender:', newMessages);
+                return newMessages;
+            });
+        } catch (e) {
+            console.error("[StreamPage sendChatMessage] Error encoding chat message:", e);
+        }
     }, [currentUser]);
+    // ========================================================================
+    // END OF MOVED FUNCTIONS
+    // ========================================================================
+
 
     const handleRetryConnection = useCallback(() => {
         setError(null); setStatusMessage("Retrying...");
@@ -236,24 +351,40 @@ function StreamPage() {
         if (roomRef.current) { roomRef.current.disconnect(true); roomRef.current = null; }
     }, []);
 
+
+    // Loading and Error states UI
     if (isLoadingStreamData && !liveKitToken) {
+        // ... (loading UI)
         return (
             <div className="flex h-screen items-center justify-center bg-black">
                 <span className="loading loading-lg loading-dots text-white"></span>
-                <p className="ml-4 text-white">Loading Stream...</p>
+                <p className="ml-4 text-white">Loading Stream and Token...</p>
+                <p className="text-xs text-neutral-400">Status: {statusMessage}</p>
             </div>
         );
     }
 
-    if (error) {
+    if (error && (!roomRef.current || roomRef.current?.state === ConnectionState.Failed || roomRef.current?.state === ConnectionState.Disconnected )) {
+        // ... (error UI)
         return (
             <div className="flex flex-col h-screen items-center justify-center bg-neutral-900 text-white p-4 text-center">
                 <h2 className="text-2xl font-semibold text-red-500 mb-4">Stream Error</h2>
-                <p className="mb-6 max-w-md">{error}</p>
+                <p className="mb-1 text-sm">Current Status: {statusMessage}</p>
+                <p className="mb-6 max-w-md text-red-400">{error}</p>
                 <div className="space-x-4">
                     <button onClick={handleRetryConnection} className="btn btn-warning">Try Again</button>
-                    <button onClick={() => navigate('/')} className="btn btn-primary">Home</button>
+                    <button onClick={() => navigate('/')} className="btn btn-primary">Go Home</button>
                 </div>
+            </div>
+        );
+    }
+     if (!liveKitToken && !error && !isLoadingStreamData) {
+        // ... (waiting for connection details UI)
+        return (
+            <div className="flex h-screen items-center justify-center bg-black">
+                <p className="text-white">Waiting for connection details... Stream might not be active or an issue occurred.</p>
+                <p className="text-xs text-neutral-400">Status: {statusMessage}</p>
+                 <button onClick={handleRetryConnection} className="btn btn-sm btn-outline btn-warning ml-4">Retry</button>
             </div>
         );
     }
@@ -263,23 +394,25 @@ function StreamPage() {
         id: streamDataFromAPI?.stream_id,
         title: streamDataFromAPI?.title,
         host: streamDataFromAPI?.User || { username: 'Streamer', avatarUrl: '', rating: 0, isFollowed: false },
-        viewerCount: roomRef.current?.remoteParticipants.size + (roomRef.current?.localParticipant ? 1: 0) || 0,
+        viewerCount: (roomRef.current?.remoteParticipants?.size || 0) + (roomRef.current?.localParticipant ? 1 : 0),
         streamUrl: window.location.href,
     };
     const currentAuctionProductData = streamDataFromAPI?.auctions?.[0]?.Product ? {
         name: streamDataFromAPI.auctions[0].Product.title,
         imageUrl: streamDataFromAPI.auctions[0].Product.images?.[0]?.image_url || 'https://via.placeholder.com/80',
         condition: streamDataFromAPI.auctions[0].Product.condition,
-        shippingInfo: "Ships in 2-3 days",
-        bids: streamDataFromAPI.auctions[0].Bids?.length || 0,
-        currentBid: streamDataFromAPI.auctions[0].current_price || streamDataFromAPI.auctions[0].starting_price || 50,
-        timeLeft: "2:30",
+        shippingInfo: "Ships in 2-3 days", // Placeholder
+        bids: streamDataFromAPI.auctions[0].bid_count || 0,
+        currentBid: streamDataFromAPI.auctions[0].current_price || streamDataFromAPI.auctions[0].starting_price || 0,
+        timeLeft: "00:00", // Placeholder, needs dynamic update
     } : null;
+
 
     return (
         <div className="flex flex-col h-screen bg-neutral-900 text-white overflow-hidden"
              onClick={() => {
                 if (roomRef.current && !roomRef.current.canPlaybackAudio) {
+                    console.log('[StreamPage] Attempting to start audio on user interaction.');
                     roomRef.current.startAudio().catch(e => console.warn("Error starting audio on click", e));
                 }
              }}
@@ -290,17 +423,18 @@ function StreamPage() {
                 <aside className="hidden md:flex flex-col w-72 lg:w-80 xl:w-96 bg-black border-r border-neutral-800 overflow-y-auto">
                     <StreamProductList
                         streamTitle={streamDataFromAPI?.title || "Products"}
-                        products={streamDataFromAPI?.Products || []}
+                        products={streamDataFromAPI?.auctions?.map(auc => auc.Product).filter(Boolean) || []} // Example products based on auctions
                     />
                 </aside>
 
-                <div className="flex-1 flex items-center justify-center bg-black overflow-hidden px-0 md:px-4 py-0 md:py-4"> {/* Added py for vertical centering if needed */}
+                <div className="flex-1 flex items-center justify-center bg-black overflow-hidden px-0 md:px-4 py-0 md:py-4">
                     <StreamVideoPlayer
                         mainParticipant={participantForVideoPlayer}
                         isLocalStreamer={isCurrentUserStreamer && participantForVideoPlayer === localParticipantState}
                         isAudioMuted={isCurrentUserStreamer ? isLocalAudioMuted : isRemoteAudioMuted}
                         onToggleAudioMute={isCurrentUserStreamer ? handleToggleLocalAudioMute : handleToggleRemoteAudioMute}
                         thumbnailUrl={streamDataFromAPI?.thumbnail_url || "https://via.placeholder.com/900x1600.png?text=Stream+Offline"}
+                        currentAuctionOnVideo={currentAuctionProductData}
                     />
                 </div>
 
@@ -322,6 +456,7 @@ function StreamPage() {
                             onTabChange={setActiveTab}
                             viewerCount={streamHeaderProps.viewerCount}
                             onSendMessage={sendChatMessage}
+                            localParticipantIdentity={roomRef.current?.localParticipant?.identity}
                         />
                     </div>
                 </aside>
@@ -332,7 +467,6 @@ function StreamPage() {
                     Tap/Click page to enable audio
                 </div>
             )}
-
             <div className="md:hidden fixed bottom-4 right-4 z-30">
                 <button
                     onClick={() => setActiveTab(prev => prev === 'chat-visible-mobile' ? 'chat' : 'chat-visible-mobile')}
@@ -344,5 +478,4 @@ function StreamPage() {
         </div>
     );
 }
-
 export default StreamPage;

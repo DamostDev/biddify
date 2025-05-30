@@ -4,7 +4,7 @@
 import React from 'react';
 import { Link, useLocation } // Import useLocation
 from 'react-router-dom';
-import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; // Adjust path
+import useAuthStore from '../services/authStore.js'; // Adjust path
 import { FiMenu, FiBell } from 'react-icons/fi';
 
 const Header = () => {

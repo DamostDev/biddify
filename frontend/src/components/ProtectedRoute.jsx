@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; // Adjust path to your Zustand store if needed
+import useAuthStore from '../services/authStore.js'; // Adjust path to your Zustand store if needed
 
 const ProtectedRoute = () => {
   // Select the necessary state from the Zustand store

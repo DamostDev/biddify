@@ -1,7 +1,7 @@
 // src/components/layout/Sidebar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js';
+import useAuthStore from '../services/authStore.js';
 import {
   FiHome, FiBarChart2, FiBox, FiTv, FiTrendingUp, FiFileText,
   FiDollarSign, FiGift, FiSettings, FiMessageSquare, FiChevronDown, FiChevronUp, FiHeart, FiX,

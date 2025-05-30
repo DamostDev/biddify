@@ -20,7 +20,25 @@ if (!apiKey || !apiSecret) {
  * @param {object} [metadata] - Optional participant metadata.
  * @returns {string} The generated JWT token.
  */
-export const generateLiveKitToken = (roomName, participantIdentity, participantName, canPublish = false, canSubscribe = true, metadata = {}) => {
+export const generateLiveKitToken = (
+        roomName, 
+        participantIdentity, 
+        participantName, 
+        canPublish = false, 
+        canSubscribe = true,
+        canPublishAV = false,     // For audio/video publishing
+        canSubscribeAV = true,    // For audio/video subscribing
+        canPublishData = true,// Specifically for data messages (like chat)
+         metadata = {}) => {
+        console.log(`[LiveKitService] generateLiveKitToken called with:
+        roomName: ${roomName}
+        participantIdentity: ${participantIdentity}
+        participantName: ${participantName}
+        canPublishAV: ${canPublishAV}
+        canSubscribeAV: ${canSubscribeAV}
+        canPublishData: ${canPublishData} // <-- CHECK THIS VALUE
+        metadata: ${JSON.stringify(metadata)}`);
+        
     if (!apiKey || !apiSecret) {
         // This check is crucial because new AccessToken will error without them
         console.error("🔴 LiveKit API Key or Secret is missing during token generation.");
@@ -36,7 +54,7 @@ export const generateLiveKitToken = (roomName, participantIdentity, participantN
         roomJoin: true,
         canPublish: canPublish,
         canSubscribe: canSubscribe,
-        canPublishData: canPublish, // Streamer can send data (e.g., active auction item)
+        canPublishData: canPublishData, // Streamer can send data (e.g., active auction item)
         canUpdateOwnMetadata: true,
         hidden: false, // So participant shows in participant list
     });

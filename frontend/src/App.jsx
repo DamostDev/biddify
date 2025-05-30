@@ -9,7 +9,7 @@ import SignupPage from './pages/SignupPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicOnlyRoute from './components/PublicOnlyRoute';
 import DashboardPage from './pages/DashboardPage';
-import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; // Ensure this path is correct
+import useAuthStore from '../src/services/authStore.js'; // Ensure this path is correct
 import NotFoundPage from './pages/NotFoundPage';
 import StreamPage from './pages/StreamPage'; // Your StreamPage component
 import MinimalStreamPage from './pages/MinimalStreamPage'; // Assuming this is your minimal stream page

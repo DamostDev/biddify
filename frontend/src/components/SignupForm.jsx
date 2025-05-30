@@ -1,7 +1,7 @@
 // src/components/SignupForm.jsx
 
 import React, { useState } from 'react';
-import useAuthStore from '/Users/mbp/Documents/biddify/frontend/src/services/authStore.js'; // Adjust path if needed
+import useAuthStore from '../services/authStore.js'; // Adjust path if needed
 import { shallow } from 'zustand/shallow';
 // Import icons if needed for password or other fields
 // import { FiEye, FiEyeOff } from 'react-icons/fi';

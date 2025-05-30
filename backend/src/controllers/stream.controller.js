@@ -116,11 +116,16 @@ export const goLiveStreamer = async (req, res) => {
     console.log("[BACKEND] Generating token with Room Name:", finalRoomNameForToken, "Identity:", participantIdentity);
     const tokenString = await generateLiveKitToken(
         finalRoomNameForToken,
-        participantIdentity, participantName,
-        true, true, participantMetadata
+        participantIdentity,
+        participantName,
+        true, 
+        true, 
+        true,
+        participantMetadata
     );
+    
     console.log("-----> [BACKEND] Generated LiveKit Token (string):", tokenString ? "OK" : "FAILED/NULL");
-
+    console.log("🔴 [BACKEND goLiveStreamer] STREAMER LiveKit Token:", tokenString);
     // Step 6: Send Response
     res.json({
         token: tokenString,
@@ -154,8 +159,7 @@ export const joinLiveStreamViewer = async (req, res) => {
           return res.status(404).json({ message: "Live stream not found or not active." });
       }
 
-      const baseIdentity = user_id ? `user-${user_id}` : `guest-${uuidv4()}`;
-      const participantIdentity = `${baseIdentity}-viewer-${stream_id}`;
+      const baseIdentity = user_id ? `user-${user_id}` : `guest-${uuidv4().slice(0,8)}`;      const participantIdentity = `${baseIdentity}-viewer-${stream_id}`;
       const participantName = user_id
           ? (await User.findByPk(user_id))?.username || `User-${user_id}`
           : `Guest-${uuidv4().substring(0, 6)}`;
@@ -164,8 +168,10 @@ export const joinLiveStreamViewer = async (req, res) => {
       const tokenString = await generateLiveKitToken(
           stream.livekitRoomName, // Use room name from the fetched stream
           participantIdentity, participantName,
-          false, true, participantMetadata
+          false, true, true, participantMetadata
       );
+
+      console.log("🔴 [BACKEND joinLiveStreamViewer] VIEWER LiveKit Token:", tokenString);  
       console.log("-----> [BACKEND] Generated LiveKit Token for Viewer (string):", tokenString ? "OK" : "FAILED/NULL");
 
       res.json({
