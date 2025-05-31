@@ -13,6 +13,8 @@ import useAuthStore from '../src/services/authStore.js'; // Ensure this path is 
 import NotFoundPage from './pages/NotFoundPage';
 import StreamPage from './pages/StreamPage'; // Your StreamPage component
 import MinimalStreamPage from './pages/MinimalStreamPage'; // Assuming this is your minimal stream page
+import ForYouPage from './pages/ForYouPage'; // Already imported
+import LivePage from './pages/LivePage';   // Already imported
 
 
 function App() {
@@ -46,6 +48,9 @@ function App() {
         <main className={`flex-grow ${isStreamPage ? '' : 'lg:pb-0 pb-14'}`}> {/* Adjust padding if Header/Footer is hidden */}
           <Routes>
             <Route path="/" element={<HomePage />} />
+            {/* These routes are already correctly placed */}
+            <Route path="/foryou" element={<ForYouPage />} />
+            <Route path="/live" element={<LivePage />} />
 
             <Route element={<PublicOnlyRoute />}>
               <Route path="/login" element={<LoginPage />} />
