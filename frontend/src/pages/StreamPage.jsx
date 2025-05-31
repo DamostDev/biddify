@@ -5,6 +5,8 @@ import {
     Room, RoomEvent, ConnectionState, Track, DataPacket_Kind,
     LogLevel,
 } from 'livekit-client';
+import { FiMessageSquare } from 'react-icons/fi';
+
 import useAuthStore from '../services/authStore.js';
 import streamService from '../services/streamService.js';
 
@@ -13,7 +15,9 @@ import StreamChat from '../components/stream/StreamChat';
 import StreamProductList from '../components/stream/StreamProductList';
 import StreamAuctionControls from '../components/stream/StreamAuctionControls';
 import StreamHeader from '../components/stream/StreamHeader';
-import { FiMessageSquare } from 'react-icons/fi';
+
+import chatService from '../services/chatService.js';
+
 
 function StreamPage() {
     const { streamId } = useParams();
@@ -39,6 +43,35 @@ function StreamPage() {
 
     const roomRef = useRef(null);
     const isCurrentUserStreamerRef = useRef(isCurrentUserStreamer);
+
+    useEffect(() => {
+        if (streamId && !isLoadingStreamData && streamDataFromAPI) { // Ensure stream data is loaded before fetching chat
+            const fetchHistory = async () => {
+                console.log('[StreamPage] Fetching chat history for stream:', streamId);
+                try {
+                    const history = await chatService.getChatMessages(streamId);
+                    // Transform fetched history to match the structure LiveKit messages will have
+                    const formattedHistory = history.map(msg => ({
+                        id: `db-${msg.message_id}`, // Distinguish from live messages if needed
+                        user: {
+                            username: msg.User?.username || msg.username_at_send_time,
+                            avatar: msg.User?.profile_picture_url || msg.avatar_url_at_send_time,
+                            isMod: false, // Determine if you store/derive this
+                            identity: `user-${msg.user_id}`, // Construct if needed
+                        },
+                        text: msg.message_text,
+                        timestamp: msg.sent_at,
+                    }));
+                    setChatMessages(formattedHistory);
+                    console.log('[StreamPage] Chat history loaded:', formattedHistory);
+                } catch (err) {
+                    console.error("Failed to fetch chat history:", err);
+                    // Optionally set an error state for chat history
+                }
+            };
+            fetchHistory();
+        }
+    }, [streamId, isLoadingStreamData, streamDataFromAPI]);
 
     useEffect(() => {
         isCurrentUserStreamerRef.current = isCurrentUserStreamer;
@@ -290,56 +323,72 @@ function StreamPage() {
         if (!isCurrentUserStreamerRef.current) setIsRemoteAudioMuted(prev => !prev);
     }, []); // isCurrentUserStreamerRef is a ref, no need to list as dep
 
-    const sendChatMessage = useCallback((text) => {
-        // ... (sendChatMessage logic remains the same, with logs)
-        if (!roomRef.current?.localParticipant || !text.trim()) {
-            console.warn("[StreamPage sendChatMessage] Cannot send: No local participant or empty text.");
-            return;
-        }
-        if (!currentUser) {
-            console.warn("[StreamPage sendChatMessage] Cannot send: Current user data not available. Please log in.");
+    const sendChatMessage = useCallback(async (text) => { // Make it async
+        if (!roomRef.current?.localParticipant || !text.trim() || !currentUser || !streamId) {
+            console.warn("Cannot send chat: Missing critical data.", {
+                hasLocalP: !!roomRef.current?.localParticipant, text, currentUser, streamId
+            });
             return;
         }
 
-        const messageData = {
+        const clientTimestamp = new Date().toISOString();
+        const messageDataForLiveKit = {
             type: 'chat',
             text: text.trim(),
             username: currentUser.username,
             avatar: currentUser.profile_picture_url,
-            timestamp: new Date().toISOString(),
+            timestamp: clientTimestamp,
         };
-        console.log('[StreamPage sendChatMessage] Preparing to send:', messageData);
 
+        // 1. Publish to LiveKit for real-time display to other users
         try {
-            const encodedPayload = new TextEncoder().encode(JSON.stringify(messageData));
-            console.log('[StreamPage sendChatMessage] Publishing data via LiveKit. Payload size:', encodedPayload.byteLength);
-            roomRef.current.localParticipant.publishData(encodedPayload, DataPacket_Kind.RELIABLE)
-                .then(() => {
-                    console.log('[StreamPage sendChatMessage] LiveKit publishData successful.');
-                })
-                .catch(e => {
-                    console.error("[StreamPage sendChatMessage] Failed to send chat message via LiveKit:", e);
-                });
-
-            setChatMessages(prevMessages => {
-                 const newMessages = [...prevMessages, {
-                    id: `local-${Date.now()}`,
-                    user: {
-                        username: currentUser.username,
-                        avatar: currentUser.profile_picture_url,
-                        isMod: false,
-                        identity: roomRef.current.localParticipant.identity,
-                    },
-                    text: messageData.text,
-                    timestamp: messageData.timestamp,
-                }];
-                console.log('[StreamPage sendChatMessage] Optimistic UI update for sender:', newMessages);
-                return newMessages;
-            });
+            const encodedPayload = new TextEncoder().encode(JSON.stringify(messageDataForLiveKit));
+            await roomRef.current.localParticipant.publishData(encodedPayload, DataPacket_Kind.RELIABLE);
+            console.log('[StreamPage sendChatMessage] LiveKit publishData successful.');
         } catch (e) {
-            console.error("[StreamPage sendChatMessage] Error encoding chat message:", e);
+            console.error("[StreamPage sendChatMessage] Failed to send chat message via LiveKit:", e);
+            // Decide if you still want to save to DB if LiveKit fails. For now, we'll let it try.
         }
-    }, [currentUser]);
+
+        // 2. Save to Database via Backend API
+        try {
+            const messagePayloadForDB = {
+                text: messageDataForLiveKit.text,
+                client_timestamp: clientTimestamp,
+                // Backend will use req.user for user_id and username/avatar
+            };
+            // We don't necessarily need to wait for this to complete for UI update if relying on LiveKit
+            chatService.saveChatMessage(streamId, messagePayloadForDB)
+                .then(savedMessage => {
+                    console.log('[StreamPage sendChatMessage] Message saved to DB:', savedMessage);
+                    // Optionally, you could update the local message with the DB ID if needed,
+                    // but for simplicity, LiveKit + optimistic update handles UI.
+                })
+                .catch(dbError => {
+                    console.error("[StreamPage sendChatMessage] Failed to save chat message to DB:", dbError);
+                    // Handle this error, maybe notify user that message might not be permanently saved
+                });
+        } catch (dbError) { // Should be caught by .catch above, but for safety
+            console.error("[StreamPage sendChatMessage] Error preparing to save chat message to DB:", dbError);
+        }
+
+        // 3. Optimistic UI update for the sender
+        setChatMessages(prevMessages => {
+             const optimisticMessage = {
+                id: `local-${Date.now()}`, // Temporary ID for local rendering
+                user: {
+                    username: currentUser.username,
+                    avatar: currentUser.profile_picture_url,
+                    isMod: false, // Determine if current user is mod if applicable
+                    identity: roomRef.current.localParticipant.identity,
+                },
+                text: messageDataForLiveKit.text,
+                timestamp: messageDataForLiveKit.timestamp,
+            };
+            console.log('[StreamPage sendChatMessage] Optimistic UI update for sender');
+            return [...prevMessages, optimisticMessage];
+        });
+    }, [currentUser, streamId]);
     // ========================================================================
     // END OF MOVED FUNCTIONS
     // ========================================================================

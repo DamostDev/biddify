@@ -9,6 +9,7 @@ import Bid from './bid.model.js';
 import Order from './order.model.js';
 import UserFollow from './userFollow.model.js';
 import ProductImage from './productImage.model.js';
+import ChatMessage from './chatMessage.model.js';
 
 
 // --- Define model associations ---
@@ -84,6 +85,13 @@ Product.hasMany(ProductImage, {
 });
 ProductImage.belongsTo(Product, { foreignKey: 'product_id' });
 
+// ChatMessage associations
+ChatMessage.belongsTo(User, { foreignKey: 'user_id' });
+User.hasMany(ChatMessage, { foreignKey: 'user_id' });
+
+ChatMessage.belongsTo(Stream, { foreignKey: 'stream_id' });
+Stream.hasMany(ChatMessage, { foreignKey: 'stream_id' });
+
 
 const syncDatabase = async () => {
   try {
@@ -113,5 +121,6 @@ export {
   Bid,
   Order,
   UserFollow,
+  ChatMessage,
   sequelize // Export sequelize instance if needed elsewhere
 };

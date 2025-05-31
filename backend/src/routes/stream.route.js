@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url'; // To get __dirname in ESM
+import chatRoutes from './chat.route.js';
 
 import {
   createStream,
@@ -85,6 +86,14 @@ router.post('/:id/end', protect, endStream);
 router.post('/:id/go-live', protect, goLiveStreamer);
 router.get('/:id/join-live', protect, joinLiveStreamViewer); // 'protect' for logged-in viewers, can be optional for guests
 router.post('/:id/end-live', protect, endLiveStream);
+
+//stream chat routes
+router.use('/:streamId/messages', chatRoutes);
+router.route('/:id')
+  .get(getStreamById)
+  .put(protect, uploadStreamThumbnail.single('thumbnail'), updateStream)
+  .delete(protect, deleteStream);
+
 
 
 // You might add routes for:
