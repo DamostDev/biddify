@@ -1,4 +1,5 @@
-import { AccessToken } from 'livekit-server-sdk'; // Use import with ESM
+// backend/src/lib/livekitService.js
+import { AccessToken } from 'livekit-server-sdk';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -7,7 +8,6 @@ const apiSecret = process.env.LIVEKIT_API_SECRET;
 
 if (!apiKey || !apiSecret) {
     console.error("🔴 LiveKit API Key or Secret not configured. Check your .env file.");
-    // In a real app, you might throw an error or have a health check fail
 }
 
 /**
@@ -15,48 +15,53 @@ if (!apiKey || !apiSecret) {
  * @param {string} roomName - The name of the room to join.
  * @param {string} participantIdentity - A unique identity for the participant.
  * @param {string} participantName - Display name for the participant.
- * @param {boolean} canPublish - Whether the participant can publish tracks.
- * @param {boolean} canSubscribe - Whether the participant can subscribe to tracks.
+ * @param {boolean} canPublishSources - Whether the participant can publish audio/video tracks.
+ * @param {boolean} canSubscribeToSources - Whether the participant can subscribe to audio/video tracks.
+ * @param {boolean} canPublishData - Whether the participant can publish data messages (e.g., chat).
  * @param {object} [metadata] - Optional participant metadata.
  * @returns {string} The generated JWT token.
  */
 export const generateLiveKitToken = (
-        roomName, 
-        participantIdentity, 
-        participantName, 
-        canPublish = false, 
-        canSubscribe = true,
-        canPublishAV = false,     // For audio/video publishing
-        canSubscribeAV = true,    // For audio/video subscribing
-        canPublishData = true,// Specifically for data messages (like chat)
-         metadata = {}) => {
-        console.log(`[LiveKitService] generateLiveKitToken called with:
-        roomName: ${roomName}
-        participantIdentity: ${participantIdentity}
-        participantName: ${participantName}
-        canPublishAV: ${canPublishAV}
-        canSubscribeAV: ${canSubscribeAV}
-        canPublishData: ${canPublishData} // <-- CHECK THIS VALUE
-        metadata: ${JSON.stringify(metadata)}`);
-        
+        roomName,
+        participantIdentity,
+        participantName,
+        canPublishSources = false,    // For publishing audio/video
+        canSubscribeToSources = true, // For subscribing to audio/video
+        canPublishData = true,      // For publishing data messages
+        metadata = {}
+    ) => {
+
+    console.log(`[LiveKitService] Generating token with:
+        Room: ${roomName}, Identity: ${participantIdentity}, Name: ${participantName}
+        CanPublishSources (AV): ${canPublishSources}
+        CanSubscribeToSources (AV): ${canSubscribeToSources}
+        CanPublishData: ${canPublishData}
+        Metadata: ${JSON.stringify(metadata)}`);
+
     if (!apiKey || !apiSecret) {
-        // This check is crucial because new AccessToken will error without them
         console.error("🔴 LiveKit API Key or Secret is missing during token generation.");
         throw new Error("LiveKit API credentials are not set.");
     }
+
     const at = new AccessToken(apiKey, apiSecret, {
         identity: participantIdentity,
         name: participantName,
         metadata: JSON.stringify(metadata), // Metadata must be a string
     });
+
     at.addGrant({
         room: roomName,
         roomJoin: true,
-        canPublish: canPublish,
-        canSubscribe: canSubscribe,
-        canPublishData: canPublishData, // Streamer can send data (e.g., active auction item)
+        canPublish: canPublishSources,        // Grant for publishing audio/video sources
+        canSubscribe: canSubscribeToSources,  // Grant for subscribing to audio/video sources
+                                              // Note: LiveKit's `canSubscribe` grant in general also covers data.
+                                              // If you want fine-grained control for subscribing to data separately,
+                                              // the SDK might not offer that directly in the grant.
+                                              // Typically, if someone can join, they can subscribe to data.
+        canPublishData: canPublishData,      // Grant for publishing data
         canUpdateOwnMetadata: true,
-        hidden: false, // So participant shows in participant list
+        hidden: false,
     });
+
     return at.toJwt();
 };
