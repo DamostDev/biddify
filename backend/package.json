@@ -21,7 +21,7 @@
     "jsonwebtoken": "^9.0.2",
     "livekit-server-sdk": "^2.13.0",
     "mongoose": "^8.13.2",
-    "multer": "^1.4.5-lts.2",
+    "multer": "^2.0.0",
     "pg": "^8.15.5",
     "sequelize": "^6.37.7",
     "socket.io": "^4.8.1",
