@@ -11,6 +11,11 @@ import UserFollow from './userFollow.model.js';
 import ProductImage from './productImage.model.js';
 import ChatMessage from './chatMessage.model.js';
 
+import UserProductLike from './userProductLike.model.js';
+import UserProductView from './userProductView.model.js';
+import UserStreamLike from './userStreamLike.model.js';
+import UserStreamView from './userStreamView.model.js';
+
 
 // --- Define model associations ---
 
@@ -92,6 +97,70 @@ User.hasMany(ChatMessage, { foreignKey: 'user_id' });
 ChatMessage.belongsTo(Stream, { foreignKey: 'stream_id' });
 Stream.hasMany(ChatMessage, { foreignKey: 'stream_id' });
 
+User.belongsToMany(Product, {
+  through: UserProductLike,
+  foreignKey: 'user_id',
+  otherKey: 'product_id',
+  as: 'LikedProducts', // User.getLikedProducts(), User.addLikedProduct()
+});
+Product.belongsToMany(User, {
+  through: UserProductLike,
+  foreignKey: 'product_id',
+  otherKey: 'user_id',
+  as: 'ProductLikers', // Product.getProductLikers(), Product.addProductLiker()
+});
+// Optional: Direct associations to the join table if you query it directly
+UserProductLike.belongsTo(User, { foreignKey: 'user_id' });
+UserProductLike.belongsTo(Product, { foreignKey: 'product_id' });
+
+// User-Product Views (Many-to-Many)
+User.belongsToMany(Product, {
+  through: UserProductView,
+  foreignKey: 'user_id',
+  otherKey: 'product_id',
+  as: 'ViewedProducts',
+});
+Product.belongsToMany(User, {
+  through: UserProductView,
+  foreignKey: 'product_id',
+  otherKey: 'user_id',
+  as: 'ProductViewers',
+});
+UserProductView.belongsTo(User, { foreignKey: 'user_id' });
+UserProductView.belongsTo(Product, { foreignKey: 'product_id' });
+
+// User-Stream Likes (Many-to-Many)
+User.belongsToMany(Stream, {
+  through: UserStreamLike,
+  foreignKey: 'user_id',
+  otherKey: 'stream_id',
+  as: 'LikedStreams',
+});
+Stream.belongsToMany(User, {
+  through: UserStreamLike,
+  foreignKey: 'stream_id',
+  otherKey: 'user_id',
+  as: 'StreamLikers',
+});
+UserStreamLike.belongsTo(User, { foreignKey: 'user_id' });
+UserStreamLike.belongsTo(Stream, { foreignKey: 'stream_id' });
+
+// User-Stream Views (Many-to-Many)
+User.belongsToMany(Stream, {
+  through: UserStreamView,
+  foreignKey: 'user_id',
+  otherKey: 'stream_id',
+  as: 'ViewedStreams',
+});
+Stream.belongsToMany(User, {
+  through: UserStreamView,
+  foreignKey: 'stream_id',
+  otherKey: 'user_id',
+  as: 'StreamViewers',
+});
+UserStreamView.belongsTo(User, { foreignKey: 'user_id' });
+UserStreamView.belongsTo(Stream, { foreignKey: 'stream_id' });
+
 
 const syncDatabase = async () => {
   try {
@@ -109,7 +178,7 @@ const syncDatabase = async () => {
   }
 };
 
-syncDatabase();
+//syncDatabase();
 
 export {
   User,
@@ -122,5 +191,10 @@ export {
   Order,
   UserFollow,
   ChatMessage,
-  sequelize // Export sequelize instance if needed elsewhere
+  sequelize,
+  UserProductLike,
+  UserProductView,
+  UserStreamLike,
+  UserStreamView
+  // Export sequelize instance if needed elsewhere
 };
