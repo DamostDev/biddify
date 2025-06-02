@@ -63,9 +63,12 @@ const Auction = sequelize.define('Auction', {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
+
 }, {
   tableName: 'auctions',
-  timestamps: false, // start_time is explicit, no general created_at/updated_at in SQL schema
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
   underscored: true,
 });
 

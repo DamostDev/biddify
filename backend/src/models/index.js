@@ -40,7 +40,7 @@ Stream.belongsTo(Category, { foreignKey: 'category_id' });
 Stream.hasMany(Auction, { foreignKey: 'stream_id' });
 
 // Product associations
-Product.belongsTo(User, { foreignKey: 'user_id' });
+Product.belongsTo(User, { as: 'Owner', foreignKey: 'user_id' });
 Product.belongsTo(Category, { foreignKey: 'category_id' });
 Product.hasMany(Auction, { foreignKey: 'product_id' }); // A product can be auctioned multiple times
 
