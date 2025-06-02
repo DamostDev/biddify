@@ -47,12 +47,18 @@ const UserStreamView = sequelize.define('UserStreamView', {
 }, {
   tableName: 'user_stream_views',
   timestamps: true,
-  createdAt: 'viewed_at',
-  updatedAt: false,
+  createdAt: 'viewed_at', // 'viewed_at' will also serve as the 'createdAt' timestamp
+  updatedAt: false,       // No 'updatedAt' timestamp
   underscored: true,
   indexes: [
-    { fields: ['user_id'] },
-    { fields: ['stream_id'] },
+    {
+      unique: true,
+      fields: ['user_id', 'stream_id', 'viewed_at'], // Added unique constraint
+      name: 'user_stream_view_unique' // Optional: custom name for the constraint
+    },
+    { fields: ['user_id'] }, // Keep for individual lookups if needed
+    { fields: ['stream_id'] }, // Keep for individual lookups if needed
+    // { fields: ['viewed_at'] }, // Indexing viewed_at alone might be useful for time-based queries
   ],
 });
 

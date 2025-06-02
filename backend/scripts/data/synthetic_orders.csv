@@ -1,0 +1,2251 @@
+order_id_placeholder,order_guid,buyer_user_guid_fk,seller_user_guid_fk,auction_guid_fk,product_guid_fk,total_amount,shipping_cost,tax_amount,status,payment_intent_id,created_at,shipping_address_json,updated_at
+1,ord-3e538e0c,usr-31e56c24,usr-03e9a3ba,auc-5476e9c8,prod-f84c68c5,125.23104320866778,46.76482026037108,11.9780796788029,paid,pi_59e8d1bb5b7f4195a2d8e442c75ebf83,2023-10-12,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-12
+1,ord-0d6dcb40,usr-2a743762,usr-ad0facb5,auc-3efd61ed,prod-9313b7ef,339.6516910900062,26.936056019552478,91.36580382205582,refunded,pi_ced7cb2e2b4b448a940e0ba45ff08cda,2024-01-18,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-18
+1,ord-12d2e6aa,usr-18e5deed,usr-d86bbc87,auc-1b79027b,prod-abdb36f3,327.3882379287586,16.06756681472999,99.65538398758811,delivered,pi_4940df4bc2d443e0adf349c2269a889d,2023-10-02,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-02
+1,ord-84c67af7,usr-24bbb2d6,usr-32ecc7cc,auc-c45919f4,prod-ff9cff47,964.6926069691312,48.074424610581474,73.56441214586167,pending,pi_677a86c430f5453897f990d6dc409821,2023-10-17,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-17
+1,ord-f57e1b78,usr-38bb498f,usr-576c011d,auc-6d1c934f,prod-ae87c23b,299.8432205280071,25.699849003760445,87.66528077449854,paid,pi_2eb51b5c2b6a4cf589916ab7cd546fa7,2023-06-09,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-09
+1,ord-a2d245c8,usr-821b5391,usr-63139c4c,auc-152a8bc1,prod-0f772f38,95.16353776899344,9.380684924754663,3.9908575204373187,paid,pi_67de88eab719420fb6f62756981b901d,2023-08-03,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-03
+1,ord-b241afaf,usr-c879d041,usr-e36b5a97,auc-779e8c11,prod-62e270dd,617.0694354100124,49.83239981025911,24.628435579170915,paid,pi_61ebbf3725f34b84ade618a007ab7a47,2023-08-04,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-04
+1,ord-dbf5831e,usr-aff16f5a,usr-d86bbc87,auc-18ec8e67,prod-66580a9b,578.7269462852331,45.2618169138102,26.817668893218627,paid,pi_1aef657a8fa341b1a1d15ccda98cd334,2023-07-23,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-23
+1,ord-ea97d43a,usr-0597d68f,usr-d3a930b6,auc-d300ab6e,prod-3cd6115e,1173.1258123561192,24.8501641871036,21.326761398846728,refunded,pi_5fd5b979a28240fcabc8ec92c62e62f3,2023-06-19,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-19
+1,ord-acc203a7,usr-0bc75854,usr-e18a7b96,auc-f65ba89a,prod-60fd5e71,411.01340628216377,9.820458248572766,4.802252239532068,delivered,pi_a2344347df1f47459ff9479dbf098dd7,2023-08-19,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-19
+1,ord-27eb0cc6,usr-7d1ac601,usr-1a64f9e8,auc-fc15288f,prod-a913a778,124.70545106774648,13.815031518718278,21.88379255668863,paid,pi_f7ba8e10b23349349614b4d6e2148d15,2023-12-31,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-31
+1,ord-3724607d,usr-0597d68f,usr-fb2463d4,auc-564718fb,prod-520b6708,1380.2533785452592,26.468724674204964,56.90923870760337,paid,pi_9f196720258a4bcf956febb2c65fc723,2023-05-06,"```json
+{
+  ""street"": ""1234 Elm Street, Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-06
+1,ord-6e4e5d70,usr-a6d2a550,usr-f7eae2a6,auc-606731fd,prod-2199dd7c,788.3707100910276,38.46507351371209,83.15006318589889,pending,pi_61364a92c4fb4af58bf6332379db6e41,2023-12-13,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-13
+1,ord-340bdd1b,usr-2e012f50,usr-51283925,auc-963c2135,prod-7e2b7449,846.002952864724,29.906267535455456,96.77320044871945,delivered,pi_f9d04913b88e4459bbafcc5c50942664,2023-04-26,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-26
+1,ord-0979f384,usr-2ed6a909,usr-41ba2370,auc-3cf1311d,prod-5349f200,969.3613994624641,19.293847569616396,53.28610665064978,pending,pi_62fc169a8aed4e4eaa7da63961796fb0,2023-07-05,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-05
+1,ord-cd48650f,usr-ccde6a87,usr-cda4df6b,auc-3efd61ed,prod-dd497c6d,621.0810534941211,9.753061401497554,95.49549660660739,pending,pi_e6daf919a79e445ea8792acac494b5c2,2023-11-19,"```json
+{
+  ""street"": ""1234 Elm Street, Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-19
+1,ord-37137048,usr-4d830a76,usr-9c6355be,auc-5b394e7f,prod-26e1e79e,627.6025158450576,36.92935393097958,16.228359488930877,paid,pi_cc18bdf7295f428d8328a8110361c304,2023-08-05,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-05
+1,ord-39438d1f,usr-c70f52dc,usr-7964db0d,auc-c1bc7d3c,prod-bb1c4000,406.7262817358832,48.401024944723055,14.454278940085475,paid,pi_15c6e71ec8554a7c9792dc1df473b5f9,2023-03-30,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-30
+1,ord-37893a4f,usr-1d676ed6,usr-6e5aaf7b,auc-c0df061e,prod-248519c0,644.7260976713691,29.80751907207031,36.87058593275459,paid,pi_57c86eb7a8394421b66c33357771ee57,2023-11-05,"```json
+{
+  ""street"": ""123 Maplewood Ave"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-05
+1,ord-2e014d59,usr-88b5a365,usr-802cad2b,auc-c76cf77b,prod-14329b08,333.1659725838039,8.966813714880306,47.38959269301197,cancelled,pi_5ae9c6f23bb442fea914ad750ed0552a,2023-11-12,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-12
+1,ord-47a7eda8,usr-3558bbdd,usr-612d455a,auc-0e2c7fd9,prod-db202002,1225.9022430950683,25.7613982944268,82.74078786492342,paid,pi_f9372fd5f5ad40368d0cea7e9fc4ce54,2023-06-04,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-04
+1,ord-864a9f58,usr-67f49b0d,usr-7964db0d,auc-9c78f716,prod-50698233,338.50289606993834,7.712835798543488,34.283222179055485,pending,pi_4d3fdf18f8344c4eb1e1fc45fe23ba8f,2023-03-15,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-15
+1,ord-571facb8,usr-98610fc6,usr-4fcc955c,auc-554ab285,prod-8bd5f3ef,57.746072730341325,33.65655362000008,55.08178319792207,refunded,pi_20a5d2fb65fd4b498d6e36ccb14716b0,2023-05-09,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-09
+1,ord-f1576e47,usr-4e0d240a,usr-e45b21c7,auc-cbabee68,prod-4a12f855,212.3332697600344,1.166860113790369,34.65226543058708,pending,pi_a5599ff9d048422e8503f288b32c9fee,2023-04-12,"```json
+{
+  ""street"": ""1234 Elm Street, Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-04-12
+1,ord-167eeded,usr-f434518c,usr-30f3e70f,auc-7680e1d4,prod-710f69f9,354.02002512296497,49.90573274007902,95.61616617105575,paid,pi_5b53f02966fd4e8eaaf22c1d39b5f275,2023-12-04,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-04
+1,ord-8c9dbb59,usr-18e5deed,usr-e2b7c331,auc-97504ef6,prod-f135147d,532.2151789298258,3.378865448280272,56.58667099105017,paid,pi_f241de4292f9426c8f371e39a56aa2f4,2023-11-11,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-11-11
+1,ord-5a04232f,usr-09786814,usr-75dac993,auc-3a53de2d,prod-24fb45f2,1200.436129704333,4.581081222603372,54.12641666304796,delivered,pi_12c155f4766342bba2678aa763919401,2024-01-23,"```json
+{
+  ""street"": ""123 Maple Street Apt 4B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-23
+1,ord-907916e4,usr-19d5149b,usr-ff41e9fc,auc-d4924e9d,prod-c054fba3,855.9372666736208,32.436523486494586,6.909956938932805,paid,pi_0ffc4e39a13743539cbf4393fe2c22a5,2023-09-13,"```json
+{
+  ""street"": ""123 Maple Street Apt 4B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-13
+1,ord-795f437d,usr-8d8c58bc,usr-ed3d1cb7,auc-1428e6a2,prod-65a71d64,523.4384654091849,43.447577630165654,79.77344076855657,paid,pi_87dbe6ac2898429080461c5a3d63ec78,2023-06-06,"```json
+{
+  ""street"": ""123 Maple Street Apt 4B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-06
+1,ord-25bf2cb5,usr-49d21b5a,usr-ada8b8bd,auc-ba7eb3c2,prod-a233525a,786.0120910127164,46.05313662380197,85.70522216055208,pending,pi_a332d7faec364f359ac1679184d39cb6,2023-08-20,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-20
+1,ord-254fc359,usr-6e82ff08,usr-df040af4,auc-170da3da,prod-008a359f,1384.7092042020895,27.416801069729114,13.26576175112738,paid,pi_4b1c6e66181441fd9f1c1cea22bd8913,2024-01-22,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-22
+1,ord-86f66da3,usr-c54eea39,usr-0dbca433,auc-4112a06c,prod-ab7ad985,80.33899436068562,27.097084724692227,40.06877554267938,pending,pi_7138be36052a410da56eab1dbb7a9cd5,2023-12-08,"```json
+{
+  ""street"": ""123 Maplewood Ave"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-08
+1,ord-6f6bd84d,usr-cd1d9a17,usr-f7eae2a6,auc-f4dd3c1e,prod-26bce4be,1041.9808706540716,49.63315019627705,28.326804504938032,shipped,pi_75f702ecc581468d853dcd574498f5a0,2023-03-24,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-24
+1,ord-9231c602,usr-f66ba022,usr-1c103460,auc-ff7306ab,prod-da8e02e8,383.2398951354472,33.60412411975147,9.394590472479592,pending,pi_4bf3838f474a429b8f228c359aa8eb07,2023-04-07,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-07
+1,ord-451cab30,usr-9dbd8bc7,usr-f434518c,auc-bec84e6f,prod-02cf84ce,1122.1063713067863,14.87337834910592,79.13502856090837,delivered,pi_8cd81942d3694487bed1686f34fefc49,2024-01-14,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-14
+1,ord-94994718,usr-d816b680,usr-9a015d8e,auc-09333481,prod-9d2cc445,476.4739597992884,22.747159549443385,16.569242368451633,shipped,pi_7421eb0d48804828bdebea3950cd7c29,2023-05-10,"```json
+{
+  ""street"": ""1234 Elm Street, Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-10
+1,ord-14e27249,usr-2605b31d,usr-75f1a5ed,auc-5adb43a8,prod-30336add,691.3530858331176,40.95771964667529,56.7720532954551,cancelled,pi_4acd2fa5560143e1b31968d90983d3f0,2023-06-26,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-06-26
+1,ord-e84c7bc3,usr-e42c8b9d,usr-19d5149b,auc-828601bc,prod-bd80f256,788.3073963120084,23.876078966408432,30.80823985285711,paid,pi_90a7e9d71c334b1f8c0c690da8aa5746,2023-08-27,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-27
+1,ord-3f474628,usr-7ed71dcc,usr-9ccd6726,auc-1a0d1c84,prod-fe7c9233,1390.6940715326873,23.302539988222158,21.891227082969746,paid,pi_c0b2302ba1cb4372a9b457ba2595e342,2023-10-21,"```json
+{
+  ""street"": ""123 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-10-21
+1,ord-94d14fcf,usr-82895527,usr-98610fc6,auc-2d053330,prod-2e1e2fb8,1042.5080487278422,0.9700303392634946,32.72066944636699,shipped,pi_4b807a13f4c14532aa7c067645de63db,2024-01-08,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-08
+1,ord-12225448,usr-4d664edc,usr-2ed6a909,auc-c58ff08a,prod-a0ee6b03,949.9818178658556,42.27330018548153,12.428901416409865,paid,pi_c413d4de77be476e9dd289ac8e110302,2023-08-24,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-24
+1,ord-3693b637,usr-b0338418,usr-2ed6a909,auc-e4755a04,prod-6fc5fba9,614.014482902046,7.074683055730113,36.9316730045431,shipped,pi_4d1ff52f026f4a1f830573cda74e4b50,2023-09-04,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-04
+1,ord-6f2470ab,usr-95ed7f31,usr-3558bbdd,auc-9c5336c8,prod-4a659a9c,197.42831391130963,31.230759478693727,89.60033687993436,paid,pi_bb489c8fff4641ad829e4ca8c18f8301,2023-08-27,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-27
+1,ord-dfb1b137,usr-e42c8b9d,usr-75dac993,auc-a3a9c3d0,prod-d496f85f,1367.4813637095167,46.81838895100252,37.69688992597753,paid,pi_df8020d0995b4ac5bbcec25ecec00446,2023-11-08,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-08
+1,ord-3462717d,usr-5a33ea8c,usr-2605b31d,auc-d3bfe267,prod-e2d050bf,248.3849567651558,39.64574351091632,57.56140843843115,delivered,pi_351c4400387d4128b0749938828f5464,2023-07-05,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-05
+1,ord-83dd6b8f,usr-be6fc7ae,usr-30f3e70f,auc-b4c590de,prod-28b80c25,481.5386933912127,28.633438802545523,87.2065555901275,paid,pi_243f56c7c16f432dbf7aac4ca5392c05,2023-07-28,"```json
+{
+  ""street"": ""123 Maple Street Apt 4B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-28
+1,ord-3444713f,usr-2a743762,usr-4e0d240a,auc-d9d4788e,prod-65ae6e70,555.7488754306519,8.44798921341765,18.608658107090946,shipped,pi_cbdde89a7cea4717817b2b4fcc2fdde8,2023-04-03,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-03
+1,ord-0f961d03,usr-09010cf1,usr-8b3c0733,auc-71f33277,prod-1d885bd8,1406.8988839577469,12.33017309110842,96.37769663215273,cancelled,pi_98425b6111fd46408660ded7f0f3c395,2023-08-26,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-08-26
+1,ord-11f0b75e,usr-e18a7b96,usr-07f9ef77,auc-7ccb9d42,prod-14d5eb4c,491.0400584185411,45.53056221307295,70.29804753206358,paid,pi_2c2b6a43d1c5465a9800584658c03e7e,2023-05-02,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-02
+1,ord-1c986584,usr-514ccdaf,usr-fb2463d4,auc-ccdbdb4e,prod-6481369f,876.8008450747288,29.60367549974201,95.91072627274883,pending,pi_8670536bc868411c93e0137715801375,2023-12-27,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-27
+1,ord-dff6ea07,usr-31eb8775,usr-ada8b8bd,auc-455f7257,prod-7ead12c2,62.7064175636241,17.65311681521679,82.00107003346437,paid,pi_84ea793d49dc47f996d95b1b8daf5830,2023-04-16,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-16
+1,ord-150f934f,usr-9451dee1,usr-cb3066b7,auc-4bc18f35,prod-6ec120e1,374.85009120990725,41.4264876055561,72.79513333728724,paid,pi_c45eb3dec2814674aa0edd39384da334,2023-06-05,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-05
+1,ord-1798d8f4,usr-b555effe,usr-22aaa082,auc-76764e8f,prod-afef592f,1290.3692634374488,6.104837160067211,8.205996343809396,pending,pi_e2e135566cb94a6e933d67d1c5e478d4,2023-07-09,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-09
+1,ord-b43f3000,usr-67f49b0d,usr-bf2a3290,auc-51e5225b,prod-d496f85f,16.0867966112076,38.00952278649207,54.98245830825691,pending,pi_03ffbc5d226d41e5837860b2819ed03c,2023-12-19,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-19
+1,ord-25679e47,usr-e45b21c7,usr-dac5c395,auc-e8edeb6d,prod-8ed5f6f0,871.7497093882162,40.39517739562478,92.82455761529161,delivered,pi_ad39525a431d4e899b8fee378e2d2cc0,2024-01-23,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-23
+1,ord-d88b0d7f,usr-f4e88a7c,usr-f4f9a207,auc-b86f19fa,prod-cf58e264,363.49565602858104,13.39258318959783,57.728229932496134,paid,pi_2d4bcd23c8e246b5bf0ed05c349475be,2024-01-16,"```json
+{
+  ""street"": ""123 Maplewood Ave"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-16
+1,ord-1ff33073,usr-5fc7c74c,usr-d816b680,auc-aed1380d,prod-8bd5f3ef,1067.3210568924987,39.30453262318684,29.16582706209585,pending,pi_3969645d6eb64417bccbe55cc7e988c0,2024-01-28,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-28
+1,ord-94db417f,usr-fe88e05a,usr-fb2463d4,auc-ee11a755,prod-1dfd125e,1263.931495011099,47.23486768246461,62.39220003777819,refunded,pi_60562f5224994612a64a59029b9e7eed,2023-12-01,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-01
+1,ord-9611005f,usr-8fc70a13,usr-e36b5a97,auc-9e4c6cf8,prod-49bfbbaa,534.3222440456796,26.961182641795045,20.079982724210755,pending,pi_418f8585ada1485eb164967d6a97538e,2023-10-10,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-10
+1,ord-ca595dfe,usr-8d8c58bc,usr-59038418,auc-aed1380d,prod-599aa6a8,66.26927922373233,23.087742728173748,91.71702401178405,paid,pi_8de5f12cfa504bf58e53e3731b65fece,2023-12-12,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-12
+1,ord-4d7fbdf0,usr-5b0a7894,usr-44d7c355,auc-30c1f612,prod-308fa7e2,1272.30735727784,26.508813233463428,89.26321125705044,paid,pi_93a20aa854da429b9c924351051c2c6b,2023-07-27,"```json
+{
+  ""street"": ""1234 Elm Street, Apt 56"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-27
+1,ord-a80964c6,usr-63139c4c,usr-3510ce29,auc-cef8c3dc,prod-47e73109,1492.8705947588126,27.058440498086178,36.41264305120659,paid,pi_c065344fa2e04a7ca32191f52ffdd362,2023-04-16,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-16
+1,ord-8192b1f6,usr-85fcbd72,usr-bf2a3290,auc-c927d358,prod-043c28c3,559.76772287417,14.310196185175977,21.635121801351275,delivered,pi_fabcdff54f324d9f993d076f01c94ccf,2023-08-14,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-14
+1,ord-ba578904,usr-4ee7510a,usr-f04c75d7,auc-58dab145,prod-d589e3fc,929.6596132515194,30.89864737241752,12.131439393704003,paid,pi_9f06b7a952414cc58d8b2ea596d81167,2023-06-04,"```json
+{
+  ""street"": ""123 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-04
+1,ord-b589ec64,usr-75f1a5ed,usr-a86828e6,auc-c0eb8f61,prod-262d029f,1165.7122987331359,7.797836910320777,38.717715737756976,delivered,pi_db0d6f4b3c054c13ace351d5bf8ea7a3,2024-01-05,"```json
+{
+  ""street"": ""123 Maple Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2024-01-05
+1,ord-b20ebbb6,usr-4c86d48c,usr-5a33ea8c,auc-db81d193,prod-14bd131f,511.51413501982194,39.690918291894874,53.42278478998238,shipped,pi_813ef6571eec4ecc9050aa957fc854bc,2023-07-09,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-09
+1,ord-a8de9e85,usr-088dfa4d,usr-b63421a7,auc-db81d193,prod-29203224,671.7284265409951,46.45590189878996,14.237663133985468,paid,pi_2a0a705b2fd440f491f8a84e60695735,2023-09-16,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-16
+1,ord-74137edb,usr-fab88057,usr-09010cf1,auc-de4da6e1,prod-321bac1d,1203.6854074043222,18.820177181882354,95.33949924031077,delivered,pi_71c8a063692b41d0a56bd5749c8cbf8d,2023-12-23,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-23
+1,ord-1d212b70,usr-9ccd6726,usr-044499b1,auc-0fe71356,prod-30b12c1e,326.44842974777697,6.423365903652717,39.463630256429994,delivered,pi_98973087f8ab4d249a03a488ae59eb78,2023-11-21,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-21
+1,ord-116d5e49,usr-5b0a7894,usr-a3b72ece,auc-f5e1ca2d,prod-c22c5bb5,645.0175864059877,8.150565887167643,38.90378534886453,delivered,pi_f6ca4c85396d41049b3c9b853fe26aca,2023-12-31,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-31
+1,ord-9c7b38d6,usr-9ccd6726,usr-3190cad9,auc-a33cc6ec,prod-7f101665,538.7551613912366,22.203466388896043,40.36699386796469,pending,pi_ed50772136094951bc9d27110821a8f6,2023-05-24,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-24
+1,ord-e5b014c4,usr-4a2b8292,usr-36a4f828,auc-3733c38d,prod-7e9ce580,694.5959045276458,40.834501761250124,7.646272248376185,shipped,pi_87ab22a3dadb40fa9f875e4fa17ae99d,2023-06-21,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-21
+1,ord-0d03b14c,usr-befc4464,usr-be6fc7ae,auc-5086c1a9,prod-5eb5ab98,1388.9159739276056,44.73879171548758,32.37061299372015,pending,pi_d6087e1fcd1646cfb0fef77d95fede65,2023-07-27,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-27
+1,ord-66563478,usr-e7805ec9,usr-5fc7c74c,auc-c71925d6,prod-761f077f,1384.458067772959,40.83001048207123,41.282428276868984,delivered,pi_53b473e7a2e142339913250286a6e1b5,2023-08-09,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-09
+1,ord-1b760173,usr-329e341c,usr-10c868d4,auc-c0df061e,prod-9632827e,236.9669361989098,16.400384848186704,35.51492463078746,paid,pi_42dd09351fb94badb1dab0247ea0cd5b,2023-03-17,"```json
+{
+  ""street"": ""123 Maplewood Ave"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-17
+1,ord-9bf75d2a,usr-704ef4e0,usr-b481aa61,auc-396e8f6e,prod-998073b8,445.1880258135653,17.975696378706175,7.227714713129718,pending,pi_954739c1ae454dfabee587cc1b5c052c,2023-10-14,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-14
+1,ord-8ee7d83a,usr-cf7d3a7b,usr-a6d2a550,auc-8e5da76f,prod-20880190,761.6371478446731,26.894533667921973,81.3781434306046,pending,pi_ebe63ef09ddd4d94a318773e6c0374ff,2023-03-16,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-16
+1,ord-ee8d54d4,usr-b63421a7,usr-cac32514,auc-2346ee0b,prod-04bf6429,842.5426005331772,39.40086650665594,82.11565820151593,paid,pi_dc4b9a45504c43a39e4307ad3637bd5b,2023-04-14,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-14
+1,ord-97d03b41,usr-4c8d32fd,usr-7d1ac601,auc-aee162b4,prod-67142f7d,374.1067450105773,17.81379733941807,41.30226126764337,paid,pi_2b00dd816b8143a5a6967e0ca8411bf2,2023-12-27,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-27
+1,ord-f79586ee,usr-d8471a9e,usr-4d830a76,auc-e4755a04,prod-d3fc0712,544.4389390833605,20.918928794162568,68.88717952670737,shipped,pi_e8343923f27247c280b158f71908f69e,2023-09-02,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-02
+1,ord-6425ce28,usr-edd1e48e,usr-0d9dd263,auc-e3b4906e,prod-8c3f400e,1037.2487796200187,18.86435068100872,89.13785901560225,paid,pi_cec66c5be5924faba925a9e85459822d,2023-08-27,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-27
+1,ord-4c858d78,usr-8b3c0733,usr-5fc7c74c,auc-50c01ffc,prod-21c00cf3,1224.3002040279384,4.025637382326192,8.781498131074162,delivered,pi_10e6c347f81e46d3a72e3f1500b578ec,2024-01-22,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-22
+1,ord-181b1f3a,usr-0e636010,usr-f66ba022,auc-74b42b6e,prod-21bf94d8,755.3982452583255,49.559854049225684,87.95390962006591,paid,pi_5be1a17b0f70466bb0d739e98b289c70,2023-09-13,"```json
+{
+  ""street"": ""123 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-13
+1,ord-725f5359,usr-8fc70a13,usr-86dc3cfe,auc-11be3558,prod-7320fc86,1194.9892569911003,49.1130415221885,6.9025126290960355,shipped,pi_2fb445c58d0a49a3b734ba66da507ff8,2023-07-30,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-30
+1,ord-91a80238,usr-ac536fdd,usr-d885a3bc,auc-59212535,prod-fe7c9233,1303.2428003361013,35.78113835710441,52.12268845567325,delivered,pi_8651f99b5f504e2c9622a9bc13b521e1,2023-07-06,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-06
+1,ord-0ec43ad2,usr-587813d2,usr-c3134135,auc-6d94e59b,prod-c82123ef,236.23018321616937,47.187694872640854,85.7539949816433,shipped,pi_65cc714be21b4ce79a991063183679d3,2023-09-07,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-07
+1,ord-30de9dae,usr-9c6355be,usr-d816b680,auc-b4d904f3,prod-e2d050bf,894.4476818026505,24.627863303758907,93.90596387686885,delivered,pi_c8d8c945bf9742adb9b7cb70c5b26889,2023-12-28,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-28
+1,ord-e073a46d,usr-4d664edc,usr-f434518c,auc-e0e50a97,prod-110e1ebc,378.65416859974846,15.388228307173723,62.698907280773966,paid,pi_a6bca05a629b4ec98985ff6a4daf0344,2023-09-19,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-19
+1,ord-6ee8623b,usr-088dfa4d,usr-cf4094e8,auc-fd387590,prod-26bce4be,192.165746809605,34.55729916099497,58.33727180749311,paid,pi_54989afe3e4740cba3e7a940e0d649d7,2023-07-02,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-02
+1,ord-b13d0de5,usr-67f49b0d,usr-d7f9a8df,auc-21c492ac,prod-cc02586b,956.249760639641,19.43899136208423,22.246960241641368,paid,pi_0cb52f965e0947efb1aa105c2104fbc1,2023-10-05,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-05
+1,ord-334a6fae,usr-28ae7fc8,usr-38bb498f,auc-ab1ead03,prod-a1971b69,1165.5715677857593,31.77636147010714,52.37610439449085,paid,pi_e68fdccd23134996b5bcf629e8329f11,2023-09-08,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-08
+1,ord-415807ea,usr-c879d041,usr-85fcbd72,auc-08201d7c,prod-3711ba72,763.2611611711494,30.90984095498175,58.05470067150935,pending,pi_dd64e4085161430fa40aa0feb0abde7d,2024-01-16,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-16
+1,ord-26619d44,usr-f04c75d7,usr-5e401bb5,auc-a0fed041,prod-6910721d,1039.5260970575819,47.83428588899194,74.06385519904642,paid,pi_fcfe2f19df41476ba74b0fa5794ebad8,2023-09-27,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-27
+1,ord-c97b4dec,usr-31eb8775,usr-8e135113,auc-5f85ebf9,prod-2d93b618,109.8385363725119,21.032378733143393,90.51369223614664,shipped,pi_9f224123598f4d51aedbd7d77356b94c,2023-04-04,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-04
+1,ord-34cdce82,usr-71cfa548,usr-dc3053e9,auc-fc6bbac9,prod-993fcdd5,251.55185953897052,13.705776276229303,45.19409078649772,shipped,pi_58c7043dbc3c47e99749ac83214bf5ef,2023-09-20,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-20
+1,ord-494ee78a,usr-9dbd8bc7,usr-75dac993,auc-2e972574,prod-dc469ed9,639.0563528495406,45.62264596340439,14.267683512868935,paid,pi_c42a851d7ed549ab8d990c9a2b4c34bd,2024-01-26,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-26
+1,ord-4b83fb0c,usr-cf4094e8,usr-3de4f1ea,auc-03d67366,prod-b5da08b5,1241.2639565334753,35.66859502119277,2.0088571160052027,paid,pi_688a067b9fff4262b1cda5572bac021b,2023-07-05,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-05
+1,ord-c285cf3c,usr-e7805ec9,usr-0583e3af,auc-d2b7007b,prod-100508a3,263.51316091469,23.17582438066402,89.21833394501483,paid,pi_100f063fc568472bbfe42ab8d67927c3,2023-10-08,"```json
+{
+  ""street"": ""123 Maple Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-08
+1,ord-70cb782b,usr-f89eca00,usr-2ed6a909,auc-d89378f3,prod-c75bbef0,40.80062252946461,11.99981121623609,45.699248605734375,shipped,pi_ef399d5654b84e49b820cf5c7b861224,2023-11-05,"```json
+{
+  ""street"": ""123 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-05
+1,ord-a6ce0578,usr-ca91e8ad,usr-dc3053e9,auc-5086c1a9,prod-107955a3,1178.2887589997547,27.378838608223177,45.40133334199387,shipped,pi_1a597f7e785747098b0b9af9d0306ea4,2023-04-01,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-01
+1,ord-4280f5ee,usr-a7f362fd,usr-8c37fb97,auc-cd1f86f2,prod-a4769556,780.3984533965066,39.16487162724395,9.455098679921603,paid,pi_6d996a352a3f4f4582e08a44aaba02ae,2023-10-04,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-04
+1,ord-80526434,usr-fc3dce2a,usr-f4e88a7c,auc-71da30e5,prod-6fc5fba9,863.295066080951,43.90916441123847,60.399798660838535,refunded,pi_68b29e2c498744b78c93aebc9750f4be,2023-06-13,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-13
+1,ord-f547b97a,usr-7ed71dcc,usr-6aee717e,auc-69e50b36,prod-c054fba3,852.4367203335956,34.29603386169477,34.047385852814486,pending,pi_bd57012372844f62a1566b2bac9299bb,2023-10-16,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-16
+1,ord-884993a7,usr-5d57d842,usr-25d26aa6,auc-10c5ad6f,prod-5c4f1722,1246.3996462869914,3.9218760284109146,11.03318752148239,shipped,pi_df3cd8e4d5dd4df7a68503d372f1388f,2023-05-28,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-28
+1,ord-7f856965,usr-f548a45f,usr-3190cad9,auc-f2ff38be,prod-52f60e2e,1226.06552754555,31.26862640599241,69.56521101623281,cancelled,pi_f328dd1c064844fc93666bb40b233b2a,2023-03-18,"```json
+{
+  ""street"": ""123 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-18
+1,ord-d4e9aa06,usr-1babf2b8,usr-567871a3,auc-2e972574,prod-1e9e3c48,1009.0968434645822,31.148225188357575,24.005277246223567,shipped,pi_92d1a92b30f344d88529c7cb6a858f28,2023-06-17,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-17
+1,ord-4097fad1,usr-f67c2be6,usr-cb3066b7,auc-6ce1663e,prod-8c8d8070,1233.824851306496,13.475241278370675,77.05076090836084,paid,pi_936039c420814d5d851c669e3cc36d91,2023-09-03,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-03
+1,ord-a841cbf3,usr-3032360b,usr-df56e82a,auc-2ac2d477,prod-28c021c0,1199.414269089389,0.03651052004956523,57.76473623343382,pending,pi_2eaa8eebf4e447dd9a1a1dede32a98a1,2023-05-13,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-13
+1,ord-419c3143,usr-1a929e70,usr-5e401bb5,auc-7879faba,prod-91454ffe,685.4574777991018,5.5172363331993495,6.967825461449628,paid,pi_9f3c00639d554970aedcc7c75c2d176d,2023-12-14,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-14
+1,ord-db072098,usr-802cad2b,usr-f67c2be6,auc-707f049f,prod-2c8ab1b4,864.123059337213,4.204693656589475,52.193656268416824,shipped,pi_bce1cd8c19e04b12ac96d9a5a73a82b9,2023-07-26,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-26
+1,ord-d0087f38,usr-eee63934,usr-cda4df6b,auc-22854114,prod-e29662ec,524.9051302726897,21.063803061315767,7.031882020631031,paid,pi_fe66ecee89cf4f78a4b742574e3b6513,2023-08-05,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-05
+1,ord-5d67b7f0,usr-2ea2e4ca,usr-d816b680,auc-5adb43a8,prod-a913a778,1078.4855611562682,33.301103510018834,43.01907099642054,refunded,pi_05ba1cddeaf04d879d691e8cda55c8a9,2023-06-13,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-13
+1,ord-16ccc881,usr-328051d5,usr-d816b680,auc-6d94e59b,prod-9dbceb22,1177.4957936932583,44.98406211375819,66.38204416650288,shipped,pi_0f8157d9b83e42e4849a53a2dbb0eaaa,2023-11-01,"```json
+{
+  ""street"": ""123 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-01
+1,ord-6bb6ac2d,usr-36a4f828,usr-a1a37788,auc-fc15288f,prod-0f629856,33.17827089418475,4.444786118954125,85.36001159477806,shipped,pi_75d55a1db17a4c32aeb8d8e45cf59f65,2023-07-21,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-21
+1,ord-f9d36888,usr-bea1b101,usr-1930f74a,auc-104a43de,prod-9f9d1711,322.68138368667496,8.802210464987532,9.100257532745049,pending,pi_0c4eb0c016e7493db480638bd70821d6,2023-07-25,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-25
+1,ord-8883fd36,usr-b2e46dab,usr-088dfa4d,auc-52e0b9b7,prod-b1cf673d,297.4902599342614,28.9211453901477,37.61468127541373,pending,pi_15e52ce5cc0342e8a2af9bd0096c8c1e,2023-07-16,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-16
+1,ord-1f42dae3,usr-821b5391,usr-d2771e28,auc-551a116f,prod-77c44ed8,126.78723755364639,12.682123461931576,25.598962670615133,paid,pi_8edf4ec08de84a46941f542aefa64b82,2023-12-05,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-05
+1,ord-a50482fb,usr-feb865b3,usr-5dbbd189,auc-6d29bc77,prod-d8c6349b,882.722175977253,11.943609150923074,7.155319354844725,delivered,pi_e36c377e1ee444aebfb9d32cab113b46,2023-10-20,"```json
+{
+  ""street"": ""123 Maplewood Ave"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-20
+1,ord-e8a29823,usr-fc3dce2a,usr-755b9a01,auc-d1c1720e,prod-65acd316,903.4365763704546,45.05514489296625,98.75645385707178,paid,pi_1a3ae9cd3f58415d978a6795926e1bb9,2023-11-25,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-25
+1,ord-4aa50395,usr-fea421ca,usr-fb2463d4,auc-04d32f12,prod-13f1c356,78.62262217015434,35.606987595837786,13.162023517167064,pending,pi_4916316bb8614a1d821b3568eb215cd1,2023-09-17,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-17
+1,ord-4c82e06d,usr-97228f9f,usr-e7805ec9,auc-656bd187,prod-6116a729,1382.3142519398953,23.478308237603695,40.13875465416125,paid,pi_b10c8dde106e4c30ad1b7391c3a6a478,2023-05-27,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-27
+1,ord-73ede3f6,usr-fa698e22,usr-ccde6a87,auc-3442f987,prod-51ce78d8,715.1956157049826,15.559588050541562,57.72252086357182,delivered,pi_83078f836c1240e0b298e2b40226f575,2023-08-03,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-03
+1,ord-e2fb8829,usr-2e012f50,usr-802cad2b,auc-707f049f,prod-dd497c6d,849.7622496655564,39.13010839410943,9.621910306514646,paid,pi_afe95fe28a7149969277d4c4982bbfb9,2023-06-14,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-14
+1,ord-4971bdd6,usr-d00aae76,usr-606088bf,auc-0a2571bd,prod-54504959,563.526755267808,24.937498932524427,6.558283983577717,paid,pi_cc4a637e86cb44b5bf99dd340a4f635c,2023-06-13,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-13
+1,ord-ce56be6a,usr-e47c0c12,usr-1d676ed6,auc-a3a9c3d0,prod-d496f85f,1375.486725308081,21.849128389569106,59.31133529753103,paid,pi_f29cac50e9d4486eafeef7ba87782c01,2023-04-29,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-29
+1,ord-482c2c2f,usr-607f1a08,usr-02738a4f,auc-97b6e298,prod-14d5eb4c,1358.050854649639,27.750348547632175,39.754001206623535,delivered,pi_f2b24c6c79fc4b1f983739365ea891af,2023-10-18,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-18
+1,ord-7cfad810,usr-d86bbc87,usr-f67c2be6,auc-f5e1ca2d,prod-b33dccdd,1378.3676631092035,39.53978133757475,80.92744829785005,paid,pi_20b49401c9bc4d7892cf71bd49edc2e9,2023-04-08,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-04-08
+1,ord-5877ee72,usr-f548a45f,usr-6083d943,auc-ae4ce3f1,prod-70bcb9b6,1175.1212439750566,6.395061497276966,15.69092030278929,delivered,pi_32c724fc520f4aba99260dfbe4582d91,2023-10-11,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-11
+1,ord-2b9d23b6,usr-e18a7b96,usr-d7f9a8df,auc-87295bc4,prod-803c1fb5,567.4617081509342,12.434487565203872,28.397687399889715,paid,pi_da6ae2cadb8d4cd5ab312b16d89d004a,2023-05-19,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-19
+1,ord-c930adc6,usr-4a2b8292,usr-ca983da7,auc-0c414f14,prod-7e2b7449,296.0837061424932,3.7712023375475354,81.44526878642873,cancelled,pi_ff74fc1065b645ce8defb3775e4eb608,2023-12-06,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-06
+1,ord-1f3986bb,usr-6e5aaf7b,usr-df56e82a,auc-0bc1e4d2,prod-8c3f400e,1006.9766183017116,36.476570562580065,43.19309180322429,pending,pi_575a2c988c9e4d4293ac0f2f1f09d886,2023-04-03,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-03
+1,ord-9cfaf709,usr-fcd2e6f8,usr-c879d041,auc-6d94e59b,prod-244f586d,502.07747897512064,43.93661196343619,82.88069242379078,refunded,pi_b1f4ef60edfc43db85ebb55ac152635f,2023-07-26,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-26
+1,ord-f9f24e2f,usr-ca91e8ad,usr-02738a4f,auc-3733c38d,prod-d5c39be1,1237.6936196336924,29.7166723113256,6.823795394138288,delivered,pi_e8ab2b83f14d410987df6f80f3b89371,2023-04-10,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Metropolis"",
+  ""state"": ""NY"",
+  ""zip_code"": ""12345"",
+  ""country"": ""USA""
+}
+```",2023-04-10
+1,ord-9da60dee,usr-25d26aa6,usr-d3a930b6,auc-25cf5e73,prod-97210638,1091.4737782796885,31.958315442892353,2.3411200770277474,cancelled,pi_175233bd84604e30b3b98c08cc3d05d2,2023-10-17,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-17
+1,ord-cef9ecde,usr-32ecc7cc,usr-eec74cf5,auc-0a0700b9,prod-92df7c71,979.2862865668964,46.700611862928156,96.83989611406841,paid,pi_900ce7b211f54f5ca8c7d48ab2ee45a2,2023-08-29,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-29
+1,ord-efabcb38,usr-9ba8a029,usr-4844cb4c,auc-cf8aee6f,prod-6d9b5969,409.9847379795831,25.932301356850424,36.81083093357533,paid,pi_36fc8f1e678c4d0a96aca69f46c06734,2023-06-23,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-23
+1,ord-36d08575,usr-cf4094e8,usr-48344912,auc-f70b01cb,prod-67f07a01,1158.6635535112682,39.2288553246428,67.68512824961653,pending,pi_f5b3bc8b97fb4a27bdb84831fc8d7ccc,2023-12-23,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-23
+1,ord-0d7169d9,usr-5fc7c74c,usr-606088bf,auc-1f6cf919,prod-d3326af3,442.14267482800796,46.42166121748393,20.406808435602997,paid,pi_f658ff44a389451492b4799edc2b04f1,2023-10-29,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-29
+1,ord-b7750af8,usr-d3a930b6,usr-0dbca433,auc-0bc1e4d2,prod-bdd5bc39,753.3615865150958,48.280002161853034,64.2789354839629,delivered,pi_b82d65b7ae4040ea9eb3a201663825d2,2023-04-29,"```json
+{
+  ""street"": ""123 Maple Street Apt 4B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-29
+1,ord-31e0c7d9,usr-821b5391,usr-d3e0d34b,auc-80c326e9,prod-f7307b30,1496.7993626351185,13.079070338920046,6.331159822833854,refunded,pi_9a0e372ad21743ffa51f8c395fc97341,2023-08-24,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-24
+1,ord-f4b06167,usr-ca983da7,usr-8bff52ed,auc-4112a06c,prod-8e12b86d,1243.1644781713903,33.125345029599316,60.299127972267186,pending,pi_7eadb4732acc49beb092c8a0f3ccf2cd,2023-09-30,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-30
+1,ord-d96ce3ef,usr-bea1b101,usr-c879d041,auc-7b9c46c1,prod-7805b59b,451.4995760750406,49.915719304857454,46.179876716040425,pending,pi_4c947ab7177044f68f7f86ed99279235,2023-08-08,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-08
+1,ord-79327db0,usr-909115fd,usr-9ba8a029,auc-2dd06fbc,prod-b44600e0,1074.1775483578513,11.472868828982863,35.086839442216856,paid,pi_875463416e1641978d35dfde52b9cc72,2023-12-04,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-04
+1,ord-9a13b4d9,usr-909115fd,usr-d86bbc87,auc-b4c590de,prod-f8109d08,707.6591503559969,40.43442510674452,54.704967663384174,shipped,pi_94b5bb621c23414a8e6a13053ed87f81,2024-01-15,"```json
+{
+  ""street"": ""123 Maplewood Ave"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-15
+1,ord-dcdadda7,usr-cda4df6b,usr-38bf583d,auc-a8f885a7,prod-9be0f5f1,104.35774836571956,42.9559057609942,61.525663923265085,paid,pi_039636303c51479abdd955b0e9b58766,2023-12-12,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-12-12
+1,ord-5d99352a,usr-0583e3af,usr-768487c6,auc-39389584,prod-d3688555,502.45405020037407,10.67373497680757,31.363940032548975,cancelled,pi_e1fe1f36180e4dbbb5f59a35dbae6afa,2023-04-10,"```json
+{
+  ""street"": ""123 Maplewood Ave"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-10
+1,ord-5cff101e,usr-5e401bb5,usr-329e341c,auc-80aaddd1,prod-2764ac5a,1227.091414015698,30.161944957149878,85.97309847099598,pending,pi_87ec0c5f6ea341b0b12c3afc8c72cd80,2024-01-18,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-18
+1,ord-87b8ef0f,usr-7964db0d,usr-567871a3,auc-aee162b4,prod-49bfbbaa,1299.5879020165044,12.16583163366714,84.8480191649642,pending,pi_70d6d667303f4f25af1830d758455981,2024-01-09,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-09
+1,ord-472c11b5,usr-f67c2be6,usr-14b7ede9,auc-bdae1710,prod-222fdfd2,1475.224984174734,15.440543485548302,39.54700256821706,delivered,pi_fbd613b61d0544468efab807c316f259,2023-11-10,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-11-10
+1,ord-154bca82,usr-dac5c395,usr-3de4f1ea,auc-a93776f5,prod-6910721d,807.6015450746396,38.27950508648401,62.9923947864064,paid,pi_7933eab557344cc28478bb2808b55805,2023-05-16,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-16
+1,ord-bc1694c8,usr-98610fc6,usr-ea9dc933,auc-715ac17c,prod-8c3f400e,1334.5172218898729,9.05447687908094,85.67245604917399,paid,pi_83a643118fca42b98ef342cce71155b4,2023-11-10,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-10
+1,ord-ed69fa3f,usr-85fcbd72,usr-fea421ca,auc-073c1dab,prod-d9f2cbd2,938.8428735859471,25.99815162645272,74.34447660541431,paid,pi_46bef8f20a5143afbb35323ab180d2bf,2023-04-14,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-14
+1,ord-e5c1fd38,usr-6e82ff08,usr-7f4c4c75,auc-59212535,prod-8db7dbe3,965.6849779591807,12.622452316709259,92.68865743674306,delivered,pi_6446d7fa5188493ca19d70366599aeea,2023-06-19,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-19
+1,ord-88d15ff6,usr-17a13355,usr-ed3d1cb7,auc-cbabee68,prod-a3256b5c,324.87749177460654,6.490335776369766,65.57364519293975,shipped,pi_f9f33c1b703345b7a59add815c1d9beb,2023-07-13,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-13
+1,ord-f6117b1b,usr-18e5deed,usr-8b3c0733,auc-52cf7162,prod-de04be08,19.329693479482074,35.04875503230991,81.65635130607902,paid,pi_c9a55cd917494840aabf27024460dd40,2023-08-27,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-27
+1,ord-edbf6b33,usr-5aade24b,usr-2ed6a909,auc-e0fde4ad,prod-ae3592bc,1151.1768306039198,27.230385337561458,46.53567217848792,pending,pi_2c28e7742ed74b7aa0b073f44a4ce721,2023-09-03,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-09-03
+1,ord-23a7346a,usr-e42c8b9d,usr-60f4ad6c,auc-9dade55e,prod-f934a0cf,1053.4714243481194,10.403322196943826,99.78370025019422,paid,pi_9e3da57b9d13479c96ba7b02cf4831c0,2023-07-22,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-22
+1,ord-8011990a,usr-97228f9f,usr-5f872e95,auc-871779e5,prod-3e433346,406.20060742816406,35.329716346904995,16.522653046183944,shipped,pi_b3b8925f444d40bdbe6f561346ced63c,2023-12-04,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-04
+1,ord-0df1c2d5,usr-67a12ef9,usr-82c3f4b8,auc-43eb46a2,prod-2b197764,973.5609668863226,16.77452004422339,40.166913037494666,pending,pi_1390597461bb42d8a102c40292e4432f,2023-11-08,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-08
+1,ord-00af542c,usr-0d46edd3,usr-ec454ed0,auc-1428e6a2,prod-993fcdd5,432.2956404168092,30.978899063289482,9.4711608363641,shipped,pi_cb1067df25a54b93870b61e569a21c52,2023-05-22,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-22
+1,ord-b2e9fb18,usr-5a33ea8c,usr-cac32514,auc-f5e1ca2d,prod-24fb45f2,1363.8210035485843,40.40556597462252,42.69731750517751,delivered,pi_8cdb74a302844ec9b1898390f18c8f24,2023-10-14,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-14
+1,ord-2a69bde9,usr-bccff7e3,usr-afbcc355,auc-3105a639,prod-043c28c3,682.0520915285489,39.137158154492404,53.82557318339912,delivered,pi_8d377e7514be49ac936f764ffd2a5aca,2023-08-15,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-15
+1,ord-8a545c70,usr-dc3053e9,usr-8fc70a13,auc-04d32f12,prod-13f75a87,1159.6859694594268,1.7123339972520357,3.2473593635991116,paid,pi_df89231037094547b64a7730a94a6181,2023-03-18,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-18
+1,ord-24d0ba4b,usr-e586ad9a,usr-92063100,auc-c1bc7d3c,prod-5f255077,1474.1101307457052,14.181729601712345,92.02739490025263,pending,pi_4dacb837e0be40bb8eb398821c70c3d5,2023-09-04,"```json
+{
+  ""street"": ""123 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-04
+1,ord-6095543d,usr-8a8b69e7,usr-3558bbdd,auc-7bd61139,prod-42c4e422,758.3493854846228,35.96858170691615,36.120331491443125,pending,pi_4374f7d997ee475fa26683548da47ca3,2023-10-17,"```json
+{
+  ""street"": ""1234 Elm Street, Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-17
+1,ord-0fab72ed,usr-98610fc6,usr-14b7ede9,auc-71f33277,prod-2af8f1f5,197.89042616751266,42.343349879905155,91.22959071888373,refunded,pi_c6b3911f95744f4da3ab24ad29d4095a,2023-09-30,"```json
+{
+  ""street"": ""123 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-30
+1,ord-374118c9,usr-5f872e95,usr-c0107131,auc-c45919f4,prod-44651832,112.01951715276147,14.812358976692263,24.999441414895983,pending,pi_ac27465c5265413aa1cb5d29a2705e82,2024-01-18,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-18
+1,ord-3a0087d7,usr-4ee7510a,usr-60f4ad6c,auc-eefdb0b3,prod-2ddb4fcb,606.2347084806244,36.911214845135525,7.69516815887612,paid,pi_c9e48999553c4ed6a6ef9b01f333b8ae,2023-11-17,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-17
+1,ord-330b167f,usr-e47c0c12,usr-4a2b8292,auc-3635f0ff,prod-77f8470e,205.54348394048316,7.030153041826626,32.103848750828824,shipped,pi_59c089a7a8d348feb57e0720391ff7ae,2024-01-27,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-27
+1,ord-63503dde,usr-5f872e95,usr-d5f7f43d,auc-c4692d66,prod-efdde17c,816.3355677090151,7.144641061980633,62.68323514672131,delivered,pi_ecc6febe1c714b668eabcf0d671e5499,2023-10-11,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-11
+1,ord-11a8b361,usr-8d8c58bc,usr-cd1d9a17,auc-403feb21,prod-1d885bd8,951.6024255215108,45.82568061351975,32.32325508627082,paid,pi_f92933dcdf714c71bd86156fc4852ab3,2023-07-07,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-07
+1,ord-5ef20277,usr-51283925,usr-fece1b7c,auc-5f85ebf9,prod-7c320b49,303.5839413255211,10.952781282357888,39.451689340391106,pending,pi_383a2b86759e40769a73733e1c3ef57f,2023-10-01,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-01
+1,ord-9adcab0b,usr-6e5a8eaa,usr-d00aae76,auc-779e8c11,prod-03cc65bd,624.745911131975,47.44044415099041,47.081588170018115,pending,pi_531e4bd157374fc3922f92aaa5216be3,2023-12-02,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-02
+1,ord-5ec8a223,usr-d00aae76,usr-1c103460,auc-9c5336c8,prod-24fb45f2,976.8266776606429,13.381739065793486,7.355101813698884,delivered,pi_2fbd955b951c406db07a1da390d4caa2,2023-06-30,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-30
+1,ord-f9312128,usr-befc4464,usr-b0338418,auc-b72e8102,prod-18ddbfa8,1044.214588308861,29.1796128998207,92.40817942045628,shipped,pi_75befa68653d43d88be2036cc72654d6,2023-05-31,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-31
+1,ord-3e88d05f,usr-4c8d32fd,usr-ada8b8bd,auc-9dec2791,prod-68767a93,1393.2457571276057,33.93504020011519,62.56645858173108,cancelled,pi_c6de48247a1a4a84b185674012bbda35,2023-03-21,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-21
+1,ord-e49eadd0,usr-4fcc955c,usr-ec454ed0,auc-5aa47a3d,prod-2ef7b468,1190.2300692166477,28.778208062935562,99.75710882845146,paid,pi_ef289050cb9f46fe93e67c6dc56d71d3,2023-06-14,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-14
+1,ord-f5150c12,usr-bccff7e3,usr-98610fc6,auc-78350b9b,prod-5e640a00,930.9477879664104,6.868525038022744,6.148073948492772,delivered,pi_74232a8c1daa4b9f825c4a928700f886,2023-05-14,"```json
+{
+  ""street"": ""123 Maple Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-14
+1,ord-8d252a93,usr-e586ad9a,usr-9ba8a029,auc-56021f97,prod-8c8d8070,1492.3516643754965,37.558278521645775,63.83386574378549,pending,pi_df539070987247808f61ca0a877688dd,2023-08-22,"```json
+{
+  ""street"": ""123 Maple Street Apt 4B"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-22
+1,ord-acad4662,usr-2ea2e4ca,usr-f434518c,auc-79ffce84,prod-5f255077,172.73423014977016,35.99134812640494,1.2143635294162403,pending,pi_cfdde6c9ab45411a865ecad0e8cf6f29,2024-01-29,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-29
+1,ord-a3b40937,usr-e801fcd0,usr-4e0d240a,auc-548d455c,prod-ea33620e,1475.2635594953883,4.139560426821943,54.307084268425086,shipped,pi_6f7570e8f18a44a0844d12d075532a40,2023-04-22,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-22
+1,ord-0a46a10e,usr-03e9a3ba,usr-6083d943,auc-d4455080,prod-984095ae,1020.24306668912,32.502551992429986,11.745467070317172,paid,pi_036cb1267d8846c69224e131630dd73f,2024-01-12,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-12
+1,ord-34e0a8c5,usr-180b1a51,usr-a660a97c,auc-87295bc4,prod-29203224,276.452114865948,7.258218383538945,96.5987913470127,delivered,pi_db80e7992dc74443ab1aa8fe9992d9d3,2024-01-24,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-24
+1,ord-e2df54c2,usr-09786814,usr-32956dda,auc-08a38da7,prod-51ce78d8,259.93076219953923,42.81853287738651,18.48320757546269,shipped,pi_779e6baee5dd411590535386a7de78c1,2023-12-19,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-19
+1,ord-fd3a80d6,usr-08c2d8e3,usr-edd1e48e,auc-e0aafb9f,prod-c0c25a8c,52.52195947185931,41.0299303005248,11.843943673634117,paid,pi_5668cc90902f4d54b79687d3f45e8a7a,2023-09-13,"```json
+{
+  ""street"": ""123 Maple Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-09-13
+1,ord-7afb6a77,usr-32af39e8,usr-e4a3b9a0,auc-9ab1db47,prod-ab7ad985,258.5451427545779,33.31343805806965,3.5070849093433387,paid,pi_9092ac81934b47e19c61e0b4842e66b5,2023-11-03,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-03
+1,ord-619435dc,usr-e36b5a97,usr-75f1a5ed,auc-d300ab6e,prod-a75aeab8,1300.9613621967744,22.998110230618675,57.166028490282095,shipped,pi_d390776a463f4b46a1ec164ef4003214,2023-08-23,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-23
+1,ord-a1af2b09,usr-8c37fb97,usr-7d1ac601,auc-a5691bfa,prod-44d48293,1349.3350049539165,18.96824537961556,39.64556263106943,shipped,pi_25da96df6b44425a8bc3a350e46ca7ce,2023-12-17,"```json
+{
+  ""street"": ""1234 Elm Street, Apt 56"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-17
+1,ord-05276131,usr-5c996a68,usr-d3a930b6,auc-6ff2d5f6,prod-110e1ebc,1326.1515149539443,15.524412296057882,24.91839376817212,paid,pi_b373bfc557dc4e5384726c041ccb79a4,2023-11-20,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-20
+1,ord-9e7455d2,usr-1930f74a,usr-328051d5,auc-cf8aee6f,prod-7e04de63,641.6576373692786,31.92731750033048,64.68741525744771,shipped,pi_223a2bb74a94427cb044545316309ec0,2023-11-30,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-30
+1,ord-409df49a,usr-2e012f50,usr-9d8446ae,auc-de1b729b,prod-23538ed7,1485.8000356197072,14.840318419650488,39.520478270898415,paid,pi_0173536d5f7d4844a3ea12ccbc507854,2023-04-14,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-14
+1,ord-85ff47c6,usr-d8013104,usr-567871a3,auc-c7bd92c9,prod-dc469ed9,1483.5694040133785,19.388838290200404,34.21903418555284,shipped,pi_df40c2a099634796b38b2014e0131216,2023-08-07,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-07
+1,ord-ac925be4,usr-1a64f9e8,usr-4c8d32fd,auc-5476e9c8,prod-d10982cd,366.1096878606827,22.792945764118404,7.895465975874516,paid,pi_d4ade7bebb6649a987f1cc30ee2c155e,2023-03-17,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Metropolis"",
+  ""state"": ""KS"",
+  ""zip_code"": ""12345"",
+  ""country"": ""USA""
+}
+```",2023-03-17
+1,ord-cb6d27e7,usr-cb3066b7,usr-c0107131,auc-f7e86d1f,prod-fffc638b,1298.1467177499294,25.84906648850841,15.005347620345056,pending,pi_a7cc5aa9fe2749a89b17bd0e4710e1c8,2023-07-12,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-12
+1,ord-1bdabf1c,usr-d2b82aa2,usr-954b130f,auc-25049518,prod-5d845c11,986.918231629673,22.85244229707758,75.57179791184944,cancelled,pi_9a7ebd72d55e4247b3ec0b9618f384b0,2023-12-11,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-11
+1,ord-7c8c8140,usr-e4a3b9a0,usr-5a33ea8c,auc-c7bd92c9,prod-4a12f855,524.4353385235702,33.486890802962364,40.02560527652484,pending,pi_48c25b703e2e49d1b1635a21423076e2,2023-03-29,"```json
+{
+  ""street"": ""123 Maple Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-29
+1,ord-17809646,usr-2909ac09,usr-88503b23,auc-512255c7,prod-5e9d9b55,817.929591958094,9.6941138807491,82.73030541319278,pending,pi_7562f112240a4fed8147f116111e668c,2023-06-30,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-30
+1,ord-f3d568b5,usr-ccde6a87,usr-61066281,auc-2346ee0b,prod-6a3d3691,934.1401514352223,40.84897849353264,41.15035364090179,delivered,pi_139b1eb3c54747b5bdb193f6eac71fee,2023-04-04,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-04
+1,ord-1378ea99,usr-e18a7b96,usr-044499b1,auc-3108d56c,prod-43195159,1276.1182353479214,3.545569167385282,48.88633511041307,pending,pi_62b0523089c946718451ac0811ac9177,2023-09-11,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-11
+1,ord-065bfa14,usr-f434518c,usr-1d676ed6,auc-e65fc864,prod-c1868dbe,305.2076389329007,17.268512823241444,86.26721871224335,delivered,pi_d206a9d8ea1742f99880f96672532f8e,2024-01-18,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-18
+1,ord-3ff59f88,usr-1a64f9e8,usr-f548a45f,auc-61b56b1c,prod-78dc963d,968.352090012211,33.08325065795076,24.687833961623408,paid,pi_f7f90d1705964450a446c3d15c908554,2023-10-14,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-14
+1,ord-70dc23c7,usr-9017d93e,usr-f4e88a7c,auc-403feb21,prod-e783ff58,1199.1858643652663,13.94414525645195,35.973179629346156,paid,pi_a51f4a669bd24b51af56c4669273bf87,2023-05-24,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-24
+1,ord-c181d7d6,usr-c5ec8054,usr-ca91e8ad,auc-a3a81799,prod-baf7870a,896.053755553959,2.846913490434627,35.041107777184465,refunded,pi_16a46a30bb3142f7924f8d3ef7bb7cfa,2023-10-19,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-19
+1,ord-26de17e2,usr-92063100,usr-0d767918,auc-551a116f,prod-3eacefdf,1379.5817622526065,42.42109357904808,6.217622242705822,delivered,pi_7e55e31c46464ff38dd61087f10a7a78,2024-01-16,"```json
+{
+  ""street"": ""123 Maplewood Ave"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-16
+1,ord-500cd3b9,usr-c3134135,usr-e4a3b9a0,auc-cf58f6b2,prod-0797a869,1336.6237924187842,48.71024086611375,80.335994093095,delivered,pi_36e1b851dfae423db526452f0ba6e13e,2023-11-25,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-25
+1,ord-c09022e8,usr-514ccdaf,usr-b0338418,auc-6bd65bd0,prod-36920e2e,631.1469533628909,3.04448775538288,1.0304563142719991,paid,pi_d2d1cb890d3746daa157d431d55022a2,2023-05-16,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-16
+1,ord-5fe02a17,usr-c3134135,usr-8a8b69e7,auc-183e5d09,prod-8de9d6d5,45.16927794717683,4.3939442550841035,90.88360768410773,paid,pi_985089075dfc4d83bf7da5ed4ad5ff99,2023-10-19,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-19
+1,ord-b7a0049a,usr-d62de943,usr-b4cc6812,auc-6b2be753,prod-f52e384d,883.6499257638185,39.1257744611876,51.00506026314883,paid,pi_78055785567944d5b54a8ed63ac698bd,2023-06-22,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-22
+1,ord-d4d60c3f,usr-514ccdaf,usr-dac5c395,auc-6864a93f,prod-be16155f,1169.683673780929,33.81223032679516,60.653293732370926,paid,pi_d841f6434ff946a0a03522ffb8b834a2,2024-01-22,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-22
+1,ord-392c161e,usr-b4cc6812,usr-48344912,auc-6d29bc77,prod-9b4f3be7,550.2459257787956,30.924694366061274,99.42128415484824,shipped,pi_6cdab770c0a8483bacac5b8a0ececbe0,2023-07-11,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-11
+1,ord-c8b92081,usr-1930f74a,usr-4c8d32fd,auc-58c4dafe,prod-23538ed7,745.4237865714333,11.424589070422165,21.99346885519654,paid,pi_592c0d50b4954b25ae2909e3a760652c,2023-12-05,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-05
+1,ord-8f4296ff,usr-d3e0d34b,usr-c3134135,auc-52cf7162,prod-bfb15b4d,554.9015214280531,39.191713393373945,8.802568361950968,delivered,pi_40a22bacc0484f2c8c1291e468d69eba,2023-10-21,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-21
+1,ord-26622afe,usr-19d5149b,usr-5a33ea8c,auc-8a3d03a0,prod-cf58e264,942.706910764835,33.9174797770814,19.372347011078794,refunded,pi_08f3a8b4acfa475eb9897f3f618a0693,2023-08-24,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-24
+1,ord-2488443a,usr-48344912,usr-576c011d,auc-d9d4788e,prod-9632827e,824.5166334427437,41.61973063061764,54.28471526911572,shipped,pi_a99c2ea550cd4f848645c40505d82e47,2023-11-15,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-15
+1,ord-3fcf6099,usr-88503b23,usr-735f86d2,auc-a7a65db7,prod-98c71c34,676.5706674124361,44.74749183908054,58.39595769891094,paid,pi_a55bc1679dee4284b05ee9ccebd02324,2023-05-31,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-31
+1,ord-4541af1b,usr-ba1ffa8a,usr-46905193,auc-715ac17c,prod-d0902034,286.21601697472477,15.987072623664439,16.602796941576827,paid,pi_c1346038105c449fa997fc22b782ba49,2023-05-18,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-18
+1,ord-556f2ea5,usr-d8013104,usr-3510ce29,auc-1a0d1c84,prod-f5f9c8eb,519.8422045862711,16.567962543857696,65.47972003725471,pending,pi_c9b67c19952f4b02a32996edf1bee133,2023-10-21,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-21
+1,ord-c7be9a80,usr-0583e3af,usr-8d8c58bc,auc-a17a5f30,prod-a0e3cd35,1217.861158755463,47.745711180322964,11.417030418933116,paid,pi_aeefbca2cb384ff1a34114085d45ac9e,2023-03-18,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-18
+1,ord-c4c44141,usr-a3b72ece,usr-d4cc9d61,auc-0a75cc99,prod-9926493a,624.4931608544209,10.832123916238984,87.18007561436485,paid,pi_3be87fe6e2c04e17b947392adac42011,2023-10-17,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-17
+1,ord-3657dac3,usr-5aade24b,usr-6e413631,auc-3635f0ff,prod-51f89b0d,83.0042165274904,15.634559863155372,47.55749617930639,pending,pi_e391e6a2c7df4453863c50a86986882f,2024-01-18,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-01-18
+1,ord-c3e004cc,usr-155e0ea4,usr-e18a7b96,auc-5adb43a8,prod-7a39f6ec,158.99719474850255,20.55663400083052,2.5158708829279397,pending,pi_4e4ada0367dc47ceafcd2dfe17ad0ae2,2023-06-17,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-17
+1,ord-ba545a05,usr-e45b21c7,usr-f24a47be,auc-51110b58,prod-421b2595,129.22455986679478,8.82754476195538,97.36010692623245,paid,pi_1bfb026f152b4633a6ebc910aa61971e,2023-04-12,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-04-12
+1,ord-b3f88a31,usr-b99da0d2,usr-f7eae2a6,auc-2b81c6b1,prod-c68762e4,662.3864725924119,22.26791557364411,81.16562697501709,shipped,pi_3e0ff39d891843af912f70e27b43675c,2024-02-01,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2024-02-01
+1,ord-a8b52aa6,usr-6756b9ae,usr-63139c4c,auc-c419379f,prod-e60694f4,1260.976095081868,10.305824301050986,99.84531317543215,pending,pi_8274bb62a16248ef95a7d282974e3b1a,2023-12-14,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-14
+1,ord-3a468349,usr-863f94f9,usr-b2c9fd41,auc-604dd524,prod-c34df271,822.2972547080426,33.49972990065859,51.43749665313537,delivered,pi_82520a721c6e468585ced931d2b55811,2023-11-20,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-20
+1,ord-1eaf8929,usr-802cad2b,usr-0597d68f,auc-720e050c,prod-e6c6b09f,168.34287546230945,23.96569805474702,51.61884385738139,pending,pi_88f44b387f6947d4b62126ff9450913d,2023-06-06,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-06
+1,ord-b217a87c,usr-514ccdaf,usr-f01d6a7e,auc-1beda4bd,prod-b1409189,1018.7836656272412,32.8175763752757,75.73369361117368,delivered,pi_636a805688ac45f6972b74cbece628ff,2023-12-07,"```json
+{
+  ""street"": ""123 Maple Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-12-07
+1,ord-f455fa3d,usr-67f49b0d,usr-e801fcd0,auc-8f659490,prod-0454f016,1175.2760850624106,48.52553839525706,96.36961980748531,pending,pi_d8a231a3622441848249f5a55be6e452,2023-03-15,"```json
+{
+  ""street"": ""123 Maplewood Ave"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-15
+1,ord-19f42e33,usr-8a8b69e7,usr-8fc70a13,auc-e979c5e1,prod-b71d2ad6,142.56524414349428,22.987195136102688,36.82509111070507,paid,pi_1d51c9f209654696b489901aaaf018f9,2023-11-14,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-14
+1,ord-ab1dc974,usr-19d5149b,usr-567871a3,auc-c76e70d1,prod-0486689b,873.3570246086097,26.840515722894136,93.20419647137344,delivered,pi_b05adfac848b4d9980a2f04e9a179590,2023-11-07,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-07
+1,ord-653a2f4f,usr-d2260722,usr-09786814,auc-8a3d03a0,prod-a913a778,289.7456316123446,27.4284578992089,52.724247065096264,pending,pi_d6f303138b544a42979c195a91b7fe62,2023-10-02,"```json
+{
+  ""street"": ""123 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-02
+1,ord-d6dab1ea,usr-44d7c355,usr-32956dda,auc-03d67366,prod-dd497c6d,534.2171510295789,18.346928223128558,91.07659211584932,paid,pi_125a332a4a394e43a68518ccbca51819,2023-09-01,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-01
+1,ord-f2a9419c,usr-3190cad9,usr-6aee717e,auc-d3455e11,prod-1caa7151,85.91116490610102,36.07968576298431,88.68934639620431,pending,pi_40db9a250bdf40d68e519fe4430af135,2023-03-20,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-03-20
+1,ord-8cc85ca6,usr-6e5aaf7b,usr-2605b31d,auc-51b9b898,prod-70bcb9b6,1406.1748898349092,36.17835085039899,0.19901921982065085,shipped,pi_847ec72cefa14a069063f7c5a326c410,2023-11-21,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-21
+1,ord-76101f26,usr-cac32514,usr-fcd2e6f8,auc-04e5b8c9,prod-2762959c,149.69832657084044,18.769644230640758,51.075159421549934,shipped,pi_ccdcabe5deed4cac87131ebd5a5fa65b,2023-05-26,"```json
+{
+  ""street"": ""123 Maple Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-05-26
+1,ord-89019de5,usr-49d21b5a,usr-b63421a7,auc-54aba9d6,prod-112adae9,1106.5956337850039,20.786237601023995,81.41052432053904,shipped,pi_84bac515b6444fffb7db8fb9aa8f2a1a,2023-12-06,"```json
+{
+  ""street"": ""123 Maple Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-12-06
+1,ord-a06ba279,usr-85fcbd72,usr-88503b23,auc-4168dd68,prod-0981f53a,1241.0379417835716,9.547791810313267,99.71436243990414,paid,pi_a79a4eb387e546c08d3991261768361d,2023-11-04,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-04
+1,ord-6aa2b782,usr-d4cc9d61,usr-fa66ede6,auc-3a53de2d,prod-86a9d4af,1485.8081455542715,45.133707509441976,78.68969685209228,pending,pi_b8e0ba60b7c8404fa27a6ba48be66b0d,2023-06-05,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-05
+1,ord-c94cd695,usr-7ed71dcc,usr-a5ac7769,auc-f65ba89a,prod-1ac8ef88,829.0530639911764,34.168119706223514,22.42959255518343,refunded,pi_808cb21133c848c292b9e17c5141b288,2023-11-25,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-11-25
+1,ord-bbafac42,usr-b2e46dab,usr-e3d6b4bf,auc-9c78f716,prod-6481369f,786.2592439621179,6.677233145533351,53.996116011484816,paid,pi_4700e0428a3d4bc6866eb74ecf2b5818,2023-08-02,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-02
+1,ord-e2cd232a,usr-32956dda,usr-fa66ede6,auc-6491d7af,prod-e243db71,286.57109850022096,42.20237095036151,56.046718999649926,delivered,pi_899e5964449e465a8c83af269915e636,2023-07-28,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-07-28
+1,ord-8d283e2e,usr-a660a97c,usr-fa66ede6,auc-d89378f3,prod-13f1c356,1212.8337463199105,13.250942852391967,67.67408239317948,shipped,pi_7ffb779b03fc42268696f59a25fd6320,2023-06-03,"```json
+{
+  ""street"": ""123 Maplewood Lane"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-06-03
+1,ord-527df624,usr-f89eca00,usr-155e0ea4,auc-80c326e9,prod-9b4f3be7,192.67058987881168,35.1220006188963,45.087851503010214,pending,pi_c4c86ea6c5a3436589aefca6e23179fa,2023-09-08,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-09-08
+1,ord-8d4f5fa2,usr-1924b5ec,usr-9d8446ae,auc-39d12ba2,prod-bab96df2,485.8871413413287,29.27720864579502,71.58650237161449,delivered,pi_baf0c75238914d98bda1399520b6357a,2023-09-29,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62701"",
+  ""country"": ""USA""
+}
+```",2023-09-29
+1,ord-c9caf333,usr-fea421ca,usr-5f872e95,auc-715ac17c,prod-2b197764,1246.1914601781273,8.170533504767041,25.24280901639746,refunded,pi_ba3e624f76da477aaa2a5810a8e13f18,2023-08-08,"```json
+{
+  ""street"": ""123 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-08
+1,ord-df633300,usr-32956dda,usr-48344912,auc-7685d6b8,prod-f4adeb29,1122.231707410417,1.6889168760263806,78.40708615797806,paid,pi_77254ce132a945208f6387960a792399,2023-06-20,"```json
+{
+  ""street"": ""123 Maplewood Dr"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-06-20
+1,ord-3369a848,usr-32af39e8,usr-d5f7f43d,auc-cb3fcabd,prod-f4f66456,515.61329975689,26.814226800807962,15.248600300799398,delivered,pi_92eeab46c4864d2e9895fa09d41c634d,2023-08-28,"```json
+{
+  ""street"": ""1234 Elm Street"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-08-28
+1,ord-086b57a0,usr-f24a47be,usr-517d8cb7,auc-a4769cbe,prod-750f3031,331.4830952106367,17.683956038649995,52.74288247625088,delivered,pi_3fb2df0429b64ed6a4e7f3d75a4fd4a4,2023-12-29,"```json
+{
+  ""street"": ""1234 Elm Street Apt 5"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-12-29
+1,ord-dd0347a4,usr-329e341c,usr-fb2463d4,auc-152a8bc1,prod-5eb5ab98,1029.2725043289417,45.74635013962071,74.55353711596653,shipped,pi_427fafb55c5d496f86545526e3a1aa73,2023-10-08,"```json
+{
+  ""street"": ""123 Maplewood Drive"",
+  ""city"": ""Springfield"",
+  ""state"": ""IL"",
+  ""zip_code"": ""62704"",
+  ""country"": ""USA""
+}
+```",2023-10-08
+1,ord-7c99d59e,usr-909115fd,usr-63139c4c,auc-dd934e0e,prod-1c725e2f,1000.515905962688,26.287798154918036,38.46076253712539,shipped,pi_dbfb5fc9470f44009738518f90b318bb,2023-10-27,"```json
+{
+  ""street"": ""123 Maple Street"",
+  ""city"": ""Hillside"",
+  ""state"": ""NJ"",
+  ""zip_code"": ""07205"",
+  ""country"": ""USA""
+}
+```",2023-10-27

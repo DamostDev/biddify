@@ -18,12 +18,12 @@ const UserProductView = sequelize.define('UserProductView', {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   },
-  product_id: {
+  product_id: { // Changed from stream_id to product_id
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'products', // Table name
-      key: 'product_id',
+      model: 'products', // References the 'products' table
+      key: 'product_id',  // References the 'product_id' key in 'products'
     },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
@@ -32,23 +32,27 @@ const UserProductView = sequelize.define('UserProductView', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
-  duration_ms: { // Optional: How long the user viewed the product page
+  duration_ms: { // How long the user viewed the product page/details
     type: DataTypes.INTEGER,
     allowNull: true,
   },
+  // percentage_watched field removed as it's less typical for product views
 }, {
   tableName: 'user_product_views',
   timestamps: true,
-  createdAt: 'viewed_at',
-  updatedAt: false,
+  createdAt: 'viewed_at', // 'viewed_at' will also serve as the 'createdAt' timestamp
+  updatedAt: false,       // No 'updatedAt' timestamp
   underscored: true,
   indexes: [
-    // You might not want a unique index here if a user can view the same product multiple times
-    // and you want to record each instance. If you only want the latest view,
-    // you'd handle that logic in your application or use an upsert.
-    // For now, let's assume multiple distinct view records are allowed.
-    { fields: ['user_id'] },
-    { fields: ['product_id'] },
+    {
+      unique: true,
+      fields: ['user_id', 'product_id', 'viewed_at'], // Unique constraint
+      name: 'user_product_view_unique' // Optional: custom name for the constraint
+    },
+    // Individual non-unique indexes can be kept if specific queries benefit from them
+    // { fields: ['user_id'] },
+    // { fields: ['product_id'] },
+    // { fields: ['viewed_at'] }, // Indexing viewed_at alone might be useful for time-based queries
   ],
 });
 
