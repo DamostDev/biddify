@@ -3,7 +3,6 @@ import { Auction, Product, Stream, User, Bid, Order, ProductImage, sequelize } f
 import { Op } from 'sequelize';
 import { scheduleAuctionEnd, clearAuctionTimer, setEndAuctionFunction } from '../lib/AuctionTimerLogic.js';
 
-const activeAuctionTimers = new Map(); // auctionId -> timeoutId
 const AUCTION_RESET_DURATION_MS = 30 * 1000; // 30 seconds for reset
 
 // Helper to fetch full auction details (used after updates)
@@ -13,24 +12,25 @@ const getFullAuctionDetails = async (auctionId, transaction = null) => {
             {
                 model: Product,
                 include: [
-                    { model: User, as: 'Owner', attributes: ['user_id', 'username', 'profile_picture_url'] }, // Ensure alias matches if defined, or remove 'as'
+                    { model: User, as: 'Owner', attributes: ['user_id', 'username', 'profile_picture_url'] },
                     { model: ProductImage, as: 'images', order: [['is_primary', 'DESC']] }
                 ]
             },
             { model: Stream, attributes: ['stream_id', 'title'] },
             { model: User, as: 'winner', attributes: ['user_id', 'username'] },
-            // Optional: include last few bids if needed in AUCTION_UPDATED
             { model: Bid, include: [{model: User, attributes:['user_id', 'username']}], order: [['bid_time', 'DESC']], limit: 3 }
         ],
         transaction
     });
 };
 
-const actualEndAuctionLogic = async (auctionId) => { // Removed models from params, they are in scope
+const actualEndAuctionLogic = async (auctionId) => {
     console.log(`[actualEndAuctionLogic] Attempting to end auction ${auctionId}`);
     const t = await sequelize.transaction();
     try {
-        clearAuctionTimer(auctionId); // Clear timer from the service
+        // Note: clearAuctionTimer is also called by the service itself before invoking this,
+        // but calling it here again ensures it's cleared if this function is ever called directly.
+        clearAuctionTimer(auctionId); 
 
         const auction = await Auction.findByPk(auctionId, {
             include: [{ model: Product, required: true }],
@@ -60,20 +60,28 @@ const actualEndAuctionLogic = async (auctionId) => { // Removed models from para
                 auction.current_price = winningBid.amount;
                 winningBid.is_winning = true;
                 await winningBid.save({ transaction: t });
-                await Order.create({ /* ... */ }, { transaction: t });
+                // Create order for sold item
+                await Order.create({
+                    buyer_id: winningBid.user_id,
+                    seller_id: auction.Product.user_id, // Get seller from Product
+                    auction_id: auction.auction_id,
+                    total_amount: winningBid.amount,
+                    status: 'pending', // Initial order status
+                 }, { transaction: t });
             }
         } else {
             auction.status = 'unsold';
             auction.winner_id = null;
         }
 
-        auction.end_time = new Date();
+        auction.end_time = new Date(); // Set actual end time
         await auction.save({ transaction: t });
         await t.commit();
 
         const finalAuctionDetails = await getFullAuctionDetails(auctionId);
         console.log(`[actualEndAuctionLogic] Auction ${auctionId} ended with status: ${finalAuctionDetails.status}. Winner: ${finalAuctionDetails.winner?.username || 'None'}`);
-        // TODO: Emit WebSocket event: auctionEnded (finalAuctionDetails)
+        // TODO: Emit WebSocket event: auctionEnded (finalAuctionDetails) - This would be `sendLiveKitData('AUCTION_ENDED', finalAuctionDetails);`
+        // Make sure to import `sendLiveKitData` if it's defined elsewhere, or handle WebSocket emission here.
 
     } catch (error) {
         await t.rollback();
@@ -81,6 +89,7 @@ const actualEndAuctionLogic = async (auctionId) => { // Removed models from para
     }
 };
 
+setEndAuctionFunction(actualEndAuctionLogic);
 
 // @desc    Create a new auction (typically within a stream)
 // @route   POST /api/auctions
@@ -126,7 +135,6 @@ export const createAuction = async (req, res) => {
         await t.rollback();
         return res.status(403).json({ message: 'You can only create auctions within your own streams' });
       }
-      // Allow for 'scheduled' or 'live' streams for auction creation
       if (!['live', 'scheduled'].includes(stream.status)) {
         await t.rollback();
         return res.status(400).json({ message: 'Auctions can only be created for live or scheduled streams' });
@@ -145,12 +153,12 @@ export const createAuction = async (req, res) => {
     const auction = await Auction.create({
       product_id,
       stream_id: stream_id || null,
-      user_id: product.user_id,
+      user_id: product.user_id, // Store who initiated (product owner)
       starting_price,
       current_price: starting_price,
       reserve_price: reserve_price || null,
-      duration_seconds, // This is now the "reset" duration
-      status: 'pending',
+      duration_seconds, 
+      status: 'pending', 
       bid_count: 0,
     }, { transaction: t });
 
@@ -173,25 +181,25 @@ export const startAuction = async (req, res) => {
     const auction = await Auction.findByPk(req.params.id, {
         include: [Product, Stream], transaction: t
     });
-    // ... (validation and authorization) ...
+    
     if (!auction) { await t.rollback(); return res.status(404).json({ message: 'Auction not found' }); }
     if (auction.Product.user_id !== req.user.user_id && (auction.Stream && auction.Stream.user_id !== req.user.user_id)) {
         await t.rollback(); return res.status(403).json({ message: 'Not authorized' });
     }
-    if (auction.status !== 'pending') { await t.rollback(); return res.status(400).json({message: `Auction status is ${auction.status}`}); }
+    if (auction.status !== 'pending') { await t.rollback(); return res.status(400).json({message: `Auction status is ${auction.status}, cannot start.`}); }
 
 
     auction.status = 'active';
     auction.start_time = new Date();
-    // The timer service uses a fixed 30s duration internally for resets
-    auction.end_time = new Date(auction.start_time.getTime() + 30000); // Set initial end_time
+    auction.end_time = new Date(auction.start_time.getTime() + (auction.duration_seconds * 1000 || AUCTION_RESET_DURATION_MS)); 
     await auction.save({ transaction: t });
     await t.commit();
 
-    scheduleAuctionEnd(auction.auction_id); // Use the service
+    scheduleAuctionEnd(auction.auction_id); // Use the AuctionTimerLogic service
 
     console.log(`Auction ${auction.auction_id} started. Ends at: ${auction.end_time}. Timer scheduled via service.`);
     const startedAuctionDetails = await getFullAuctionDetails(auction.auction_id);
+    // TODO: Emit WebSocket: auctionStarted (startedAuctionDetails)
     res.status(200).json({ message: 'Auction started successfully', auction: startedAuctionDetails });
   } catch (error) {
     await t.rollback();
@@ -294,97 +302,20 @@ export const placeBid = async (req, res) => {
   }
 };
 
-// Internal logic to end an auction
-export const endAuctionLogic = async (auctionId) => {
-    console.log(`[endAuctionLogic] Attempting to end auction ${auctionId}`);
-    const t = await sequelize.transaction();
-    try {
-        // Clear timer from our map immediately if it's still there
-        if (activeAuctionTimers.has(auctionId)) {
-            clearTimeout(activeAuctionTimers.get(auctionId));
-            activeAuctionTimers.delete(auctionId);
-            console.log(`[endAuctionLogic] Cleared and removed timer for auction ${auctionId} from map.`);
-        }
-
-        const auction = await Auction.findByPk(auctionId, {
-            include: [
-              { model: Product, required: true } 
-            ], // Include winner to get username for event
-            transaction: t,
-            lock: t.LOCK.UPDATE
-        });
-
-        if (!auction || auction.status !== 'active') {
-            console.log(`[endAuctionLogic] Auction ${auctionId} not found or not active. Status: ${auction ? auction.status : 'N/A'}`);
-            await t.rollback();
-            return;
-        }
-
-        // Re-verify winner: The last bid sets auction.winner_id tentatively.
-        // If no bids, winner_id would be null.
-        const winningBid = await Bid.findOne({
-            where: { auction_id: auctionId, is_cancelled: false },
-            order: [['amount', 'DESC'], ['bid_time', 'ASC']],
-            include: [{ model: User, attributes: ['user_id', 'username'] }],
-            transaction: t
-        });
-
-        if (winningBid) { // A bid was placed
-             auction.winner_id = winningBid.user_id;
-            if (auction.reserve_price && winningBid.amount < auction.reserve_price) {
-                auction.status = 'unsold';
-                console.log(`[endAuctionLogic] Auction ${auctionId} unsold (reserve not met). Bid: ${winningBid.amount}, Reserve: ${auction.reserve_price}`);
-            } else {
-                auction.status = 'sold';
-                auction.current_price = winningBid.amount; // Final price
-                winningBid.is_winning = true;
-                await winningBid.save({ transaction: t });
-                console.log(`[endAuctionLogic] Auction ${auctionId} sold to user ${winningBid.user_id} for ${winningBid.amount}`);
-                await Order.create({
-                    buyer_id: winningBid.user_id,
-                    seller_id: auction.Product.user_id,
-                    auction_id: auction.auction_id,
-                    total_amount: winningBid.amount,
-                    status: 'pending',
-                }, { transaction: t });
-                console.log(`[endAuctionLogic] Order created for auction ${auctionId}`);
-            }
-        } else { // No bids at all
-            auction.status = 'unsold';
-            auction.winner_id = null;
-            console.log(`[endAuctionLogic] Auction ${auctionId} unsold (no bids).`);
-        }
-
-        auction.end_time = new Date(); // Actual end time
-        await auction.save({ transaction: t });
-        await t.commit();
-
-        // Emit WebSocket event: auctionEnded (auctionDetails)
-        // Fetch final details for the event
-        const finalAuctionDetails = await getFullAuctionDetails(auctionId);
-        console.log(`[endAuctionLogic] Auction ${auctionId} ended with status: ${finalAuctionDetails.status}. Winner: ${finalAuctionDetails.winner?.username || 'None'}`);
-        // In a real app, you'd emit `finalAuctionDetails` here.
-        // For this simulation, the frontend will detect the status change when it fetches or based on last update.
-
-    } catch (error) {
-        await t.rollback();
-        console.error(`[endAuctionLogic] Error for auction ${auctionId}:`, error);
-    }
-};
-
 // @desc    Cancel a pending or active auction (owner only)
 export const cancelAuction = async (req, res) => {
     const auctionIdToCancel = req.params.id;
-    const currentUserId = req.user.user_id; // Assuming 'protect' middleware adds req.user
+    const currentUserId = req.user.user_id; 
 
     const t = await sequelize.transaction();
     try {
         const auction = await Auction.findByPk(auctionIdToCancel, {
             include: [
-                { model: Product, required: true }, // Auction must have a product
-                { model: Stream, required: false }  // Stream is optional
+                { model: Product, required: true }, 
+                { model: Stream, required: false }  
             ],
-            transaction: t
+            transaction: t,
+            lock: t.LOCK.UPDATE // Lock for update
         });
 
         if (!auction) {
@@ -392,48 +323,35 @@ export const cancelAuction = async (req, res) => {
             return res.status(404).json({ message: 'Auction not found' });
         }
 
-        // Authorization: Only product owner or stream owner (if auction is in stream) can cancel
         const productOwnerId = auction.Product.user_id;
         const streamOwnerId = auction.Stream ? auction.Stream.user_id : null;
 
         let authorized = false;
-        if (currentUserId === productOwnerId) {
-            authorized = true;
-        } else if (streamOwnerId && currentUserId === streamOwnerId) {
-            authorized = true;
-        }
-        // You might add an admin role check here too if needed: || req.user.isAdmin
-
+        if (currentUserId === productOwnerId) authorized = true;
+        else if (streamOwnerId && currentUserId === streamOwnerId) authorized = true;
+        
         if (!authorized) {
             await t.rollback();
             return res.status(403).json({ message: 'Not authorized to cancel this auction' });
         }
 
-        // Check if auction can be cancelled
         if (auction.status === 'sold' || auction.status === 'unsold' || auction.status === 'cancelled') {
             await t.rollback();
             return res.status(400).json({ message: `Auction cannot be cancelled. Current status: ${auction.status}` });
         }
 
-        // If auction was active, clear its server-side timer using the service
         if (auction.status === 'active') {
-            clearAuctionTimer(auction.auction_id);
+            clearAuctionTimer(auction.auction_id); // Clear timer using the service
             console.log(`[Cancel Auction] Cleared server-side timer for active auction ${auction.auction_id}.`);
         }
 
-        // Update auction status
         auction.status = 'cancelled';
-        auction.end_time = new Date(); // Mark the cancellation time as its end time
-        // auction.winner_id = null; // Ensure no winner if cancelled while active with a high bidder
+        auction.end_time = new Date(); 
         await auction.save({ transaction: t });
-
         await t.commit();
 
         const cancelledAuctionDetails = await getFullAuctionDetails(auction.auction_id);
-        
-        // TODO: Emit WebSocket event: auctionCancelled (cancelledAuctionDetails) to all clients in the stream/room
-        // Example: sendLiveKitData('AUCTION_CANCELLED', cancelledAuctionDetails); // If using StreamPage's sendLiveKitData
-
+        // TODO: Emit WebSocket event: auctionCancelled (cancelledAuctionDetails)
         console.log(`Auction ${auction.auction_id} cancelled successfully by user ${currentUserId}.`);
         res.status(200).json({ message: 'Auction cancelled successfully', auction: cancelledAuctionDetails });
 
@@ -478,7 +396,7 @@ export const getAllAuctions = async (req, res) => {
       ],
       order: [['start_time', 'DESC'], ['created_at', 'DESC']],
     });
-    console.log(`[getAllAuctions Backend] streamId: ${streamId}, status: ${status}. Found auctions:`, JSON.stringify(auctions, null, 2));
+    // console.log(`[getAllAuctions Backend] streamId: ${streamId}, status: ${status}. Found auctions:`, JSON.stringify(auctions, null, 2));
     res.status(200).json(auctions);
   } catch (error) {
     console.error('[getAllAuctions Backend] Error fetching auctions:', error);
@@ -488,7 +406,7 @@ export const getAllAuctions = async (req, res) => {
 
 export const getAuctionById = async (req, res) => {
   try {
-    const auction = await getFullAuctionDetails(req.params.id); // Use helper
+    const auction = await getFullAuctionDetails(req.params.id); 
     if (!auction) {
       return res.status(404).json({ message: 'Auction not found' });
     }

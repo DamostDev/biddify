@@ -161,24 +161,20 @@ Stream.belongsToMany(User, {
 UserStreamView.belongsTo(User, { foreignKey: 'user_id' });
 UserStreamView.belongsTo(Stream, { foreignKey: 'stream_id' });
 
-
-const syncDatabase = async () => {
+export const syncDatabase = async () => {
   try {
-    await sequelize.authenticate();
-    console.log('✅ PostgreSQL connection established');
+    // await sequelize.authenticate(); // Authentication is done in index.js now
+    // console.log('✅ PostgreSQL connection established'); // Moved to index.js
 
-    // Sync all models
-    // Use { alter: true } carefully in production, prefer migrations
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ alter: true }); // Use { alter: true } carefully in production
     console.log('✅ All models synchronized (alter mode)');
     
   } catch (error) {
     console.error('❌ Database synchronization failed:', error);
-    process.exit(1);
+    // process.exit(1); // Let the main index.js handle process exit
+    throw error; // Re-throw to be caught by startServer
   }
 };
-
-//syncDatabase();
 
 export {
   User,
@@ -196,5 +192,4 @@ export {
   UserProductView,
   UserStreamLike,
   UserStreamView
-  // Export sequelize instance if needed elsewhere
 };

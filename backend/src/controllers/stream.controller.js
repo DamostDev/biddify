@@ -18,27 +18,32 @@ console.log('[StreamController Global Scope] Reading process.env.LIVEKIT_API_SEC
 
 let roomService = null; 
 
-if (process.env.LIVEKIT_API_KEY && process.env.LIVEKIT_API_SECRET && process.env.LIVEKIT_URL && typeof process.env.LIVEKIT_URL === 'string' && process.env.LIVEKIT_URL.trim() !== '') {
+// --- CORRECTED SECTION ---
+// Declare livekitApiUrl here, before it's used in the if condition
+const livekitApiUrl = process.env.LIVEKIT_URL ? process.env.LIVEKIT_URL.replace(/^wss?:\/\//, 'https://') : null;
+console.log('[StreamController Global Scope] Derived LiveKit API URL for RoomServiceClient:', livekitApiUrl);
+
+if (process.env.LIVEKIT_API_KEY && process.env.LIVEKIT_API_SECRET && livekitApiUrl) {
   try {
-    // Pass the FULL LIVEKIT_URL (e.g., "wss://your-project.livekit.cloud")
-    // The SDK's RoomServiceClient should handle resolving this to the correct HTTP/S endpoint for API calls.
-    console.log(`[StreamController Global Scope] Attempting to initialize RoomServiceClient with FULL URL: "${process.env.LIVEKIT_URL}"`);
+    console.log(`[StreamController Global Scope] Attempting to initialize RoomServiceClient with API URL: "${livekitApiUrl}"`);
     roomService = new RoomServiceClient(
-      process.env.LIVEKIT_URL, // <--- KEY CHANGE: Use full URL
+      livekitApiUrl, // Use the derived HTTP/S URL
       process.env.LIVEKIT_API_KEY,
       process.env.LIVEKIT_API_SECRET
     );
     console.log('[StreamController Global Scope] ✅ LiveKit RoomServiceClient initialized successfully.');
   } catch (e) {
-    console.error('🔴 [StreamController Global Scope] Error initializing RoomServiceClient with URL "' + process.env.LIVEKIT_URL + '":', e.message, e);
+    console.error('🔴 [StreamController Global Scope] Error initializing RoomServiceClient with URL "' + livekitApiUrl + '":', e.message, e);
     roomService = null; 
   }
 } else {
   console.warn('⚠️ [StreamController Global Scope] RoomServiceClient NOT initialized. Prerequisites not met:');
-  if (!process.env.LIVEKIT_URL || typeof process.env.LIVEKIT_URL !== 'string' || process.env.LIVEKIT_URL.trim() === '') console.warn('  - LIVEKIT_URL is missing, empty, or not a string.');
+  if (!livekitApiUrl) console.warn('  - LIVEKIT_URL is missing, empty, or could not be parsed correctly.'); // Updated check
   if (!process.env.LIVEKIT_API_KEY) console.warn('  - LIVEKIT_API_KEY is missing or empty.');
   if (!process.env.LIVEKIT_API_SECRET) console.warn('  - LIVEKIT_API_SECRET is missing or empty.');
 }
+// --- END CORRECTED SECTION ---
+
 console.log('---------------------------------------------------------------------');
 console.log('--- [StreamController Global Scope] MODULE LOADING END ---');
 console.log('---------------------------------------------------------------------');
@@ -50,6 +55,7 @@ const generateStreamKey = () => {
   return crypto.randomBytes(16).toString('hex');
 };
 
+// ... (rest of the file remains the same)
 export const createStream = async (req, res) => {
   const { title, description, category_id, is_private = false, thumbnail_url_manual } = req.body;
   const user_id = req.user.user_id;
@@ -145,7 +151,6 @@ export const getAllStreams = async (req, res) => {
 
     let streamsToReturn = streamsFromDB.map(s => s.get({ plain: true }));
 
-    // --->>> DIAGNOSTIC TEST BLOCK for roomService in getAllStreams <<<---
     if (roomService) {
       console.log('[getAllStreams DIAGNOSTIC] roomService object IS available before participant count loop.');
       try {
@@ -157,16 +162,13 @@ export const getAllStreams = async (req, res) => {
     } else {
       console.warn('[getAllStreams DIAGNOSTIC] roomService is NULL or not initialized before participant count loop. Skipping LiveKit calls.');
     }
-    // --->>> END DIAGNOSTIC TEST BLOCK <<<---
 
     if (roomService && (requestedStatus === 'live' || requestedStatus === 'live_or_scheduled')) {
       const participantCountPromises = streamsToReturn
         .filter(s => s.status === 'live' && s.livekitRoomName)
         .map(async (stream) => {
-          // console.log(`[getAllStreams] Attempting listParticipants for LiveKit room: "${stream.livekitRoomName}" (Type: ${typeof stream.livekitRoomName})`);
           try {
             const participants = await roomService.listParticipants(stream.livekitRoomName);
-            // console.log(`[getAllStreams] For room ${stream.livekitRoomName}, LiveKit participant count: ${participants.length}. DB count was ${stream.viewer_count}.`);
             return { ...stream, viewer_count: participants.length };
           } catch (lkError) {
             console.warn(`[getAllStreams] LiveKit Error on listParticipants for room ${stream.livekitRoomName}: ${lkError.message}. Using DB count ${stream.viewer_count}.`);
@@ -337,14 +339,14 @@ export const updateStream = async (req, res) => {
     if (req.file) {
         if (stream.thumbnail_url && stream.thumbnail_url !== thumbnail_url_manual && stream.thumbnail_url.startsWith(getBaseUrl(req))) {
             try { 
-                const oldUrl = new URL(stream.thumbnail_url); // Ensure it's a valid URL before parsing
+                const oldUrl = new URL(stream.thumbnail_url); 
                 const oldFilename = path.basename(oldUrl.pathname);
                 const oldFilePath = path.join('public/uploads/streams/', oldFilename);
                 if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath); 
             } catch(e){ console.warn("Error parsing/deleting old thumbnail URL during update:", e.message); }
         }
         newThumbnailUrl = `${getBaseUrl(req)}/uploads/streams/${req.file.filename}`;
-    } else if (thumbnail_url_manual !== undefined) { // If thumbnail_url_manual is explicitly passed (even as null or empty string)
+    } else if (thumbnail_url_manual !== undefined) { 
         if (!thumbnail_url_manual && stream.thumbnail_url && stream.thumbnail_url.startsWith(getBaseUrl(req))) {
              try{ 
                 const oldUrl = new URL(stream.thumbnail_url);
@@ -377,7 +379,7 @@ export const updateStream = async (req, res) => {
     res.status(200).json(updatedStreamWithDetails);
   } catch (error) {
     console.error('Error updating stream:', error);
-    if (req.file && newThumbnailUrl && newThumbnailUrl.includes(req.file.filename)) { // Check if newThumbnailUrl was set from req.file
+    if (req.file && newThumbnailUrl && newThumbnailUrl.includes(req.file.filename)) { 
       if (fs && fs.unlink) fs.unlink(req.file.path, err => { if (err) console.error("Error deleting temp thumbnail on update failure:", err); });
     }
     res.status(500).json({ message: 'Server error' });
@@ -392,9 +394,9 @@ export const deleteStream = async (req, res) => {
     if (stream.user_id !== req.user.user_id) { await t.rollback(); return res.status(403).json({ message: 'Not authorized' }); }
     if (stream.status === 'live') { await t.rollback(); return res.status(400).json({ message: 'Cannot delete live stream.'}); }
     
-    if (stream.thumbnail_url && stream.thumbnail_url.startsWith(getBaseUrl(req))) { // Only delete if it's a local upload
+    if (stream.thumbnail_url && stream.thumbnail_url.startsWith(getBaseUrl(req))) { 
         try{ 
-            const urlObject = new URL(stream.thumbnail_url); // Validate URL before path.basename
+            const urlObject = new URL(stream.thumbnail_url); 
             const filename = path.basename(urlObject.pathname);
             const filePath = path.join('public/uploads/streams/', filename);
             if (fs.existsSync(filePath)) fs.unlinkSync(filePath); 
@@ -412,7 +414,7 @@ export const deleteStream = async (req, res) => {
   }
 };
 
-export const startStream = async (req, res) => { // General DB status update
+export const startStream = async (req, res) => { 
     try {
         const stream = await Stream.findByPk(req.params.id);
         if (!stream) return res.status(404).json({ message: 'Stream not found' });
@@ -420,7 +422,7 @@ export const startStream = async (req, res) => { // General DB status update
         if (stream.status === 'live') return res.status(400).json({ message: 'Already live' });
         if (stream.status === 'ended' || stream.status === 'cancelled') return res.status(400).json({ message: 'Stream ended/cancelled' });
         stream.status = 'live';
-        stream.start_time = new Date(); // Set start time when DB status becomes live
+        stream.start_time = new Date(); 
         await stream.save();
         res.status(200).json({ message: 'Stream live (DB)', stream });
     } catch (error) { 
@@ -429,7 +431,7 @@ export const startStream = async (req, res) => { // General DB status update
     }
 };
 
-export const endStream = async (req, res) => { // General DB status update
+export const endStream = async (req, res) => { 
     try {
         const stream = await Stream.findByPk(req.params.id);
         if (!stream) return res.status(404).json({ message: 'Stream not found' });

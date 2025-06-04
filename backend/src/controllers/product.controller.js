@@ -40,26 +40,38 @@ export const createProduct = async (req, res) => {
       await ProductImage.bulkCreate(imageRecords, { transaction: t });
     }
 
-    await t.commit();
-
+    // Fetch details BEFORE commit
     const newProductWithDetails = await Product.findByPk(product.product_id, {
       include: [
-        { model: User, attributes: ['user_id', 'username', 'profile_picture_url'] },
+        { model: User, as: 'Owner', attributes: ['user_id', 'username', 'profile_picture_url'] },
         { model: Category, attributes: ['category_id', 'name'] },
         { model: ProductImage, as: 'images', attributes: ['image_id', 'image_url', 'is_primary'] }
-      ]
+      ],
+      transaction: t // Include in transaction for read consistency
     });
+
+    await t.commit(); // NOW commit
 
     res.status(201).json(newProductWithDetails);
   } catch (error) {
-    await t.rollback();
+    // Check if transaction is still active before trying to rollback
+    if (t && !t.finished) { // 'finished' can be 'commit', 'rollback', or undefined if not started/finished
+        try {
+            await t.rollback();
+        } catch (rollbackError) {
+            console.error('Error rolling back transaction:', rollbackError);
+        }
+    }
     console.error('Error creating product:', error);
-    // Cleanup uploaded files if transaction fails
+    // Cleanup uploaded files if transaction fails (and was rolled back or never committed)
     if (req.files && req.files.length > 0) {
       req.files.forEach(file => {
-        fs.unlink(file.path, err => {
-          if (err) console.error("Error deleting uploaded file on failure:", err);
-        });
+        // Check if file.path exists before unlinking, as multer might not have saved it if an early error occurred
+        if (file.path && fs.existsSync(file.path)) {
+            fs.unlink(file.path, err => {
+              if (err) console.error("Error deleting uploaded file on failure:", err);
+            });
+        }
       });
     }
     res.status(500).json({ message: 'Server error creating product' });
@@ -163,7 +175,6 @@ export const getProductsByUserId = async (req, res) => {
 // @access  Protected
 export const updateProduct = async (req, res) => {
   const { title, description, category_id, condition, original_price, is_active, images_to_delete } = req.body;
-  // images_to_delete should be an array of image_id's
   const t = await sequelize.transaction();
 
   try {
@@ -173,17 +184,15 @@ export const updateProduct = async (req, res) => {
     });
 
     if (!product) {
-      await t.rollback();
+      await t.rollback(); // Rollback here is safe as commit hasn't happened
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Authorization: Check if logged-in user owns the product
     if (product.user_id !== req.user.user_id) {
       await t.rollback();
       return res.status(403).json({ message: 'User not authorized to update this product' });
     }
 
-    // Update product fields
     product.title = title || product.title;
     product.description = description !== undefined ? description : product.description;
     product.category_id = category_id !== undefined ? (category_id || null) : product.category_id;
@@ -193,7 +202,6 @@ export const updateProduct = async (req, res) => {
     
     await product.save({ transaction: t });
 
-    // Handle image deletion
     if (images_to_delete && Array.isArray(images_to_delete) && images_to_delete.length > 0) {
         const imageIdsToDelete = images_to_delete.map(id => parseInt(id)).filter(id => !isNaN(id));
         const imagesToDeleteRecords = await ProductImage.findAll({
@@ -205,59 +213,58 @@ export const updateProduct = async (req, res) => {
         });
 
         for (const img of imagesToDeleteRecords) {
-            // Delete file from server
-            const filename = path.basename(img.image_url);
-            const filePath = path.join('public/uploads/products/', filename); // Adjust path if needed
+            const filename = path.basename(new URL(img.image_url).pathname); // Safer URL parsing
+            const filePath = path.join('public/uploads/products/', filename);
              try {
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                 }
             } catch (fileError) {
                 console.error("Error deleting image file during update:", fileError);
-                // Decide if this should halt the transaction or just log
             }
             await img.destroy({ transaction: t });
         }
     }
 
-    // Handle new image uploads
     if (req.files && req.files.length > 0) {
-        // Determine if there's already a primary image, if not, make the first new one primary
-        let hasPrimaryImage = product.images ? product.images.some(img => img.is_primary) : false;
-        if (images_to_delete && Array.isArray(images_to_delete)) { // Recheck after deletion
-            const remainingImages = product.images.filter(img => !images_to_delete.includes(String(img.image_id)));
-            hasPrimaryImage = remainingImages.some(img => img.is_primary);
-        }
-
-
+        let hasPrimaryImage = product.images ? product.images.filter(img => !imagesToDelete || !imagesToDelete.includes(String(img.image_id))).some(img => img.is_primary) : false;
         const newImageRecords = req.files.map((file, index) => ({
             product_id: product.product_id,
             image_url: `${getBaseUrl(req)}/uploads/products/${file.filename}`,
-            is_primary: !hasPrimaryImage && index === 0, // Make first new image primary if no existing primary
+            is_primary: !hasPrimaryImage && index === 0,
         }));
         await ProductImage.bulkCreate(newImageRecords, { transaction: t });
     }
     
-    await t.commit();
-
+    // Fetch details BEFORE commit
     const updatedProductWithDetails = await Product.findByPk(req.params.id, {
       include: [
-        { model: User, attributes: ['user_id', 'username', 'profile_picture_url'] },
+        { model: User, as: 'Owner',  attributes: ['user_id', 'username', 'profile_picture_url'] },
         { model: Category, attributes: ['category_id', 'name'] },
         { model: ProductImage, as: 'images', attributes: ['image_id', 'image_url', 'is_primary'], order: [['is_primary', 'DESC']] }
-      ]
+      ],
+      transaction: t // Include in transaction
     });
+
+    await t.commit(); // NOW commit
 
     res.status(200).json(updatedProductWithDetails);
   } catch (error) {
-    await t.rollback();
+    if (t && !t.finished) {
+        try {
+            await t.rollback();
+        } catch (rollbackError) {
+            console.error('Error rolling back transaction:', rollbackError);
+        }
+    }
     console.error('Error updating product:', error);
-    // Cleanup newly uploaded files if transaction fails
     if (req.files && req.files.length > 0) {
       req.files.forEach(file => {
-        fs.unlink(file.path, err => {
-          if (err) console.error("Error deleting newly uploaded file on update failure:", err);
-        });
+         if (file.path && fs.existsSync(file.path)) {
+            fs.unlink(file.path, err => {
+              if (err) console.error("Error deleting newly uploaded file on update failure:", err);
+            });
+        }
       });
     }
     res.status(500).json({ message: 'Server error updating product' });
@@ -280,40 +287,41 @@ export const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Authorization: Check if logged-in user owns the product
     if (product.user_id !== req.user.user_id) {
       await t.rollback();
       return res.status(403).json({ message: 'User not authorized to delete this product' });
     }
 
-    // Delete associated images from server and DB
     if (product.images && product.images.length > 0) {
       for (const image of product.images) {
-        const filename = path.basename(image.image_url);
-        const filePath = path.join('public/uploads/products/', filename); // Adjust path
         try {
+            const urlObject = new URL(image.image_url);
+            const filename = path.basename(urlObject.pathname);
+            const filePath = path.join('public/uploads/products/', filename);
             if (fs.existsSync(filePath)) {
                 fs.unlinkSync(filePath);
             }
         } catch (fileError) {
-            console.error("Error deleting image file:", fileError);
-            // Potentially log this but continue, as DB record deletion is more critical
+            console.error("Error parsing URL or deleting image file:", image.image_url, fileError);
         }
-        // ProductImage records will be cascade deleted if set up in model association
-        // Or delete them manually: await image.destroy({ transaction: t });
       }
     }
-    // If onDelete: 'CASCADE' is set for ProductImages in Product model, they'll be deleted.
-    // Otherwise, manually delete:
+    // ProductImages will be cascade deleted if onDelete: 'CASCADE' is set in Product model.
+    // If not, they need to be manually destroyed:
     // await ProductImage.destroy({ where: { product_id: product.product_id }, transaction: t });
 
-
-    await product.destroy({ transaction: t }); // This will trigger cascade delete for ProductImages if defined
+    await product.destroy({ transaction: t }); 
     await t.commit();
 
-    res.status(200).json({ message: 'Product deleted successfully' }); // or 204
+    res.status(200).json({ message: 'Product deleted successfully' });
   } catch (error) {
-    await t.rollback();
+    if (t && !t.finished) {
+        try {
+            await t.rollback();
+        } catch (rollbackError) {
+            console.error('Error rolling back transaction:', rollbackError);
+        }
+    }
     console.error('Error deleting product:', error);
     if (error.name === 'SequelizeForeignKeyConstraintError') {
         return res.status(400).json({ message: 'Cannot delete product. It is associated with other items (e.g., active auctions or orders).' });
