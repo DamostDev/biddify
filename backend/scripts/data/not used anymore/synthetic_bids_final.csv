@@ -1,0 +1,1 @@
+bid_id_placeholder,bid_guid,auction_guid_fk,user_guid_fk,amount,bid_time,is_winning,is_cancelled

@@ -1,0 +1,1 @@
+order_guid,buyer_user_guid_fk,seller_user_guid_fk,auction_guid_fk,product_guid_fk,total_amount,shipping_cost,tax_amount,status,payment_intent_id,shipping_address_json,created_at,updated_at,order_id_placeholder

@@ -11,6 +11,7 @@ import {
   getProductsByUserId,
   updateProduct,
   deleteProduct,
+  assignProductsToStream
   // addProductImage, // Optional: dedicated endpoint to add more images later
   // removeProductImage, // Optional
 } from '../controllers/product.controller.js';
@@ -68,6 +69,8 @@ router.route('/:id')
   .get(getProductById)
   .put(protect, uploadProductImages.array('newImages', 5), updateProduct) // Handle new image uploads during update
   .delete(protect, deleteProduct);
+
+router.post('/assign-to-stream', protect, assignProductsToStream);
 
 // Optional: Routes for managing images separately after product creation
 // router.post('/:id/images', protect, uploadProductImages.array('images', 5), addProductImage);

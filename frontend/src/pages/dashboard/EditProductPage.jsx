@@ -1,11 +1,11 @@
 // src/pages/dashboard/EditProductPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
-import { getAllCategories, updateProduct, getProductById } from '../../services/productService';
-import SectionCard from '../../components/common/SectionCard'; // Adjust path
+import { getAllCategories, updateProduct as apiUpdateProduct, getProductById } from '../../services/productService'; // Renamed
+import SectionCard from '../../components/common/SectionCard';
 import {
-  FiArrowLeft, FiUploadCloud, FiX, FiPaperclip, FiHelpCircle, FiTrash2,
-  FiCheckSquare, FiAlertCircle
+  FiArrowLeft, FiUploadCloud, FiX, FiTrash2, FiHelpCircle,
+  FiCheckSquare, FiAlertCircle, FiToggleLeft, FiToggleRight
 } from 'react-icons/fi';
 
 const EditProductPage = () => {
@@ -13,20 +13,17 @@ const EditProductPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const initialState = {
+  const initialFormState = {
     title: '', description: '', category_id: '', condition: 'good',
     original_price: '', is_active: true, quantity: 1,
-    flash_sale: false, accept_offers: false, reserve_for_live: false,
-    shipping_profile_id: '', cost_per_item: '',
-    images: [],
+    cost_per_item: '', images: [],
   };
 
-  const [formData, setFormData] = useState(initialState);
-  const [productToEdit, setProductToEdit] = useState(location.state?.product || null);
+  const [formData, setFormData] = useState(initialFormState);
   const [categories, setCategories] = useState([]);
-  const [newImages, setNewImages] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
-  const [imagesToDelete, setImagesToDelete] = useState([]);
+  const [newImages, setNewImages] = useState([]); // File objects for new uploads
+  const [imagePreviews, setImagePreviews] = useState([]); // Data URLs for new image previews
+  const [imagesToDelete, setImagesToDelete] = useState([]); // image_id's to delete
 
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,15 +36,16 @@ const EditProductPage = () => {
   useEffect(() => {
     setIsLoadingData(true);
     setIsFetchingCategories(true);
-    setError(null);
+    setError(null); setSuccess(null);
 
     const fetchInitialData = async () => {
         try {
-            const productDataFromAPI = await getProductById(productId);
-            const categoryData = await getAllCategories();
+            const [productDataFromAPI, categoryData] = await Promise.all([
+                getProductById(productId),
+                getAllCategories()
+            ]);
 
             if (productDataFromAPI) {
-                setProductToEdit(productDataFromAPI);
                 const initialImages = productDataFromAPI.images || [];
                 setFormData({
                     title: productDataFromAPI.title || '',
@@ -56,16 +54,15 @@ const EditProductPage = () => {
                     condition: productDataFromAPI.condition || 'good',
                     original_price: productDataFromAPI.original_price || '',
                     is_active: productDataFromAPI.is_active !== undefined ? productDataFromAPI.is_active : true,
-                    quantity: productDataFromAPI.quantity || 1,
-                    images: initialImages,
-                    flash_sale: productDataFromAPI.flash_sale || false,
-                    accept_offers: productDataFromAPI.accept_offers || false,
-                    reserve_for_live: productDataFromAPI.reserve_for_live || false,
+                    quantity: productDataFromAPI.quantity === undefined ? 1 : productDataFromAPI.quantity,
                     cost_per_item: productDataFromAPI.cost_per_item || '',
-                    shipping_profile_id: productDataFromAPI.shipping_profile_id || '',
+                    images: initialImages,
                 });
+                setNewImages([]);
+                setImagePreviews([]);
+                setImagesToDelete([]);
             } else {
-                setError("Product not found.");
+                setError("Product not found or could not be loaded.");
             }
             setCategories(categoryData || []);
         } catch (err) {
@@ -79,7 +76,7 @@ const EditProductPage = () => {
     if (productId) {
         fetchInitialData();
     } else {
-        setError("Product ID is missing in URL.");
+        setError("Product ID is missing.");
         setIsLoadingData(false);
         setIsFetchingCategories(false);
     }
@@ -90,7 +87,7 @@ const EditProductPage = () => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (type === 'number' && value !== '' ? parseFloat(value) : value)
+      [name]: type === 'checkbox' ? checked : (name === 'original_price' || name === 'quantity' || name === 'cost_per_item' ? (value === '' ? '' : parseFloat(value)) : value)
     }));
     if (error) setError(null);
     if (success) setSuccess(null);
@@ -118,7 +115,7 @@ const EditProductPage = () => {
     setNewImages(prev => [...prev, ...validFiles]);
     const previewUrls = validFiles.map(file => URL.createObjectURL(file));
     setImagePreviews(prev => [...prev, ...previewUrls]);
-    if (!error && validFiles.length > 0) setError(null);
+    if (!error && validFiles.length > 0 && !error.includes('maximum')) setError(null);
     if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
@@ -141,42 +138,50 @@ const EditProductPage = () => {
       navigate('/dashboard/inventory');
       return;
     }
+
+    if (!formData.title || !formData.original_price || formData.original_price <= 0) {
+        setError('Please fill in Title and Price (must be > 0).');
+        return;
+    }
+    if (((formData.images?.length || 0) - imagesToDelete.length + newImages.length) === 0) {
+        setError('Please upload at least one image for the product.');
+        return;
+    }
+
     setIsSubmitting(true); setError(null); setSuccess(null);
-    const isPublishing = actionType === 'publish';
 
     const payload = new FormData();
-    Object.keys(formData).forEach(key => {
-      if (key !== 'images') {
-        if (key === 'is_active') {
-            payload.append(key, isPublishing);
-        } else if (formData[key] !== null && formData[key] !== undefined) {
-            payload.append(key, formData[key]);
-        }
-      }
-    });
+    payload.append('title', formData.title);
+    payload.append('description', formData.description);
+    if (formData.category_id) payload.append('category_id', formData.category_id);
+    payload.append('condition', formData.condition);
+    payload.append('original_price', formData.original_price);
+    payload.append('is_active', formData.is_active); // Send current is_active state
+    payload.append('quantity', formData.quantity || 1);
+    if (formData.cost_per_item || formData.cost_per_item === 0) payload.append('cost_per_item', formData.cost_per_item);
 
-    imagesToDelete.forEach(id => payload.append('images_to_delete[]', id));
+    imagesToDelete.forEach(id => payload.append('images_to_delete[]', id)); // Backend needs array format
     newImages.forEach(file => payload.append('newImages', file));
 
     try {
-      const updatedData = await updateProduct(productId, payload);
-      setSuccess(`Product "${updatedData.title || formData.title}" ${isPublishing ? 'updated successfully' : 'saved as draft'}!`);
-      setProductToEdit(updatedData);
+      const updatedData = await apiUpdateProduct(productId, payload);
+      setSuccess(`Product "${updatedData.title || formData.title}" updated successfully!`);
+      // Refresh form data with response, especially for images
       setFormData(prev => ({
         ...prev,
         ...updatedData,
-        images: updatedData.images || []
+        images: updatedData.images || [] // Update existing images list
       }));
-      setNewImages([]);
-      setImagePreviews(prev => { prev.forEach(URL.revokeObjectURL); return []; });
-      setImagesToDelete([]);
+      setNewImages([]); // Clear staging area for new images
+      imagePreviews.forEach(url => URL.revokeObjectURL(url)); // Clean up previews
+      setImagePreviews([]);
+      setImagesToDelete([]); // Clear deletion list
 
       setTimeout(() => {
-        // setSuccess(null); // Optional: clear success before navigating
         navigate('/dashboard/inventory');
-      }, 1500); // Adjust delay or remove if success message should be a toast on next page
+      }, 1500);
     } catch (err) {
-      setError(err.message || 'Failed to update product.');
+      setError(err.response?.data?.message || err.message || 'Failed to update product.');
     } finally {
       setIsSubmitting(false);
     }
@@ -212,7 +217,7 @@ const EditProductPage = () => {
       >
         <FiUploadCloud className="w-8 h-8 mb-2 text-base-content/50"/>
         <p className="mb-1 text-sm text-base-content/80"><span className="font-semibold">Upload More Images</span></p>
-        <p className="text-xs text-base-content/60">Max 5 images total. {(formData.images?.length || 0) - imagesToDelete.length + newImages.length} / 5 uploaded.</p>
+        <p className="text-xs text-base-content/60">Max 5 images total. {(formData.images?.length || 0) - imagesToDelete.length + newImages.length} / 5.</p>
         <input
             ref={fileInputRef}
             id="product-images-upload"
@@ -244,123 +249,102 @@ const EditProductPage = () => {
   );
 
   const renderProductDetailsSection = () => (
-    <SectionCard title="Product Details" actions={
-        <button type="button" className="btn btn-xs btn-outline btn-neutral normal-case gap-1" disabled>
-            <FiPaperclip size={12}/> Use Barcode
-        </button>
-    }>
+    <SectionCard title="Product Details">
       <div className="form-control">
-        <label className="label py-1"><span className="label-text font-medium">Category*</span></label>
-        <select name="category_id" value={formData.category_id} onChange={handleChange} className="select select-bordered w-full" required disabled={isSubmitting || isFetchingCategories}>
-          <option value="" disabled>Select a category</option>
+        <label className="label py-1"><span className="label-text font-medium">Category</span></label>
+        <select name="category_id" value={formData.category_id} onChange={handleChange} className="select select-bordered w-full" disabled={isSubmitting || isFetchingCategories}>
+          <option value="">Select a category (Optional)</option>
           {categories.map(cat => <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>)}
         </select>
+        {isFetchingCategories && <span className="text-xs text-info mt-1">Loading categories...</span>}
       </div>
       <div className="form-control">
         <label className="label py-1"><span className="label-text font-medium">Title*</span></label>
         <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Vintage Pokémon Card, Funko Pop" className="input input-bordered w-full" required disabled={isSubmitting} />
       </div>
       <div className="form-control">
-        <label className="label py-1"><span className="label-text font-medium">Description*</span></label>
-        <textarea name="description" value={formData.description} onChange={handleChange} className="textarea textarea-bordered w-full h-24" placeholder="Detailed description of your item, condition, etc." required disabled={isSubmitting}></textarea>
+        <label className="label py-1"><span className="label-text font-medium">Description</span></label>
+        <textarea name="description" value={formData.description} onChange={handleChange} className="textarea textarea-bordered w-full h-24" placeholder="Detailed description of your item, condition, etc." disabled={isSubmitting}></textarea>
       </div>
-      <div className="form-control">
-        <label className="label py-1"><span className="label-text font-medium">Quantity*</span></label>
-        <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} className="input input-bordered w-full" required min="0" step="1" disabled={isSubmitting} />
-      </div>
-    </SectionCard>
-  );
-
-  const renderVariantsSection = () => (
-    <SectionCard title="Variants" description="Add various colors or sizes and quantities for this product.">
-      <div className="flex justify-end items-center">
-        <input type="checkbox" className="toggle toggle-primary" disabled={isSubmitting} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="form-control">
+            <label className="label py-1"><span className="label-text font-medium">Condition*</span></label>
+            <select name="condition" value={formData.condition} onChange={handleChange} className="select select-bordered w-full" required disabled={isSubmitting}>
+                <option value="new">New</option>
+                <option value="like_new">Like New</option>
+                <option value="good">Good</option>
+                <option value="fair">Fair</option>
+                <option value="poor">Poor</option>
+            </select>
+        </div>
+        <div className="form-control">
+            <label className="label py-1"><span className="label-text font-medium">Quantity*</span></label>
+            <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} placeholder="1" className="input input-bordered w-full" required min="0" step="1" disabled={isSubmitting} />
+        </div>
       </div>
     </SectionCard>
   );
 
   const renderPricingSection = () => (
     <SectionCard title="Pricing">
-        <div className="tabs mb-4">
-            <button type="button" className="tab tab-lg tab-lifted tab-active !bg-neutral !text-neutral-content rounded-t-md font-medium">Buy It Now</button>
-            <button type="button" className="tab tab-lg tab-lifted opacity-50 cursor-not-allowed" disabled>Auction</button>
-        </div>
         <div className="form-control">
             <label className="label py-1"><span className="label-text font-medium">Price (USD)*</span></label>
             <input type="number" name="original_price" value={formData.original_price} onChange={handleChange} placeholder="0.00" className="input input-bordered w-full" required min="0.01" step="0.01" disabled={isSubmitting}/>
-        </div>
-        <div className="pt-2 space-y-1">
-            <label className="label cursor-pointer py-2 justify-between items-center">
-                <div>
-                    <span className="label-text font-medium">Flash Sale</span>
-                    <p className="text-xs text-base-content/60 pr-4">Turn this on to enable flash sales on this product.</p>
-                </div>
-                <input type="checkbox" name="flash_sale" checked={formData.flash_sale} onChange={handleChange} className="toggle toggle-primary" disabled={isSubmitting} />
-            </label>
-             <div className="divider my-0"></div>
-            <label className="label cursor-pointer py-2 justify-between items-center">
-                <div>
-                    <span className="label-text font-medium">Accept Offers</span>
-                    <p className="text-xs text-base-content/60 pr-4">Turn this on if you are willing to accept offers in lives and the marketplace. You can accept, counter or decline the offers.</p>
-                </div>
-                <input type="checkbox" name="accept_offers" checked={formData.accept_offers} onChange={handleChange} className="toggle toggle-primary" disabled={isSubmitting} />
-            </label>
-             <div className="divider my-0"></div>
-            <label className="label cursor-pointer py-2 justify-between items-center">
-                <div>
-                    <span className="label-text font-medium">Reserve for Live</span>
-                    <p className="text-xs text-base-content/60 pr-4">Turn this on to make this product only purchasable within a show.</p>
-                </div>
-                <input type="checkbox" name="reserve_for_live" checked={formData.reserve_for_live} onChange={handleChange} className="toggle toggle-primary" disabled={isSubmitting} />
-            </label>
-        </div>
-    </SectionCard>
-  );
-
-  const renderShippingSection = () => (
-    <SectionCard title="Shipping">
-        <div className="form-control">
-            <label className="label py-1"><span className="label-text font-medium">Shipping Profile*</span></label>
-            <select name="shipping_profile_id" value={formData.shipping_profile_id} onChange={handleChange} className="select select-bordered w-full" disabled={isSubmitting} >
-                 <option value="">Default Shipping (Not Implemented)</option>
-            </select>
-        </div>
-         <div className="form-control mt-3">
-            <label className="label cursor-pointer py-2 justify-between items-center">
-                <div>
-                    <span className="label-text font-medium text-error">Hazardous Materials*</span>
-                    <p className="text-xs text-base-content/60 pr-4">Confirm this item not the shipping of fragrances, nail polish, electronics containing lithium batteries, and any items that may pose risks to health and safety.</p>
-                </div>
-                <input type="checkbox" name="no_hazardous_materials" className="toggle toggle-sm toggle-primary" disabled={isSubmitting} required/>
-            </label>
         </div>
     </SectionCard>
   );
 
  const renderOptionalFieldsSection = () => (
-    <SectionCard title="Optional Fields" description="This information can only be seen by you.">
+    <SectionCard title="Optional Internal Fields" description="This information can only be seen by you.">
         <div className="form-control">
-            <label className="label py-1"><span className="label-text font-medium">Cost Per Item</span></label>
+            <label className="label py-1"><span className="label-text font-medium">Cost Per Item (USD)</span></label>
             <input type="number" name="cost_per_item" value={formData.cost_per_item} onChange={handleChange} placeholder="0.00" className="input input-bordered w-full" min="0" step="0.01" disabled={isSubmitting}/>
+            <p className="text-xs text-base-content/60 mt-1">Track your cost for profit calculation.</p>
         </div>
     </SectionCard>
   );
-  // --- END FORM SECTION RENDER FUNCTIONS ---
 
+  const renderStatusSection = () => (
+    <SectionCard title="Product Status">
+        <div className="form-control">
+            <label className="label cursor-pointer py-2 justify-start items-center gap-3">
+                <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={formData.is_active}
+                    onChange={handleChange}
+                    className={`toggle toggle-lg ${formData.is_active ? 'toggle-success' : 'toggle-error'}`} // Changed to success/error
+                    disabled={isSubmitting}
+                />
+                <span className="label-text text-base font-medium">
+                    {formData.is_active ? 'Active (Listed for Sale)' : 'Inactive (Not Listed)'}
+                </span>
+                {formData.is_active ? <FiToggleRight size={28} className="text-success" /> : <FiToggleLeft size={28} className="text-error"/>}
+            </label>
+            <p className="text-xs text-base-content/60 mt-1 ml-12">
+                {formData.is_active
+                    ? 'This product is currently visible and purchasable in the marketplace.'
+                    : 'This product is saved as a draft or has been delisted. It is not visible to buyers.'}
+            </p>
+        </div>
+    </SectionCard>
+  );
+
+  // --- END FORM SECTION RENDER FUNCTIONS ---
 
   if (isLoadingData) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><span className="loading loading-lg loading-ball text-primary"></span></div>;
   }
-  if (error && !productToEdit && !isLoadingData) { // If product failed to load initially and not just a submission error
+  if (error && !formData.title && !isLoadingData) { // If initial load failed catastrophically
     return <div role="alert" className="alert alert-error m-6 shadow-lg"><FiAlertCircle size={24}/><div><h3 className="font-bold">Error Loading Product!</h3><div className="text-xs">{error}</div></div> <Link to="/dashboard/inventory" className="btn btn-sm btn-neutral">Back to Inventory</Link></div>;
   }
-   if (!productToEdit && !isLoadingData) { // Product not found but no specific error, or ID missing
-      return <div role="alert" className="alert alert-warning m-6 shadow-lg"><FiAlertCircle size={24}/><div><h3 className="font-bold">Product Not Found</h3><div className="text-xs">The requested product could not be loaded. It may have been deleted or the ID is incorrect.</div></div> <Link to="/dashboard/inventory" className="btn btn-sm btn-neutral">Back to Inventory</Link></div>;
+  if (!formData.title && !isLoadingData && !error && productId) { // Product was not found (e.g., bad ID), but no network error
+      return <div role="alert" className="alert alert-warning m-6 shadow-lg"><FiAlertCircle size={24}/><div><h3 className="font-bold">Product Not Found</h3><div className="text-xs">The product with ID '{productId}' could not be found. It may have been deleted or the ID is incorrect.</div></div> <Link to="/dashboard/inventory" className="btn btn-sm btn-neutral">Back to Inventory</Link></div>;
   }
 
 
   return (
-    <div className="space-y-5 pb-28"> {/* Main page container */}
+    <div className="space-y-5 pb-28">
       <div className="flex items-center gap-2 pt-3">
         <Link to="/dashboard/inventory" className="btn btn-ghost btn-sm btn-circle p-0 -ml-1">
           <FiArrowLeft size={24} />
@@ -371,25 +355,22 @@ const EditProductPage = () => {
       <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
         {renderMediaSection()}
         {renderProductDetailsSection()}
-        {renderVariantsSection()}
         {renderPricingSection()}
-        {renderShippingSection()}
+        {renderStatusSection()}
         {renderOptionalFieldsSection()}
 
-        {/* Display error only if there's no success message, to avoid showing both */}
         {error && !success && <div role="alert" className="alert alert-error mt-6 shadow-md"><FiAlertCircle size={20}/><span>{error}</span></div>}
         {success && <div role="alert" className="alert alert-success mt-6 shadow-md"><FiCheckSquare size={20}/><span>{success}</span></div>}
       </form>
 
-      {/* Sticky Footer Actions */}
       <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-base-100 p-3 sm:p-4 border-t border-base-300 flex flex-col sm:flex-row justify-end items-center gap-2 sm:gap-3 shadow-[0_-2px_10px_-3px_rgba(0,0,0,0.1)] z-20">
         <p className="text-xs text-base-content/60 mr-auto hidden md:flex items-center gap-1"><FiHelpCircle size={14}/> Edit your product details and save changes.</p>
-        <button type="button" onClick={() => handleSubmit('cancel')} className="btn btn-ghost btn-sm sm:btn-md w-full sm:w-auto order-3 sm:order-1" disabled={isSubmitting}>Cancel</button>
-        <button type="button" onClick={() => handleSubmit('draft')} className="btn btn-outline btn-sm sm:btn-md w-full sm:w-auto order-2" disabled={isSubmitting}>
-          {isSubmitting ? <span className="loading loading-spinner loading-xs"></span> : "Save as Draft"}
-        </button>
+        <button type="button" onClick={() => handleSubmit('cancel')} className="btn btn-ghost btn-sm sm:btn-md w-full sm:w-auto order-2 sm:order-1" disabled={isSubmitting}>Cancel</button>
+        {/* <button type="button" onClick={() => handleSubmit('draft')} className="btn btn-outline btn-sm sm:btn-md w-full sm:w-auto order-2" disabled={isSubmitting}>
+          {isSubmitting ? <span className="loading loading-spinner loading-xs"></span> : "Save Changes (Keep Draft)"}
+        </button> */}
         <button type="button" onClick={() => handleSubmit('publish')} className="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto order-1 sm:order-3 bg-yellow-400 hover:bg-yellow-500 text-black border-yellow-400" disabled={isSubmitting}>
-          {isSubmitting ? <span className="loading loading-spinner loading-xs"></span> : "Update Product"}
+          {isSubmitting ? <span className="loading loading-spinner loading-xs"></span> : "Save and Update Product"}
         </button>
       </div>
     </div>
