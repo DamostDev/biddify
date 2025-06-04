@@ -37,3 +37,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.search-bar-wide {
+  min-width: 500px; /* Set minimum width */
+  max-width: 800px; /* Set maximum width */
+}
+
+/* On larger screens, make it even wider */
+@media (min-width: 1280px) {
+  .search-bar-wide {
+    min-width: 600px;
+    max-width: 1000px;
+  }
+}
+
+/* On extra large screens */
+@media (min-width: 1536px) {
+  .search-bar-wide {
+    min-width: 700px;
+    max-width: 1200px;
+  }
+}

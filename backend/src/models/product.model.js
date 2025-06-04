@@ -1,3 +1,4 @@
+// backend/src/models/product.model.js
 import { DataTypes } from 'sequelize';
 import sequelize from '../lib/connectPG.js';
 
@@ -9,9 +10,9 @@ const Product = sequelize.define('Product', {
   },
   user_id: {
     type: DataTypes.INTEGER,
-    allowNull: false, // Assuming a product must have a seller (user)
+    allowNull: false,
     references: {
-      model: 'users', // Table name
+      model: 'users',
       key: 'user_id',
     },
   },
@@ -25,9 +26,9 @@ const Product = sequelize.define('Product', {
   },
   category_id: {
     type: DataTypes.INTEGER,
-    allowNull: true, // Assuming category can be optional
+    allowNull: true,
     references: {
-      model: 'categories', // Table name
+      model: 'categories',
       key: 'category_id',
     },
   },
@@ -43,7 +44,16 @@ const Product = sequelize.define('Product', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
-  // created_at and updated_at are handled by Sequelize timestamps options
+  // quantity: { // Make sure these are present if your forms use them
+  //   type: DataTypes.INTEGER,
+  //   defaultValue: 1,
+  //   allowNull: false,
+  // },
+  // cost_per_item: {
+  //     type: DataTypes.DECIMAL(10, 2),
+  //     allowNull: true,
+  // },
+  // NO stream_id here
 }, {
   tableName: 'products',
   timestamps: true,
