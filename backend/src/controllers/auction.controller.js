@@ -2,8 +2,64 @@
 import { Auction, Product, Stream, User, Bid, Order, ProductImage, sequelize } from '../models/index.js'; // Added ProductImage
 import { Op } from 'sequelize';
 import { scheduleAuctionEnd, clearAuctionTimer, setEndAuctionFunction } from '../lib/AuctionTimerLogic.js';
+import { RoomServiceClient, DataPacket_Kind } from 'livekit-server-sdk';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// --- Initialize RoomServiceClient ---
+let roomServiceInstance = null;
+const livekitControllerApiUrl = process.env.LIVEKIT_URL ? process.env.LIVEKIT_URL.replace(/^wss?:\/\//, 'https://') : null;
+
+console.log('[AuctionController Init] LIVEKIT_URL:', process.env.LIVEKIT_URL);
+console.log('[AuctionController Init] LIVEKIT_API_KEY:', process.env.LIVEKIT_API_KEY ? 'Exists' : 'MISSING');
+console.log('[AuctionController Init] LIVEKIT_API_SECRET:', process.env.LIVEKIT_API_SECRET ? 'Exists' : 'MISSING');
+console.log('[AuctionController Init] Derived API URL:', livekitControllerApiUrl);
+
+if (process.env.LIVEKIT_API_KEY && process.env.LIVEKIT_API_SECRET && livekitControllerApiUrl) {
+  try {
+    roomServiceInstance = new RoomServiceClient(
+      livekitControllerApiUrl,
+      process.env.LIVEKIT_API_KEY,
+      process.env.LIVEKIT_API_SECRET
+    );
+    console.log('[AuctionController Init] ✅ LiveKit RoomServiceClient initialized successfully.');
+  } catch (e) {
+    console.error('🔴 [AuctionController Init] Error initializing RoomServiceClient:', e.message, e);
+    roomServiceInstance = null; // Ensure it's null on failure
+  }
+} else {
+  console.warn('⚠️ [AuctionController Init] RoomServiceClient NOT initialized. Prerequisites not met:');
+  if (!livekitControllerApiUrl) console.warn('  - LIVEKIT_URL missing or invalid.');
+  if (!process.env.LIVEKIT_API_KEY) console.warn('  - LIVEKIT_API_KEY missing.');
+  if (!process.env.LIVEKIT_API_SECRET) console.warn('  - LIVEKIT_API_SECRET missing.');
+}
+// --- End RoomServiceClient Init ---
 
 const AUCTION_RESET_DURATION_MS = 30 * 1000; // 30 seconds for reset
+
+async function sendDataToLiveKitRoom(roomName, type, payloadData) {
+    // Check roomServiceInstance validity at the time of the call
+    if (!roomServiceInstance) {
+        console.error('[AuctionCtrl SendMsg] RoomService not initialized. Cannot send message.');
+        // Optionally, re-attempt initialization or throw an error that can be caught
+        // For now, just log and return to prevent crash if it's not critical for function flow
+        return;
+    }
+    if (!roomName) {
+        console.error('[AuctionCtrl SendMsg] roomName missing for sendDataToLiveKitRoom.');
+        return;
+    }
+    try {
+        const dataToSend = { type, payload: payloadData, senderIdentity: 'server-auction-system' };
+        const encodedPayload = new TextEncoder().encode(JSON.stringify(dataToSend));
+        // Send to all participants in the room
+        await roomServiceInstance.sendData(roomName, encodedPayload, DataPacket_Kind.RELIABLE, { topic: "auction_updates" });
+        console.log(`[AuctionCtrl SendMsg] Sent ${type} to room ${roomName}.`);
+    } catch (e) {
+        console.error(`[AuctionCtrl SendMsg] Error sending ${type} to room ${roomName}:`, e);
+    }
+}
 
 // Helper to fetch full auction details (used after updates)
 const getFullAuctionDetails = async (auctionId, transaction = null) => {
@@ -16,7 +72,7 @@ const getFullAuctionDetails = async (auctionId, transaction = null) => {
                     { model: ProductImage, as: 'images', order: [['is_primary', 'DESC']] }
                 ]
             },
-            { model: Stream, attributes: ['stream_id', 'title'] },
+            { model: Stream, attributes: ['stream_id', 'title', 'livekitRoomName'] },
             { model: User, as: 'winner', attributes: ['user_id', 'username'] },
             { model: Bid, include: [{model: User, attributes:['user_id', 'username']}], order: [['bid_time', 'DESC']], limit: 3 }
         ],
@@ -25,11 +81,13 @@ const getFullAuctionDetails = async (auctionId, transaction = null) => {
 };
 
 const actualEndAuctionLogic = async (auctionId) => {
+    // ... (transaction logic and DB updates as you had corrected) ...
+    // The call to sendDataToLiveKitRoom is now more robust due to the check inside it.
     console.log(`[actualEndAuctionLogic] Attempting to end auction ${auctionId}`);
     const t = await sequelize.transaction();
+    let committed = false;
+
     try {
-        // Note: clearAuctionTimer is also called by the service itself before invoking this,
-        // but calling it here again ensures it's cleared if this function is ever called directly.
         clearAuctionTimer(auctionId); 
 
         const auction = await Auction.findByPk(auctionId, {
@@ -40,10 +98,11 @@ const actualEndAuctionLogic = async (auctionId) => {
 
         if (!auction || auction.status !== 'active') {
             console.log(`[actualEndAuctionLogic] Auction ${auctionId} not found or not active. Status: ${auction ? auction.status : 'N/A'}`);
-            await t.rollback();
+            if (t && !t.finished) await t.rollback(); // Ensure rollback if transaction started
             return;
         }
 
+        // ... (rest of your auction ending logic: winningBid, status update, order creation) ...
         const winningBid = await Bid.findOne({
             where: { auction_id: auctionId, is_cancelled: false },
             order: [['amount', 'DESC'], ['bid_time', 'ASC']],
@@ -60,13 +119,12 @@ const actualEndAuctionLogic = async (auctionId) => {
                 auction.current_price = winningBid.amount;
                 winningBid.is_winning = true;
                 await winningBid.save({ transaction: t });
-                // Create order for sold item
                 await Order.create({
                     buyer_id: winningBid.user_id,
-                    seller_id: auction.Product.user_id, // Get seller from Product
+                    seller_id: auction.Product.user_id,
                     auction_id: auction.auction_id,
                     total_amount: winningBid.amount,
-                    status: 'pending', // Initial order status
+                    status: 'pending',
                  }, { transaction: t });
             }
         } else {
@@ -74,18 +132,38 @@ const actualEndAuctionLogic = async (auctionId) => {
             auction.winner_id = null;
         }
 
-        auction.end_time = new Date(); // Set actual end time
+        auction.end_time = new Date();
         await auction.save({ transaction: t });
+
+
         await t.commit();
+        committed = true;
 
         const finalAuctionDetails = await getFullAuctionDetails(auctionId);
         console.log(`[actualEndAuctionLogic] Auction ${auctionId} ended with status: ${finalAuctionDetails.status}. Winner: ${finalAuctionDetails.winner?.username || 'None'}`);
-        // TODO: Emit WebSocket event: auctionEnded (finalAuctionDetails) - This would be `sendLiveKitData('AUCTION_ENDED', finalAuctionDetails);`
-        // Make sure to import `sendLiveKitData` if it's defined elsewhere, or handle WebSocket emission here.
+
+        // Call the potentially safer sendDataToLiveKitRoom
+        if (finalAuctionDetails && finalAuctionDetails.Stream && finalAuctionDetails.Stream.livekitRoomName) {
+            await sendDataToLiveKitRoom( // This call is now after commit
+                finalAuctionDetails.Stream.livekitRoomName,
+                'AUCTION_ENDED',
+                finalAuctionDetails
+            );
+        } else {
+            console.warn(`[actualEndAuctionLogic] Could not send AUCTION_ENDED: Stream info or livekitRoomName missing for auction ${auctionId}.`);
+        }
 
     } catch (error) {
-        await t.rollback();
-        console.error(`[actualEndAuctionLogic] Error for auction ${auctionId}:`, error);
+        console.error(`[actualEndAuctionLogic] Error processing auction ${auctionId}:`, error); // Log the actual error
+        if (!committed && t && !t.finished) {
+            try {
+                await t.rollback();
+                console.log(`[actualEndAuctionLogic] Transaction rolled back for auction ${auctionId} due to error.`);
+            } catch (rollbackError) {
+                console.error(`[actualEndAuctionLogic] CRITICAL: Error rolling back transaction for auction ${auctionId}:`, rollbackError);
+            }
+        }
+        // No re-throw here unless you have a higher level error handler for background tasks
     }
 };
 
@@ -197,12 +275,22 @@ export const startAuction = async (req, res) => {
 
     scheduleAuctionEnd(auction.auction_id); // Use the AuctionTimerLogic service
 
-    console.log(`Auction ${auction.auction_id} started. Ends at: ${auction.end_time}. Timer scheduled via service.`);
     const startedAuctionDetails = await getFullAuctionDetails(auction.auction_id);
-    // TODO: Emit WebSocket: auctionStarted (startedAuctionDetails)
+
+    if (startedAuctionDetails && startedAuctionDetails.Stream && startedAuctionDetails.Stream.livekitRoomName) {
+        await sendDataToLiveKitRoom(
+            startedAuctionDetails.Stream.livekitRoomName,
+            'AUCTION_STARTED',
+            startedAuctionDetails
+        );
+    } else {
+        console.warn(`[startAuction] Could not send AUCTION_STARTED message for auction ${auction.auction_id}.`);
+    }
+
+    console.log(`Auction ${auction.auction_id} started. Ends at: ${auction.end_time}. Timer scheduled via service.`);
     res.status(200).json({ message: 'Auction started successfully', auction: startedAuctionDetails });
   } catch (error) {
-    await t.rollback();
+    if (!committedStart && t && !t.finished) await t.rollback();
     console.error('Error starting auction:', error);
     res.status(500).json({ message: 'Server error starting auction' });
   }
@@ -211,6 +299,9 @@ export const startAuction = async (req, res) => {
 // @desc    Place a new bid on an auction
 // @route   POST /api/bids
 // @access  Protected
+
+const activeAuctionTimers = new Map();
+
 export const placeBid = async (req, res) => {
   const { auction_id, amount } = req.body;
   const user_id = req.user.user_id;
@@ -285,6 +376,16 @@ export const placeBid = async (req, res) => {
 
     // Emit WebSocket event: newBid or auctionUpdated - Simulated by returning full details
     const updatedAuctionDetails = await getFullAuctionDetails(auction.auction_id);
+    if (updatedAuctionDetails && updatedAuctionDetails.Stream && updatedAuctionDetails.Stream.livekitRoomName) {
+        await sendDataToLiveKitRoom(
+            updatedAuctionDetails.Stream.livekitRoomName,
+            'AUCTION_UPDATED',
+            updatedAuctionDetails
+        );
+    } else {
+        console.warn(`[placeBid] Could not send AUCTION_UPDATED message for auction ${auction.auction_id}: Stream info or livekitRoomName missing.`);
+    }
+
     const bidDetails = await Bid.findByPk(bid.bid_id, { // Fetch bid with user for response
         include: [{ model: User, attributes: ['user_id', 'username', 'profile_picture_url']}]
     });
@@ -294,9 +395,8 @@ export const placeBid = async (req, res) => {
         bid: bidDetails,
         auction: updatedAuctionDetails // Send full updated auction
     });
-
   } catch (error) {
-    await t.rollback();
+    if (t && !t.finished) await t.rollback(); // Ensure rollback if transaction is active
     console.error('Error placing bid:', error);
     res.status(500).json({ message: 'Server error placing bid' });
   }
@@ -348,16 +448,26 @@ export const cancelAuction = async (req, res) => {
         auction.status = 'cancelled';
         auction.end_time = new Date(); 
         await auction.save({ transaction: t });
+
         await t.commit();
+        committedCancel = true;
 
         const cancelledAuctionDetails = await getFullAuctionDetails(auction.auction_id);
-        // TODO: Emit WebSocket event: auctionCancelled (cancelledAuctionDetails)
+        if (cancelledAuctionDetails && cancelledAuctionDetails.Stream && cancelledAuctionDetails.Stream.livekitRoomName) {
+            await sendDataToLiveKitRoom(
+                cancelledAuctionDetails.Stream.livekitRoomName,
+                'AUCTION_ENDED', // Use AUCTION_ENDED to signify it's over
+                cancelledAuctionDetails // Payload contains status: 'cancelled'
+            );
+        } else {
+            console.warn(`[cancelAuction] Could not send AUCTION_ENDED (cancelled) message for auction ${auction.auction_id}.`);
+        }
         console.log(`Auction ${auction.auction_id} cancelled successfully by user ${currentUserId}.`);
         res.status(200).json({ message: 'Auction cancelled successfully', auction: cancelledAuctionDetails });
 
     } catch (error) {
-        await t.rollback();
-        console.error(`Error cancelling auction ${auctionIdToCancel}:`, error);
+        if (!committedCancel && t && !t.finished) await t.rollback();
+        console.error(`Error cancelling auction ${req.params.id}:`, error);
         res.status(500).json({ message: 'Server error while cancelling auction' });
     }
 };

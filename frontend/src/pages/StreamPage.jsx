@@ -176,22 +176,38 @@ const handleDataReceived = useCallback((payload, participant) => {
                 break;
 
             case 'AUCTION_STARTED':
-            case 'AUCTION_UPDATED':
-            case 'AUCTION_ENDED':
-                // For these auction events, the eventSpecificPayload IS the auction object
-                const auctionDataFromEvent = eventSpecificPayload;
-                console.log(`[Viewer LK Data RX] Processing ${message.type}. Auction Data Received:`, JSON.stringify(auctionDataFromEvent, null, 2));
-
-                if (auctionDataFromEvent && auctionDataFromEvent.Product) {
-                    setCurrentAuction(auctionDataFromEvent);
+            case 'AUCTION_UPDATED': {
+                const auctionData = eventSpecificPayload; // Use 'auctionData' for clarity in these cases
+                console.log(`[LK Data RX] Processing ${message.type}. Auction Data:`, JSON.stringify(auctionData, null, 2));
+                if (auctionData && auctionData.Product) {
+                    setCurrentAuction(auctionData);
                     setAuctionError(null);
-                    console.log(`[Viewer LK Data RX] ${message.type} processed, currentAuction updated successfully.`);
+                    console.log(`[LK Data RX] ${message.type} processed, currentAuction updated.`);
                 } else {
-                    console.error(`[Viewer LK Data RX] ${message.type} received, but auctionDataFromEvent or its Product is missing/invalid. Payload:`, auctionDataFromEvent);
+                    console.error(`[LK Data RX] ${message.type} received invalid payload:`, auctionData);
                     setAuctionError(`Received incomplete data for ${message.type}.`);
                 }
                 break;
-
+            }
+            case 'AUCTION_ENDED': { // Use block scope for AUCTION_ENDED
+                const auctionDataEnded = eventSpecificPayload; // Use 'auctionDataEnded' for clarity
+                console.log(`[LK Data RX - AUCTION_ENDED] Received payload:`, JSON.stringify(auctionDataEnded, null, 2));
+                if (auctionDataEnded && auctionDataEnded.Product && ['sold', 'unsold', 'cancelled'].includes(auctionDataEnded.status)) {
+                    setCurrentAuction(auctionDataEnded);
+                    console.log("[LK Data RX - AUCTION_ENDED] setCurrentAuction called with FINAL ended state:", auctionDataEnded);
+                    setAuctionError(null);
+                } else {
+                    console.error(`[LK Data RX - AUCTION_ENDED] Payload issue. Payload:`, auctionDataEnded);
+                    // Fallback logic as before
+                    if (auctionDataEnded && ['sold', 'unsold', 'cancelled'].includes(auctionDataEnded.status)) {
+                        setCurrentAuction(prev => ({ ...prev, status: auctionDataEnded.status, winner: auctionDataEnded.winner, current_price: auctionDataEnded.current_price, Product: prev?.Product || auctionDataEnded.Product })); // Preserve product if possible
+                        console.warn("[LK Data RX - AUCTION_ENDED] Partially updated auction status due to missing/incomplete Product in payload.");
+                    } else {
+                         setAuctionError("Received incomplete auction end data.");
+                    }
+                }
+                break;
+            } 
             default:
                 console.warn('[LiveKit Data RECEIVED] Unknown message type:', message.type);
         }
@@ -371,6 +387,13 @@ const handleDataReceived = useCallback((payload, participant) => {
         handleConnectionStateChange, handleTrackSubscribed, handleParticipantConnectedEvent,
         handleParticipantDisconnectedEvent, handleDataReceived, handleAudioPlaybackChange // These are now stable
     ]);
+
+    
+    console.log("[STREAM PAGE RENDER] currentAuction state:",
+        currentAuction ? { id: currentAuction.auction_id, status: currentAuction.status, productTitle: currentAuction.Product?.title } : null
+    );
+    console.log("[STREAM PAGE RENDER] isCurrentUserStreamer:", isCurrentUserStreamer);
+
 
 
     // --- Component Actions (Callbacks for children) ---

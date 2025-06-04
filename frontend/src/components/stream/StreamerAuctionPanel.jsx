@@ -33,6 +33,21 @@ const StreamerAuctionPanel = ({ currentStreamId, onAuctionAction, currentAuction
     fetchProducts();
   }, []);
 
+  /////////////////////////////
+  useEffect(() => {
+    console.log("[STREAMER AUCTION PANEL - PROP UPDATE] Received currentAuction:",
+      currentAuction ? { id: currentAuction.auction_id, status: currentAuction.status, product_id: currentAuction.product_id } : null
+    );
+    // If the auction has truly ended, you might want to reset local form state here
+    if (currentAuction && ['sold', 'unsold', 'cancelled'].includes(currentAuction.status)) {
+        // Resetting fields when auction ends is good practice
+        setSelectedProductId('');
+        setStartingPrice('');
+        setReservePrice('');
+        setError(null); // Clear any panel-specific errors
+    }
+  }, [currentAuction]);
+
   const handleStartAuction = async () => {
     if (!selectedProductId || !startingPrice || parseFloat(startingPrice) <= 0) {
       setError("Please select a product and enter a valid starting price.");
@@ -148,6 +163,16 @@ const StreamerAuctionPanel = ({ currentStreamId, onAuctionAction, currentAuction
       </button>
       {currentAuction && currentAuction.status === 'active' && (
           <p className="text-yellow-400 text-xs text-center mt-1">An auction is currently active.</p>
+      )}
+      {currentAuction && (currentAuction.status === 'sold' || currentAuction.status === 'unsold' || currentAuction.status === 'cancelled') && (
+            <p className="text-green-400 text-xs text-center mt-1">
+                Previous auction: {currentAuction.Product?.title} - {currentAuction.status}. Ready for new auction.
+            </p>
+      )}
+      {!currentAuction && (
+            <p className="text-neutral-400 text-xs text-center mt-1">
+                No auction active. Select a product to start.
+            </p>
       )}
     </div>
   );
