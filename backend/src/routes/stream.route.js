@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url'; // To get __dirname in ESM
 import chatRoutes from './chat.route.js';
 
 import {
-  getProductsForStream,
   createStream,
   getAllStreams,
   getStreamById,
@@ -87,7 +86,6 @@ router.post('/:id/end', protect, endStream);
 router.post('/:id/go-live', protect, goLiveStreamer);
 router.get('/:id/join-live', protect, joinLiveStreamViewer); // 'protect' for logged-in viewers, can be optional for guests
 router.post('/:id/end-live', protect, endLiveStream);
-router.get('/:streamId/products', getProductsForStream);
 
 //stream chat routes
 router.use('/:streamId/messages', chatRoutes);

@@ -1,19 +1,26 @@
-// backend/src/controllers/user.controller.js
-import { User, Order, Product, Stream, Auction, sequelize } from '../models/index.js'; // <<< MAKE SURE Order, Product, Stream, Auction ARE IMPORTED
-import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
+// src/controllers/user.controller.js
+import { User } from '../models/index.js';
+import bcrypt from 'bcrypt'; // Keep for changePassword if in the same file
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'url'; // Needed for __dirname in ES Modules
 
-// Define __dirname for ES Modules (if not already done or if this is a separate context)
+// Define __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Helper to get base URL for constructing image URLs
 const getBaseUrl = (req) => `${req.protocol}://${req.get('host')}`;
+
+// Define the relative path from the project root to the avatars upload directory
+// Assuming 'public' is at the root of your project and this controller is in 'src/controllers'
 const AVATAR_UPLOAD_DIR_RELATIVE_TO_PROJECT_ROOT = 'public/uploads/avatars/';
+// Define the absolute path for fs operations (like deleting files)
+// This goes up one level from 'src/controllers' to 'src', then up another to project root, then to 'public/...'
 const AVATAR_UPLOAD_DIR_ABSOLUTE = path.resolve(__dirname, '..', '..', AVATAR_UPLOAD_DIR_RELATIVE_TO_PROJECT_ROOT);
 
+
+// Ensure upload directory exists (can also be done at server start-up)
 if (!fs.existsSync(AVATAR_UPLOAD_DIR_ABSOLUTE)) {
   try {
     fs.mkdirSync(AVATAR_UPLOAD_DIR_ABSOLUTE, { recursive: true });
@@ -23,9 +30,8 @@ if (!fs.existsSync(AVATAR_UPLOAD_DIR_ABSOLUTE)) {
   }
 }
 
-
+// ... (getUserProfile and changePassword can remain as previously defined) ...
 export const getUserProfile = async (req, res) => {
-  // ... (your existing code)
   if (req.user) {
     res.status(200).json(req.user);
   } else {
@@ -33,9 +39,15 @@ export const getUserProfile = async (req, res) => {
   }
 };
 
+
 export const updateUserProfile = async (req, res) => {
-  // ... (your existing code)
     try {
+      // --- Debugging: Log body right after multer ---
+      console.log("Received body after multer:", JSON.stringify(req.body, null, 2));
+      console.log("Received file after multer:", req.file);
+      // --- End Debugging ---
+  
+  
       if (!req.user || !req.user.user_id) {
           if (req.file?.path && fs.existsSync(req.file.path)) { fs.unlinkSync(req.file.path); }
           return res.status(401).json({ message: 'User not authenticated or user ID missing.' });
@@ -48,8 +60,12 @@ export const updateUserProfile = async (req, res) => {
         return res.status(404).json({ message: 'User not found in database.' });
       }
   
+      // --- Destructure AFTER checking req.body ---
+      // If req.body is guaranteed by multer, we can destructure.
+      // Provide default values if fields might be missing but multer worked.
       const { username = user.username, full_name = user.full_name, bio = user.bio } = req.body;
   
+      // --- Username Update Logic ---
       if (username && username !== user.username) {
         const existingUser = await User.findOne({ where: { username: username } });
         if (existingUser && existingUser.user_id !== user.user_id) {
@@ -59,15 +75,25 @@ export const updateUserProfile = async (req, res) => {
         user.username = username;
       }
   
+      // --- Other Text Fields Update ---
+      // Now we update directly using the destructured values (or their defaults if not provided in req.body)
+      // We only update if the value actually changed to potentially avoid unnecessary DB writes.
+      // Or simply assign them - Sequelize might optimize if value hasn't changed.
+      // Let's assign directly for simplicity, assuming '' or null are valid values to set.
       user.full_name = full_name;
       user.bio = bio;
   
+  
+      // --- Profile Picture Update Logic (remains the same) ---
       if (req.file) {
+        // ... (logic as before) ...
+         console.log("New profile picture uploaded on backend:", req.file);
         const newImageRelativePathForURL = `uploads/avatars/${req.file.filename}`;
         const newImageUrl = `${getBaseUrl(req)}/${newImageRelativePathForURL}`;
   
         if (user.profile_picture_url) {
           try {
+            // ... (delete old file logic as before) ...
              const oldUrl = new URL(user.profile_picture_url);
             const oldImageFilename = path.basename(oldUrl.pathname);
             const oldImageAbsolutePath = path.join(AVATAR_UPLOAD_DIR_ABSOLUTE, oldImageFilename);
@@ -85,6 +111,7 @@ export const updateUserProfile = async (req, res) => {
         user.profile_picture_url = newImageUrl;
       }
   
+      // --- Save the user ---
       await user.save();
   
       const updatedUser = await User.findByPk(user.user_id);
@@ -102,10 +129,10 @@ export const updateUserProfile = async (req, res) => {
       }
       res.status(500).json({ message: 'Server error updating profile. Please check server logs.' });
     }
-};
+  };
 
+  
 export const changePassword = async (req, res) => {
-  // ... (your existing code)
   const { current_password, new_password } = req.body;
 
   if (!current_password || !new_password) {
@@ -133,81 +160,5 @@ export const changePassword = async (req, res) => {
   } catch (error) {
     console.error('Change Password Error:', error);
     res.status(500).json({ message: 'Server error changing password' });
-  }
-};
-
-export const getDashboardSummary = async (req, res) => {
-  const userId = req.user.user_id;
-
-  try {
-    const totalSalesResult = await Order.findOne({ // Using Order model
-      where: {
-        seller_id: userId,
-        status: { [Op.in]: ['paid', 'shipped', 'delivered'] }
-      },
-      attributes: [[sequelize.fn('SUM', sequelize.col('total_amount')), 'totalSalesValue']],
-      raw: true,
-    });
-    const totalSales = parseFloat(totalSalesResult?.totalSalesValue || 0);
-
-    const totalOrders = await Order.count({ // Using Order model
-      where: { seller_id: userId }
-    });
-
-    const activeListings = await Product.count({ // Using Product model
-      where: { user_id: userId, is_active: true }
-    });
-
-    const upcomingStreamsCount = await Stream.count({ // Using Stream model
-        where: { user_id: userId, status: 'scheduled' }
-    });
-
-    const recentSales = await Order.findAll({ // Using Order model
-      where: { seller_id: userId },
-      limit: 3,
-      order: [['created_at', 'DESC']],
-      // Corrected include for recentSales to get Product title via Auction
-      include: [{
-        model: Auction, // Order belongsTo Auction
-        attributes: ['auction_id'],
-        include: [{
-            model: Product, // Auction belongsTo Product
-            attributes: ['title']
-        }]
-      }],
-      attributes: ['order_id', 'total_amount', 'created_at', 'status']
-    });
-
-    const recentProducts = await Product.findAll({ // Using Product model
-        where: { user_id: userId },
-        limit: 3,
-        order: [['created_at', 'DESC']],
-        attributes: ['product_id', 'title', 'created_at', 'is_active']
-    });
-
-    res.status(200).json({
-      totalSales,
-      totalOrders,
-      activeListings,
-      upcomingStreamsCount,
-      recentSales: recentSales.map(sale => ({
-        id: `sale-${sale.order_id}`,
-        type: 'sale',
-        description: `Sold: ${sale.Auction?.Product?.title || 'Item (Details N/A)'}`,
-        time: sale.created_at,
-        amount: sale.total_amount,
-        status: sale.status
-      })),
-      recentProducts: recentProducts.map(product => ({
-        id: `prod-${product.product_id}`,
-        type: product.is_active ? 'listing' : 'draft',
-        description: `${product.is_active ? 'Listed' : 'Drafted'}: ${product.title}`,
-        time: product.created_at
-      }))
-    });
-
-  } catch (error) {
-    console.error("Error fetching dashboard summary:", error);
-    res.status(500).json({ message: "Failed to fetch dashboard summary." });
   }
 };

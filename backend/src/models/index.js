@@ -10,7 +10,6 @@ import Order from './order.model.js';
 import UserFollow from './userFollow.model.js';
 import ProductImage from './productImage.model.js';
 import ChatMessage from './chatMessage.model.js';
-import StreamProduct from './streamProduct.model.js'; 
 
 import UserProductLike from './userProductLike.model.js';
 import UserProductView from './userProductView.model.js';
@@ -34,7 +33,7 @@ Category.belongsTo(Category, {
 
 // User associations
 User.hasMany(Stream, { foreignKey: 'user_id' });
-User.hasMany(Product, { foreignKey: 'user_id' }); // This is for product owner
+User.hasMany(Product, { foreignKey: 'user_id' });
 User.hasMany(Auction, { as: 'wonAuctions', foreignKey: 'winner_id' });
 User.hasMany(Bid, { foreignKey: 'user_id' });
 User.hasMany(Order, { as: 'purchases', foreignKey: 'buyer_id' });
@@ -46,36 +45,16 @@ Stream.belongsTo(Category, { foreignKey: 'category_id' });
 Stream.hasMany(Auction, { foreignKey: 'stream_id' });
 
 // Product associations
-Product.belongsTo(User, { as: 'Owner', foreignKey: 'user_id' }); // Product owned by User
+Product.belongsTo(User, { as: 'Owner', foreignKey: 'user_id' });
 Product.belongsTo(Category, { foreignKey: 'category_id' });
-Product.hasMany(Auction, { foreignKey: 'product_id' });
-
-// Many-to-Many: Product <-> Stream (through StreamProduct)
-Product.belongsToMany(Stream, {
-  through: StreamProduct,
-  foreignKey: 'product_id',
-  otherKey: 'stream_id',
-  as: 'FeaturedInStreams'
-});
-
-Stream.belongsToMany(Product, {
-  through: StreamProduct,
-  foreignKey: 'stream_id',
-  otherKey: 'product_id',
-  as: 'StreamCatalog' // Renamed from StreamProducts for clarity if you prefer
-});
-
-// Optional: Direct associations to the join table if you query it directly
-StreamProduct.belongsTo(Product, { foreignKey: 'product_id' });
-StreamProduct.belongsTo(Stream, { foreignKey: 'stream_id' });
-
+Product.hasMany(Auction, { foreignKey: 'product_id' }); // A product can be auctioned multiple times
 
 // Auction associations
 Auction.belongsTo(Product, { foreignKey: 'product_id' });
 Auction.belongsTo(Stream, { foreignKey: 'stream_id', allowNull: true });
 Auction.belongsTo(User, { as: 'winner', foreignKey: 'winner_id', allowNull: true });
 Auction.hasMany(Bid, { foreignKey: 'auction_id' });
-Auction.hasOne(Order, { foreignKey: 'auction_id', allowNull: true });
+Auction.hasOne(Order, { foreignKey: 'auction_id', allowNull: true }); // An auction might not result in an order (e.g., unsold)
 
 // Bid associations
 Bid.belongsTo(Auction, { foreignKey: 'auction_id' });
@@ -88,51 +67,53 @@ Order.belongsTo(Auction, { foreignKey: 'auction_id', allowNull: true });
 
 // UserFollow (Many-to-Many for User follows User)
 User.belongsToMany(User, {
-  as: 'Following',
+  as: 'Following', // Users that this user is following
   through: UserFollow,
-  foreignKey: 'follower_id',
-  otherKey: 'followed_id',
+  foreignKey: 'follower_id', // In UserFollow table, this links to the User doing the following
+  otherKey: 'followed_id',   // In UserFollow table, this links to the User being followed
 });
 User.belongsToMany(User, {
-  as: 'Followers',
+  as: 'Followers', // Users that are following this user
   through: UserFollow,
-  foreignKey: 'followed_id',
-  otherKey: 'follower_id',
+  foreignKey: 'followed_id', // In UserFollow table, this links to the User being followed
+  otherKey: 'follower_id',   // In UserFollow table, this links to the User doing the following
 });
+
+// Optional: Explicit associations for UserFollow model if you query it directly
 UserFollow.belongsTo(User, { as: 'follower', foreignKey: 'follower_id' });
 UserFollow.belongsTo(User, { as: 'followed', foreignKey: 'followed_id' });
 
-// ProductImage associations
 Product.hasMany(ProductImage, {
   foreignKey: 'product_id',
-  as: 'images',
-  onDelete: 'CASCADE',
+  as: 'images', // You can eager load these as product.images
+  onDelete: 'CASCADE', // If a product is deleted, delete its images too
 });
 ProductImage.belongsTo(Product, { foreignKey: 'product_id' });
 
 // ChatMessage associations
 ChatMessage.belongsTo(User, { foreignKey: 'user_id' });
 User.hasMany(ChatMessage, { foreignKey: 'user_id' });
+
 ChatMessage.belongsTo(Stream, { foreignKey: 'stream_id' });
 Stream.hasMany(ChatMessage, { foreignKey: 'stream_id' });
 
-// UserProductLike associations
 User.belongsToMany(Product, {
   through: UserProductLike,
   foreignKey: 'user_id',
   otherKey: 'product_id',
-  as: 'LikedProducts',
+  as: 'LikedProducts', // User.getLikedProducts(), User.addLikedProduct()
 });
 Product.belongsToMany(User, {
   through: UserProductLike,
   foreignKey: 'product_id',
   otherKey: 'user_id',
-  as: 'ProductLikers',
+  as: 'ProductLikers', // Product.getProductLikers(), Product.addProductLiker()
 });
+// Optional: Direct associations to the join table if you query it directly
 UserProductLike.belongsTo(User, { foreignKey: 'user_id' });
 UserProductLike.belongsTo(Product, { foreignKey: 'product_id' });
 
-// UserProductView associations
+// User-Product Views (Many-to-Many)
 User.belongsToMany(Product, {
   through: UserProductView,
   foreignKey: 'user_id',
@@ -148,7 +129,7 @@ Product.belongsToMany(User, {
 UserProductView.belongsTo(User, { foreignKey: 'user_id' });
 UserProductView.belongsTo(Product, { foreignKey: 'product_id' });
 
-// UserStreamLike associations
+// User-Stream Likes (Many-to-Many)
 User.belongsToMany(Stream, {
   through: UserStreamLike,
   foreignKey: 'user_id',
@@ -164,7 +145,7 @@ Stream.belongsToMany(User, {
 UserStreamLike.belongsTo(User, { foreignKey: 'user_id' });
 UserStreamLike.belongsTo(Stream, { foreignKey: 'stream_id' });
 
-// UserStreamView associations
+// User-Stream Views (Many-to-Many)
 User.belongsToMany(Stream, {
   through: UserStreamView,
   foreignKey: 'user_id',
@@ -184,8 +165,12 @@ export const syncDatabase = async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ PostgreSQL connection established');
-    await sequelize.sync({ alter: true }); // Use { alter: true } carefully in production
+
+    // Sync all models
+    // Use { alter: true } carefully in production, prefer migrations
+    await sequelize.sync({ alter: true });
     console.log('✅ All models synchronized (alter mode)');
+    
   } catch (error) {
     console.error('❌ Database synchronization failed:', error);
     // process.exit(1); // Let the main index.js handle process exit
@@ -193,7 +178,7 @@ export const syncDatabase = async () => {
   }
 };
 
-// syncDatabase(); // Call this only if you want to sync on every server start (dev)
+//syncDatabase();
 
 export {
   User,
@@ -206,10 +191,10 @@ export {
   Order,
   UserFollow,
   ChatMessage,
-  StreamProduct, 
+  sequelize,
   UserProductLike,
   UserProductView,
   UserStreamLike,
-  UserStreamView,
-  sequelize,
+  UserStreamView
+  // Export sequelize instance if needed elsewhere
 };

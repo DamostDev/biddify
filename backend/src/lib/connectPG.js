@@ -19,8 +19,6 @@ try {
   console.log("connecting to database")
   await sequelize.authenticate();
   console.log('✅ PostgreSQL connection established');
-  await sequelize.sync({ alter: true });
-  console.log('✅ All models synchronized (alter: true mode)');
 
 } catch (error) {
   console.error('❌ Unable to connect to PostgreSQL:', error);

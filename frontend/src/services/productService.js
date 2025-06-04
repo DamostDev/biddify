@@ -71,15 +71,3 @@ export const getProductById = async (productId) => {
       throw new Error(error.response?.data?.message || `Failed to fetch product with ID ${productId}.`);
     }
   };
-  export const assignProductsToStream = async (productIds, streamId) => {
-    try {
-      const response = await apiClient.post('/products/assign-to-stream', {
-        product_ids: productIds,
-        stream_id: streamId,
-      });
-      return response.data; // Expects { message, assigned_product_ids, stream_id }
-    } catch (error) {
-      console.error('Error assigning products to stream:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to assign products to stream.');
-    }
-  };

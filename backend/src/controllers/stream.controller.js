@@ -445,21 +445,3 @@ export const endStream = async (req, res) => {
         res.status(500).json({ message: 'Server error' }); 
     }
 };
-export const getProductsForStream = async (req, res) => {
-  const { streamId } = req.params;
-  try {
-      const stream = await Stream.findByPk(streamId);
-      if (!stream) return res.status(404).json({ message: 'Stream not found' });
-      const products = await stream.getStreamCatalog({
-          // Add any include options for products here, e.g., images, category
-          include: [
-              { model: ProductImage, as: 'images', where: { is_primary: true }, required: false },
-              { model: Category, attributes: ['category_id', 'name'] }
-          ],
-          joinTableAttributes: [] // Exclude attributes from StreamProduct table in this response
-      });
-      res.status(200).json(products);
-  } catch (error) {
-      // ... error handling ...
-  }
-};

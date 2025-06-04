@@ -5,16 +5,14 @@ import {
   unfollowUser,
   getFollowing,
   getFollowers,
-  checkFollowingStatus,
-  
+  checkFollowingStatus
 } from '../controllers/userFollow.controller.js';
 
 // Import new user controllers
 import {
   getUserProfile,
   updateUserProfile,
-  changePassword,
-  getDashboardSummary
+  changePassword
 } from '../controllers/user.controller.js'; // Assuming you named it user.controller.js
 
 import { protect } from '../middleware/authMiddleware.js';
@@ -38,7 +36,6 @@ router.post('/:userIdToUnfollow/unfollow', protect, unfollowUser);
 router.get('/:userId/following', getFollowing);
 router.get('/:userId/followers', getFollowers);
 router.get('/:userId/is-following', protect, checkFollowingStatus);
-router.get('/dashboard-summary', protect, getDashboardSummary);
 
 // Optional: Get public profile of another user
 // router.get('/:userId/public-profile', getPublicUserProfile); // You'd need a new controller for this
