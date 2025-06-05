@@ -42,7 +42,6 @@ const StreamProductList = ({ streamTitle, products }) => {
       <div className="flex justify-around items-center px-2 border-b border-neutral-800 shrink-0">
         <TabButton name="auction" label="Auction" />
         <TabButton name="buyNow" label="Buy Now" />
-        <TabButton name="giveaways" label="Giveaways" />
         <TabButton name="sold" label="Sold" />
       </div>
       <div className="flex justify-around items-center px-2 border-b border-neutral-800 shrink-0 mb-2">

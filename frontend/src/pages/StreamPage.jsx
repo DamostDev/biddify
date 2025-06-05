@@ -10,6 +10,7 @@ import { FiMessageSquare, FiAlertTriangle } from 'react-icons/fi';
 import useAuthStore from '../services/authStore.js';
 import streamService from '../services/streamService.js';
 import auctionService from '../services/auctionService.js';
+import * as userService from '../services/userService.js'; // Corrected import for follow actions // Added for follow actions
 import chatService from '../services/chatService.js';
 
 import StreamVideoPlayer from '../components/stream/StreamVideoPlayer';
@@ -47,11 +48,14 @@ function StreamPage() {
     const [isLocalAudioMuted, setIsLocalAudioMuted] = useState(false);
     const [isRemoteAudioMuted, setIsRemoteAudioMuted] = useState(false);
     const [activeTab, setActiveTab] = useState('chat');
+    const [isFollowingHost, setIsFollowingHost] = useState(false); // For follow button
+    const [roomParticipants, setRoomParticipants] = useState([]); // For "Watching" tab
 
     // Auction Specific State
     const [currentAuction, setCurrentAuction] = useState(null);
     const [isAuctionLoading, setIsAuctionLoading] = useState(false);
     const [auctionError, setAuctionError] = useState(null);
+    const [followLoading, setFollowLoading] = useState(false); // To disable follow button during API call
 
     // Refs
     const roomRef = useRef(null);
@@ -66,6 +70,20 @@ function StreamPage() {
     //  LIVEKIT EVENT HANDLERS - DEFINED BEFORE USAGE IN EFFECTS
     // ========================================================================
 
+    const updateRoomParticipantsList = useCallback((roomInstance) => {
+        if (!roomInstance) return;
+        const participants = [];
+        if (roomInstance.localParticipant) {
+            participants.push(roomInstance.localParticipant);
+        }
+        roomInstance.remoteParticipants.forEach(rp => participants.push(rp));
+        setRoomParticipants(participants.map(p => ({
+            sid: p.sid,
+            identity: p.identity,
+            name: p.name, // Name set during token generation
+            metadata: safeParseMetadata(p.metadata) // For potential role-based styling
+        })));
+    }, [safeParseMetadata]);
     const handleNewStreamerCandidate = useCallback((participant) => {
         if (!participant || !roomRef.current || isCurrentUserStreamerRef.current) return;
         const meta = safeParseMetadata(participant.metadata);
@@ -73,7 +91,7 @@ function StreamPage() {
             console.log("[StreamPage LK CB] New streamer candidate identified:", participant.identity);
             setMainParticipant(prev => (!prev || prev.sid !== participant.sid ? participant : prev));
         }
-    }, [safeParseMetadata]); // safeParseMetadata is stable
+    }, [safeParseMetadata]);
 
     const handleConnectionStateChange = useCallback(async (connectionState, roomInstance) => {
         if (!roomInstance) {
@@ -88,6 +106,7 @@ function StreamPage() {
             console.log(`[LK CB] ==> CONNECTED to room: ${roomInstance.name}, Local SID: ${roomInstance.localParticipant.sid}`);
             setLocalParticipantState(roomInstance.localParticipant);
             roomInstance.remoteParticipants.forEach(p => handleNewStreamerCandidate(p)); // Process existing remotes
+            updateRoomParticipantsList(roomInstance);
 
             if (isCurrentUserStreamerRef.current && roomInstance.localParticipant) {
                 console.log("[LK CB] User is streamer. Setting self as main participant and enabling media.");
@@ -104,11 +123,12 @@ function StreamPage() {
         } else if (connectionState === ConnectionState.Disconnected) {
             console.log(`[LK CB] DISCONNECTED from room SID: ${roomInstance.sid}`);
             setLocalParticipantState(null); setMainParticipant(null);
+            setRoomParticipants([]); // Clear participants on disconnect
         } else if (connectionState === ConnectionState.Failed) {
             console.error(`[LK CB] Connection FAILED for room SID: ${roomInstance.sid}`);
             setError(prev => `${prev || ''} LiveKit connection failed.`);
-        }
-    }, [handleNewStreamerCandidate, isLocalAudioMuted]); // Dependencies for this handler
+        } // Add updateRoomParticipantsList to dependencies
+    }, [handleNewStreamerCandidate, isLocalAudioMuted, updateRoomParticipantsList]);
 
     const handleTrackSubscribed = useCallback((track, publication, remoteParticipant) => {
         console.log(`[LK CB] Track Subscribed: ${track.kind} from ${remoteParticipant.identity}`);
@@ -122,10 +142,12 @@ function StreamPage() {
         if (!isCurrentUserStreamerRef.current) { // If viewer, check if new participant is a streamer
             handleNewStreamerCandidate(participant);
         }
-    }, [handleNewStreamerCandidate]);
+        if (roomRef.current) updateRoomParticipantsList(roomRef.current);
+    }, [handleNewStreamerCandidate, updateRoomParticipantsList]);
 
     const handleParticipantDisconnectedEvent = useCallback((participant) => {
         console.log(`[LK CB] Participant Disconnected: ${participant.identity}`);
+        if (roomRef.current) updateRoomParticipantsList(roomRef.current);
         setMainParticipant(prevStreamer => {
             if (prevStreamer?.sid === participant.sid) {
                 console.log("[LK CB] Main participant (streamer) disconnected. Clearing mainParticipant.");
@@ -133,7 +155,7 @@ function StreamPage() {
             }
             return prevStreamer;
         });
-    }, []);
+    }, [updateRoomParticipantsList]);
 
 const handleDataReceived = useCallback((payload, participant) => {
     try {
@@ -247,6 +269,7 @@ const handleDataReceived = useCallback((payload, participant) => {
         setLiveKitToken(null); setLiveKitUrl(null);
         setStreamDataFromAPI(null); setCurrentAuction(null); setChatMessages([]);
         setMainParticipant(null); setLocalParticipantState(null);
+        setIsFollowingHost(false); setRoomParticipants([]); // Reset follow status and participants
 
         const init = async () => {
             try {
@@ -296,6 +319,19 @@ const handleDataReceived = useCallback((payload, participant) => {
                     console.log("[StreamPage Init]    LiveKit token and URL acquired.");
                 } else {
                     throw new Error(tokenResponse?.message || "Failed to obtain LiveKit connection details.");
+                }
+
+                // 6. Fetch initial follow status (if logged in and not the host)
+                if (isMounted && currentUser && currentUser.user_id !== apiStreamDataResponse.user_id) {
+                    console.log("[StreamPage Init] 6. Fetching follow status...");
+                    try {
+                        const followStatus = await userService.getFollowingStatus(apiStreamDataResponse.user_id);
+                        if (isMounted) setIsFollowingHost(followStatus.isFollowing);
+                        console.log(`[StreamPage Init]    Follow status for host ${apiStreamDataResponse.user_id}: ${followStatus.isFollowing}`);
+                    } catch (followErr) {
+                        console.warn("[StreamPage Init]    Could not fetch follow status:", followErr.message);
+                        // Keep isFollowingHost as false
+                    }
                 }
 
                 console.log("[StreamPage Init] 5. Fetching chat history...");
@@ -539,6 +575,32 @@ const handleDataReceived = useCallback((payload, participant) => {
         }
     }, [currentUser, currentAuction, sendLiveKitData]);
 
+    const handleFollowToggle = useCallback(async () => {
+        if (!currentUser || !streamDataFromAPI?.User || followLoading) return;
+        if (currentUser.user_id === streamDataFromAPI.User.user_id) return; // Cannot follow self
+
+        setFollowLoading(true);
+        const hostId = streamDataFromAPI.User.user_id;
+        try {
+            if (isFollowingHost) {
+                await userService.unfollowUser(hostId);
+                setIsFollowingHost(false);
+                console.log(`[StreamPage] Unfollowed user ${hostId}`);
+            } else {
+                await userService.followUser(hostId);
+                setIsFollowingHost(true);
+                console.log(`[StreamPage] Followed user ${hostId}`);
+            }
+        } catch (err) {
+            console.error("[StreamPage] Error toggling follow:", err);
+            // Optionally show an error to the user via a toast or message state
+            setError(prev => `${prev || ''} Follow action failed: ${err.message}.`);
+        } finally {
+            setFollowLoading(false);
+        }
+    }, [currentUser, streamDataFromAPI, isFollowingHost, followLoading]);
+
+
     const handleRetryConnection = useCallback(() => {
         console.log("[StreamPage] Retrying connection...");
         setError(null); setAuctionError(null); setStatusMessage("Retrying...");
@@ -548,6 +610,16 @@ const handleDataReceived = useCallback((payload, participant) => {
             roomRef.current.disconnect(true);
             roomRef.current = null;
         }
+        // Re-trigger initial useEffect by clearing streamId or navigating away and back (complex)
+        // Simpler: just re-fetch everything. We can simulate this by resetting a key dependency.
+        // For now, the existing logic in useEffect (streamId) should re-trigger if streamId changes
+        // or component re-mounts. The current retry clears tokens to re-trigger LiveKit part.
+        // To re-trigger the *initial* data fetch, you might need to navigate or force a re-render differently.
+        // The current setup should try to re-fetch tokens and connect to LiveKit if tokens were the issue.
+        // If the initial streamService.getStreamDetails failed, this retry won't re-call that part
+        // without more complex state management or a full re-mount.
+        // A full re-init means calling the whole useEffect[streamId] logic again.
+        // This simple retry focuses on LiveKit connection part.
     }, []);
 
     // --- UI Rendering Logic ---
@@ -596,7 +668,16 @@ const handleDataReceived = useCallback((payload, participant) => {
     }
 
     const participantForVideoPlayer = isCurrentUserStreamer ? localParticipantState : mainParticipant;
-    const hostUser = streamDataFromAPI?.User || { username: 'Streamer', avatarUrl: '', rating: 0, isFollowed: false };
+    const hostUser = streamDataFromAPI?.User
+        ? {
+            user_id: streamDataFromAPI.User.user_id,
+            username: streamDataFromAPI.User.username,
+            avatarUrl: streamDataFromAPI.User.profile_picture_url, // Use the correct field
+            rating: streamDataFromAPI.User.seller_rating || 0,
+            isFollowed: isFollowingHost, // Use state here
+          }
+        : { user_id: null, username: 'Streamer', avatarUrl: '', rating: 0, isFollowed: false };
+
     const streamHeaderProps = {
         id: streamDataFromAPI?.stream_id,
         title: streamDataFromAPI?.title,
@@ -609,12 +690,19 @@ const handleDataReceived = useCallback((payload, participant) => {
     console.log(`[StreamPage RENDER] currentAuction ID: ${currentAuction ? currentAuction.auction_id : 'null'}, Status: ${currentAuction ? currentAuction.status : 'N/A'}`);
     console.log(`[StreamPage RENDER] participantForVideoPlayer: ${participantForVideoPlayer?.identity || 'None'}`);
     console.log(`[StreamPage RENDER] isCurrentUserStreamer: ${isCurrentUserStreamer}`);
+    console.log(`[StreamPage RENDER] isFollowingHost: ${isFollowingHost}`);
+    console.log(`[StreamPage RENDER] roomParticipants count: ${roomParticipants.length}`);
+
 
     return (
         <div className="flex flex-col h-screen bg-neutral-900 text-white overflow-hidden"
              onClick={() => { if (roomRef.current && !roomRef.current.canPlaybackAudio) {roomRef.current.startAudio().catch(e => console.warn("Error starting audio on click", e));} }}
         >
-            <StreamHeader streamData={streamHeaderProps} />
+            <StreamHeader
+                streamData={streamHeaderProps}
+                onFollowToggle={handleFollowToggle}
+                isCurrentUserHost={currentUser?.user_id === streamDataFromAPI?.User?.user_id}
+            />
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex flex-col w-72 lg:w-80 xl:w-96 bg-black border-r border-neutral-800 overflow-y-auto">
                     <StreamProductList
@@ -665,6 +753,7 @@ const handleDataReceived = useCallback((payload, participant) => {
                             messages={chatMessages} activeTab={activeTab} onTabChange={setActiveTab}
                             viewerCount={streamHeaderProps.viewerCount} onSendMessage={sendChatMessageViaLiveKit}
                             localParticipantIdentity={roomRef.current?.localParticipant?.identity}
+                            roomParticipantsForChat={roomParticipants} // Pass the list of participants
                         />
                     </div>
                 </aside>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiCopy, FiMoreVertical, FiStar, FiCheckCircle, FiArrowLeft } from 'react-icons/fi';
 
-const StreamHeader = ({ streamData }) => {
+const StreamHeader = ({ streamData, onFollowToggle, isCurrentUserHost }) => {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopyLink = () => {
@@ -27,10 +27,15 @@ const StreamHeader = ({ streamData }) => {
           <div className="flex items-center text-xs text-neutral-400">
             <FiStar className="w-3 h-3 mr-1 text-yellow-400 fill-current" />
             <span>{streamData.host.rating}</span>
-            {/* Placeholder for follow button */}
-            <button className="ml-2.5 text-xs font-medium text-yellow-400 hover:text-yellow-300">
-              {streamData.host.isFollowed ? <span className="flex items-center gap-1"><FiCheckCircle size={12}/> Following</span> : '+ Follow'}
-            </button>
+            {!isCurrentUserHost && streamData.host.user_id && ( // Show follow button if not the host and host_id exists
+              <button
+                className="ml-2.5 text-xs font-medium text-yellow-400 hover:text-yellow-300 disabled:text-neutral-500 disabled:cursor-not-allowed"
+                onClick={onFollowToggle}
+                disabled={!onFollowToggle} // Disable if handler not provided
+              >
+                {streamData.host.isFollowed ? <span className="flex items-center gap-1"><FiCheckCircle size={12}/> Following</span> : '+ Follow'}
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -80,16 +80,17 @@ const ChatMessage = ({ msg, localParticipantIdentity }) => {
 const WatcherItem = ({ watcher }) => (
     <div className="flex items-center gap-2 p-2 hover:bg-neutral-800/50 rounded">
          <div className="avatar placeholder shrink-0">
-            <div className="w-7 h-7 rounded-full bg-neutral-700">
+            <div className={`w-7 h-7 rounded-full ${watcher.isStreamer ? 'ring-2 ring-purple-400' : 'bg-neutral-700'}`}>
+                {/* You could add avatar logic here if participant metadata included it: watcher.avatar */}
                 <span className="text-xs text-neutral-300">{watcher.username?.substring(0,2).toUpperCase()}</span>
             </div>
         </div>
-        <span className="text-sm text-neutral-300">{watcher.username}</span>
+        <span className={`text-sm ${watcher.isStreamer ? 'text-purple-300 font-semibold' : 'text-neutral-300'}`}>{watcher.username}</span>
     </div>
 );
 
 
-const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessage, localParticipantIdentity }) => {
+const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessage, localParticipantIdentity, roomParticipantsForChat = [] }) => {
   const [newMessage, setNewMessage] = useState('');
   const chatContainerRef = useRef(null); // Ref for the scrollable div that contains messages
   const chatEndRef = useRef(null);      // Ref for the empty div at the end of messages list
@@ -173,8 +174,15 @@ const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessa
     }
   };
 
-  const watchers = Array.from({length: Math.min(viewerCount || 0, 20)}, (_, i) => ({id: `w${i}`, username: `Watcher${i+1}`}));
-
+  // Use actual room participants passed from StreamPage
+  const watchers = roomParticipantsForChat.map(p => ({
+    id: p.sid, // Use LiveKit Participant SID as a unique key
+    username: p.name || p.identity, // Participant.name is set during token generation
+    // You could add avatar logic here if participant metadata included it:
+    // avatar: p.metadata?.avatarUrl 
+    isStreamer: p.metadata?.role === 'streamer' 
+  }));
+  
   return (
     <div className="flex flex-col h-full bg-black text-white">
       {/* Tabs */}
