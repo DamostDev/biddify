@@ -10,7 +10,7 @@ import { FiMessageSquare, FiAlertTriangle } from 'react-icons/fi';
 import useAuthStore from '../services/authStore.js';
 import streamService from '../services/streamService.js';
 import auctionService from '../services/auctionService.js';
-import * as userService from '../services/userService.js'; // Corrected import for follow actions // Added for follow actions
+import * as userService from '../services/userService.js';
 import chatService from '../services/chatService.js';
 
 import StreamVideoPlayer from '../components/stream/StreamVideoPlayer';
