@@ -2,33 +2,37 @@ import React from 'react';
 import { FiEdit, FiTrash2, FiTv } from 'react-icons/fi';
 
 const ProductTable = ({
-  products = [], // Default prop to ensure it's always an array
+  products = [],
   onEdit,
   onDelete,
-  selectedProductIds = [], // Default prop
+  selectedProductIds = [],
   onSelectProduct,
-  onSelectAllProducts,
+  onSelectAllProducts, // Renamed from onSelectAllCurrentPageProducts for clarity from parent
   isLoading,
 }) => {
 
   const handleSelectAllClick = (e) => {
     const isChecked = e.target.checked;
-    const currentPageProductIds = products.map(p => p.product_id); // products is guaranteed to be an array
-    onSelectAllProducts(currentPageProductIds, isChecked);
+    // Only consider active products for select all
+    const currentPageActiveProductIds = products
+      .filter(p => p.is_active) // Filter for active products
+      .map(p => p.product_id);
+    onSelectAllProducts(currentPageActiveProductIds, isChecked);
   };
 
-  // Calculate isAllOnPageSelected. Ensure it's always a boolean.
-  // This calculation happens on every render.
-  let isAllOnPageSelectedValue = false; // Default to false
+  // Calculate if all *active* products on the current page are selected
+  let isAllActiveOnPageSelectedValue = false;
   if (!isLoading && products.length > 0) {
-    // Only proceed if not loading and there are products to check
-    isAllOnPageSelectedValue = products.every(p => selectedProductIds.includes(p.product_id));
+    const activeProductsOnPage = products.filter(p => p.is_active);
+    if (activeProductsOnPage.length > 0) {
+      isAllActiveOnPageSelectedValue = activeProductsOnPage.every(p => selectedProductIds.includes(p.product_id));
+    }
   }
-  // If products is empty, .every() on an empty array returns true,
-  // so explicitly check products.length > 0.
 
-  // Skeleton Loading
+
+  // Skeleton Loading (existing code is fine)
   if (isLoading && products.length === 0) {
+    // ... your existing skeleton JSX ...
     return (
         <div className="overflow-x-auto bg-base-100 rounded-lg shadow-sm">
             <table className="table w-full">
@@ -81,12 +85,11 @@ const ProductTable = ({
               <input
                 type="checkbox"
                 className="checkbox checkbox-xs checkbox-primary"
-                checked={isAllOnPageSelectedValue} 
+                checked={isAllActiveOnPageSelectedValue}
                 onChange={handleSelectAllClick}
-                disabled={products.length === 0 || isLoading}
+                disabled={products.filter(p => p.is_active).length === 0 || isLoading} // Disable if no active products
               />
             </th>
-            {/* ... other th elements ... */}
             <th className="p-3">Product</th>
             <th className="p-3 hidden md:table-cell">Category</th>
             <th className="p-3 text-center hidden sm:table-cell">Qty</th>
@@ -100,7 +103,6 @@ const ProductTable = ({
           {products.map((product) => {
             const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0];
             const priceDisplay = `$${parseFloat(product.original_price || 0).toFixed(2)}`;
-            // Ensure isSelected is always boolean
             const isSelected = selectedProductIds.includes(product.product_id);
 
             return (
@@ -109,13 +111,13 @@ const ProductTable = ({
                   <input
                     type="checkbox"
                     className="checkbox checkbox-xs checkbox-primary"
-                    checked={isSelected} 
+                    checked={isSelected}
                     onChange={() => onSelectProduct(product.product_id)}
-                    disabled={isLoading}
+                    disabled={isLoading || !product.is_active}
                   />
                 </td>
-                {/* ... rest of your td elements ... */}
-                 <td className="p-3">
+                <td className="p-3">
+                  {/* ... existing product title and image display ... */}
                   <div className="flex items-center space-x-3">
                     <div className="avatar hidden sm:flex shrink-0">
                       <div className="mask mask-squircle w-10 h-10 bg-base-300">
@@ -150,16 +152,25 @@ const ProductTable = ({
                 </td>
                 <td className="p-3 hidden lg:table-cell text-sm text-base-content/80 capitalize">{product.condition || <span className="opacity-50">-</span>}</td>
                 <td className="p-3 text-center">
-                    <span className={`badge badge-sm font-medium ${product.is_active ? 'badge-success badge-outline' : 'badge-ghost'}`}>
-                        {product.is_active ? 'Active' : 'Inactive'}
-                    </span>
+                  {/* MODIFIED: Status badge logic */}
+                  <span className={`badge badge-sm font-medium ${product.is_active ? 'badge-success badge-outline' : 'badge-error'}`}>
+                    {product.is_active ? 'Active' : 'Sold'}
+                  </span>
                 </td>
                 <td className="p-3 text-center">
                   <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-ghost btn-xs m-1 normal-case">Actions ▼</label>
                     <ul tabIndex={0} className="dropdown-content z-[10] menu menu-xs p-1 shadow bg-base-100 rounded-box w-32 border border-base-300">
-                      <li><button onClick={() => onEdit(product)} className="flex items-center w-full text-left hover:bg-base-200 p-1.5 rounded "><FiEdit className="inline mr-1.5"/> Edit</button></li>
-                      <li><button onClick={() => onDelete(product)} className="flex items-center w-full text-left hover:bg-error/10 text-error p-1.5 rounded "><FiTrash2 className="inline mr-1.5"/> Delete</button></li>
+                      <li>
+                        <button onClick={() => onEdit(product)} className="flex items-center w-full text-left hover:bg-base-200 p-1.5 rounded ">
+                          <FiEdit className="inline mr-1.5"/> Edit {/* Consider disabling Edit if !product.is_active */}
+                        </button>
+                      </li>
+                      <li>
+                        <button onClick={() => onDelete(product)} className="flex items-center w-full text-left hover:bg-error/10 text-error p-1.5 rounded ">
+                          <FiTrash2 className="inline mr-1.5"/> Delete {/* Consider disabling Delete if !product.is_active, or archive */}
+                        </button>
+                      </li>
                     </ul>
                   </div>
                 </td>

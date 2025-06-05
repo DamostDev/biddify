@@ -211,7 +211,7 @@ const handleDataReceived = useCallback((payload, participant) => {
                 }
                 break;
             }
-            case 'AUCTION_ENDED': { // Use block scope for AUCTION_ENDED
+            case 'AUCTION_ENDED': {
                 const auctionDataEnded = eventSpecificPayload; // Use 'auctionDataEnded' for clarity
                 console.log(`[LK Data RX - AUCTION_ENDED] Received payload:`, JSON.stringify(auctionDataEnded, null, 2));
                 if (auctionDataEnded && auctionDataEnded.Product && ['sold', 'unsold', 'cancelled'].includes(auctionDataEnded.status)) {
