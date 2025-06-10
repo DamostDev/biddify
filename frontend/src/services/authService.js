@@ -1,16 +1,5 @@
 // src/services/authService.js
-import axios from 'axios';
-
-// Configure Axios instance
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api/auth';
-
-const apiClient = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // Crucial for HttpOnly cookies
-});
+import apiClient from './apiClient'; // <-- IMPORT THE SHARED CLIENT
 
 // --- Internal function names match backend endpoints/actions ---
 
@@ -26,8 +15,8 @@ const signup = async (userData) => {
     if (!username || !email || !password) {
         throw new Error("Username, email, and password are required for signup.");
     }
-    // Calls the backend /signup endpoint
-    const response = await apiClient.post('/signup', { username, email, password });
+    // Calls the backend /api/auth/signup endpoint
+    const response = await apiClient.post('/auth/signup', { username, email, password }); // <-- PREPENDED /auth
     return response.data;
   } catch (error) {
     console.error('Signup Service Error:', error);
@@ -48,10 +37,11 @@ const login = async (credentials) => {
      if (!email || !password) {
         throw new Error("Email and password are required for login.");
     }
-    // Calls the backend /login endpoint
-    const response = await apiClient.post('/login', { email, password });
+    // Calls the backend /api/auth/login endpoint
+    const response = await apiClient.post('/auth/login', { email, password }); // <-- PREPENDED /auth
     return response.data;
-  } catch (error) {
+  } catch (error)
+  {
     console.error('Login Service Error:', error);
     const message = error.response?.data?.message || error.message || 'Login failed. Please check your credentials.';
      if (error.response?.status === 401) {
@@ -69,8 +59,8 @@ const login = async (credentials) => {
  */
 const getMe = async () => {
   try {
-     // Calls the backend /me endpoint
-    const response = await apiClient.get('/me');
+     // Calls the backend /api/auth/me endpoint
+    const response = await apiClient.get('/auth/me'); // <-- PREPENDED /auth
     return response.data;
   } catch (error) {
     console.error('GetMe Service Error:', error);
@@ -89,8 +79,8 @@ const getMe = async () => {
  */
 const logout = async () => {
   try {
-    // Calls the backend /logout endpoint
-    const response = await apiClient.post('/logout');
+    // Calls the backend /api/auth/logout endpoint
+    const response = await apiClient.post('/auth/logout'); // <-- PREPENDED /auth
     return response.data;
   } catch (error) {
     console.error('Logout Service Error:', error);
