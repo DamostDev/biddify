@@ -1,6 +1,7 @@
 // frontend/src/components/stream/StreamChat.jsx
-import React, { useState, useRef, useEffect, useCallback } from 'react'; // Added useCallback
-import { FiSend, FiUsers, FiMessageSquare, FiArrowDownCircle } from 'react-icons/fi'; // Added FiArrowDownCircle
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { FiSend, FiUsers, FiMessageSquare, FiArrowDownCircle, FiSmile } from 'react-icons/fi';
+import EmotionTracker from './EmotionTracker'; // --- New Import
 
 // Assuming ChatMessage and WatcherItem are defined above this or imported
 // For clarity, I'll include a minimal ChatMessage that can render system messages if they are passed
@@ -113,20 +114,14 @@ const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessa
       return;
     }
 
-    // Check if the effect is running due to a truly new message
-    // This checks if the timestamp of the last message is newer than the second to last,
-    // or if it's the only message.
     const lastMessage = messages[messages.length - 1];
     const secondLastMessage = messages[messages.length - 2];
-    // Consider it a new message if it's the first, or newer than previous
     const isNewMessageAdded = !secondLastMessage || new Date(lastMessage.timestamp) > new Date(secondLastMessage.timestamp);
 
 
     if (isAtBottom) {
-      // If already at bottom, scroll to new message (usually instant)
       scrollToBottom("auto");
     } else if (isNewMessageAdded && (activeTab === 'chat' || activeTab === 'chat-visible-mobile')) {
-      // If not at bottom and a new message arrived for the active chat tab, increment counter
       setNewMessagesSinceScrollUp(prev => prev + 1);
     }
   }, [messages, isAtBottom, scrollToBottom, activeTab]); // Added activeTab to only count new messages if chat is visible
@@ -134,7 +129,6 @@ const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessa
   // Effect for initial scroll to bottom when chat tab becomes active or messages first load
   useEffect(() => {
     if (activeTab === 'chat' || activeTab === 'chat-visible-mobile') {
-      // A small delay can sometimes help ensure layout is complete
       setTimeout(() => scrollToBottom("auto"), 50);
     }
   }, [activeTab, scrollToBottom]); // Run when activeTab changes
@@ -148,18 +142,18 @@ const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessa
       const threshold = 30; // How many pixels from bottom to still be considered "at bottom"
       const userIsAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
       
-      if (userIsAtBottom !== isAtBottom) { // Only update state if it changed
+      if (userIsAtBottom !== isAtBottom) { 
           setIsAtBottom(userIsAtBottom);
       }
 
-      if (userIsAtBottom) { // If user scrolls to bottom, clear new message counter
+      if (userIsAtBottom) { 
         setNewMessagesSinceScrollUp(0);
       }
     };
 
     container.addEventListener('scroll', handleScroll, { passive: true });
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [isAtBottom]); // Rerun if isAtBottom changes to ensure correct comparison in handler
+  }, [isAtBottom]);
 
 
   const handleFormSubmit = (e) => {
@@ -167,19 +161,15 @@ const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessa
     if (newMessage.trim() && onSendMessage) {
       onSendMessage(newMessage);
       setNewMessage('');
-      // If user is near the bottom or was at bottom when sending, scroll them down.
       if (isAtBottom || (chatContainerRef.current && chatContainerRef.current.scrollHeight - chatContainerRef.current.scrollTop - chatContainerRef.current.clientHeight < 150)) {
-        setTimeout(() => scrollToBottom("smooth"), 50); // Small delay for message to render
+        setTimeout(() => scrollToBottom("smooth"), 50);
       }
     }
   };
 
-  // Use actual room participants passed from StreamPage
   const watchers = roomParticipantsForChat.map(p => ({
-    id: p.sid, // Use LiveKit Participant SID as a unique key
-    username: p.name || p.identity, // Participant.name is set during token generation
-    // You could add avatar logic here if participant metadata included it:
-    // avatar: p.metadata?.avatarUrl 
+    id: p.sid,
+    username: p.name || p.identity,
     isStreamer: p.metadata?.role === 'streamer' 
   }));
   
@@ -201,19 +191,37 @@ const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessa
         >
           <FiUsers size={14}/> Watching ({viewerCount || 0})
         </button>
+        <button
+          onClick={() => onTabChange('emotion')}
+          className={`flex-1 py-2.5 text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors
+                      ${activeTab === 'emotion' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}
+        >
+          <FiSmile size={14}/> Emotion
+        </button>
       </div>
 
-      {/* Message List / Watcher List container with ref */}
+      {/* Message List / Watcher List / Emotion Tracker container */}
       <div className="relative flex-grow overflow-y-auto" ref={chatContainerRef}>
-        <div className="p-2 sm:p-3 space-y-0"> {/* Inner padding for messages */}
-          {(activeTab === 'chat' || activeTab === 'chat-visible-mobile') && messages.map(msg => (
-            <ChatMessage key={msg.id} msg={msg} localParticipantIdentity={localParticipantIdentity} />
-          ))}
-          {activeTab === 'watching' && watchers.map(w => <WatcherItem key={w.id} watcher={w} />)}
-          <div ref={chatEndRef} style={{ height: '1px' }} /> {/* Target for scrolling to bottom */}
-        </div>
-
-        {/* New Messages Indicator/Button */}
+        {/* --- Use a wrapper for chat messages to keep padding consistent --- */}
+        {(activeTab === 'chat' || activeTab === 'chat-visible-mobile') && (
+            <div className="p-2 sm:p-3 space-y-0">
+                 {messages.map(msg => (
+                    <ChatMessage key={msg.id} msg={msg} localParticipantIdentity={localParticipantIdentity} />
+                 ))}
+                 <div ref={chatEndRef} style={{ height: '1px' }} />
+            </div>
+        )}
+        {/* --- Other tabs can have their own padding --- */}
+        {activeTab === 'watching' && (
+            <div className="p-2 sm:p-3 space-y-0">
+                {watchers.map(w => <WatcherItem key={w.id} watcher={w} />)}
+            </div>
+        )}
+        {activeTab === 'emotion' && (
+            <EmotionTracker />
+        )}
+        
+        {/* --- New Messages Indicator/Button (Only for Chat Tab) --- */}
         {newMessagesSinceScrollUp > 0 && (activeTab === 'chat' || activeTab === 'chat-visible-mobile') && (
           <div className="sticky bottom-3 left-1/2 -translate-x-1/2 z-10 w-auto opacity-90 hover:opacity-100 transition-opacity">
             <button
@@ -227,7 +235,7 @@ const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessa
         )}
       </div>
 
-      {/* Input Area */}
+      {/* Input Area (Only for Chat Tab) */}
       {(activeTab === 'chat' || activeTab === 'chat-visible-mobile') && (
         <form onSubmit={handleFormSubmit} className="p-2 sm:p-3 border-t border-neutral-800 shrink-0">
           <div className="relative">
