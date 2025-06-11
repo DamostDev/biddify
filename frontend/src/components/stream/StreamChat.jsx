@@ -1,13 +1,26 @@
 // frontend/src/components/stream/StreamChat.jsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { FiSend, FiUsers, FiMessageSquare, FiArrowDownCircle, FiSmile } from 'react-icons/fi';
-import EmotionTracker from './EmotionTracker'; // --- New Import
+import { FiSend, FiUsers, FiMessageSquare, FiSmile, FiArrowDownCircle } from 'react-icons/fi';
+import EmotionTracker from './EmotionTracker';
 
-// Assuming ChatMessage and WatcherItem are defined above this or imported
-// For clarity, I'll include a minimal ChatMessage that can render system messages if they are passed
-const ChatMessage = ({ msg, localParticipantIdentity }) => {
-  const isOwnMessage = msg.user && msg.user.identity === localParticipantIdentity; // Check if msg.user exists
+const ChatMessage = ({ msg, localParticipantIdentity, variant }) => {
+  const isOverlay = variant === 'overlay';
+  const isOwnMessage = msg.user && msg.user.identity === localParticipantIdentity;
 
+  if (isOverlay) {
+    return (
+      <div className={`flex items-start gap-2.5 mb-2 px-3 py-1 rounded-full text-shadow-sm ${isOwnMessage ? 'justify-end' : ''}`}>
+          <div className="max-w-[85%] text-sm leading-snug break-words p-2 rounded-xl shadow-md bg-black/60 text-white backdrop-blur-sm">
+            {!isOwnMessage && (
+              <span className="font-semibold text-yellow-300 mr-1.5">{msg.user.username}:</span>
+            )}
+            {msg.text}
+          </div>
+      </div>
+    );
+  }
+
+  // --- Desktop Variant Logic ---
   const formatTimestamp = (isoString) => {
     if (!isoString) return '';
     try {
@@ -15,23 +28,8 @@ const ChatMessage = ({ msg, localParticipantIdentity }) => {
     } catch (e) { return ''; }
   };
 
-  if (msg.type === 'system') {
-    return (
-      <div className="text-center py-2 my-1">
-        <p className="text-xs text-neutral-500 italic px-2 py-1 bg-neutral-800/50 rounded-full inline-block">
-          {msg.text}
-        </p>
-      </div>
-    );
-  }
+  if (!msg.user) return null;
 
-  if (!msg.user) { // Fallback for messages without a user object (should not happen with current setup)
-      return (
-          <div className="text-xs text-neutral-500 p-1">Invalid message data.</div>
-      );
-  }
-
-  // Your existing styling for user messages (own and others)
   if (isOwnMessage) {
     return (
       <div className="flex justify-end mb-1.5">
@@ -51,7 +49,7 @@ const ChatMessage = ({ msg, localParticipantIdentity }) => {
     return (
       <div className="flex items-start gap-2.5 mb-2">
         <div className="avatar placeholder shrink-0 mt-1">
-          <div className={`w-7 h-7 rounded-full ${msg.user.isMod ? 'ring-2 ring-yellow-400 ring-offset-black ring-offset-1' : 'bg-neutral-800'}`}>
+          <div className={`w-7 h-7 rounded-full ${msg.user.isMod ? 'ring-2 ring-yellow-400' : 'bg-neutral-800'}`}>
             {msg.user.avatar ? (
               <img src={msg.user.avatar} alt={msg.user.username} className="object-cover w-full h-full"/>
             ) : (
@@ -65,9 +63,7 @@ const ChatMessage = ({ msg, localParticipantIdentity }) => {
               {msg.user.username}:
             </span>
             {' '}
-            <span className="text-white">
-              {msg.text}
-            </span>
+            <span className="text-white">{msg.text}</span>
           </p>
           <p className="text-[10px] text-neutral-400 text-right mt-1 leading-none">
             {formatTimestamp(msg.timestamp)}
@@ -82,7 +78,6 @@ const WatcherItem = ({ watcher }) => (
     <div className="flex items-center gap-2 p-2 hover:bg-neutral-800/50 rounded">
          <div className="avatar placeholder shrink-0">
             <div className={`w-7 h-7 rounded-full ${watcher.isStreamer ? 'ring-2 ring-purple-400' : 'bg-neutral-700'}`}>
-                {/* You could add avatar logic here if participant metadata included it: watcher.avatar */}
                 <span className="text-xs text-neutral-300">{watcher.username?.substring(0,2).toUpperCase()}</span>
             </div>
         </div>
@@ -90,82 +85,60 @@ const WatcherItem = ({ watcher }) => (
     </div>
 );
 
-
-const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessage, localParticipantIdentity, roomParticipantsForChat = [] }) => {
+const StreamChat = ({ 
+    variant = 'full',
+    messages = [], 
+    activeTab, 
+    onTabChange, 
+    viewerCount, 
+    onSendMessage, 
+    localParticipantIdentity, 
+    roomParticipantsForChat = [] 
+}) => {
   const [newMessage, setNewMessage] = useState('');
-  const chatContainerRef = useRef(null); // Ref for the scrollable div that contains messages
-  const chatEndRef = useRef(null);      // Ref for the empty div at the end of messages list
+  const chatEndRef = useRef(null);
 
-  const [isAtBottom, setIsAtBottom] = useState(true);
-  const [newMessagesSinceScrollUp, setNewMessagesSinceScrollUp] = useState(0);
-
-  const scrollToBottom = useCallback((behavior = "smooth") => {
-    // Scrolls the chatEndRef into view within the chatContainerRef
-    chatEndRef.current?.scrollIntoView({ behavior: behavior });
-    setIsAtBottom(true); // Assume we are at bottom after explicitly scrolling
-    setNewMessagesSinceScrollUp(0); // Reset new message count
-  }, []);
-
-  // Effect to handle auto-scrolling or incrementing new message count when `messages` prop changes
   useEffect(() => {
-    if (!messages || messages.length === 0) {
-      setIsAtBottom(true);
-      setNewMessagesSinceScrollUp(0);
-      return;
-    }
-
-    const lastMessage = messages[messages.length - 1];
-    const secondLastMessage = messages[messages.length - 2];
-    const isNewMessageAdded = !secondLastMessage || new Date(lastMessage.timestamp) > new Date(secondLastMessage.timestamp);
-
-
-    if (isAtBottom) {
-      scrollToBottom("auto");
-    } else if (isNewMessageAdded && (activeTab === 'chat' || activeTab === 'chat-visible-mobile')) {
-      setNewMessagesSinceScrollUp(prev => prev + 1);
-    }
-  }, [messages, isAtBottom, scrollToBottom, activeTab]); // Added activeTab to only count new messages if chat is visible
-
-  // Effect for initial scroll to bottom when chat tab becomes active or messages first load
-  useEffect(() => {
-    if (activeTab === 'chat' || activeTab === 'chat-visible-mobile') {
-      setTimeout(() => scrollToBottom("auto"), 50);
-    }
-  }, [activeTab, scrollToBottom]); // Run when activeTab changes
-
-  // Scroll event listener for the chat container to detect user scrolling
-  useEffect(() => {
-    const container = chatContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const threshold = 30; // How many pixels from bottom to still be considered "at bottom"
-      const userIsAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
-      
-      if (userIsAtBottom !== isAtBottom) { 
-          setIsAtBottom(userIsAtBottom);
-      }
-
-      if (userIsAtBottom) { 
-        setNewMessagesSinceScrollUp(0);
-      }
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [isAtBottom]);
-
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (newMessage.trim() && onSendMessage) {
       onSendMessage(newMessage);
       setNewMessage('');
-      if (isAtBottom || (chatContainerRef.current && chatContainerRef.current.scrollHeight - chatContainerRef.current.scrollTop - chatContainerRef.current.clientHeight < 150)) {
-        setTimeout(() => scrollToBottom("smooth"), 50);
-      }
     }
   };
+
+  if (variant === 'overlay') {
+    return (
+      <div className="h-full max-h-[50vh] w-full overflow-y-auto chat-fade-mask px-2 pb-2 pointer-events-auto">
+        {messages.map(msg => (
+            <ChatMessage key={msg.id} msg={msg} localParticipantIdentity={localParticipantIdentity} variant="overlay" />
+        ))}
+        <div ref={chatEndRef} />
+      </div>
+    );
+  }
+
+  if (variant === 'input_only') {
+      return (
+        <form onSubmit={handleFormSubmit} className="p-3 bg-gradient-to-t from-black/50 to-transparent">
+          <div className="relative">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Say something..."
+              className="input input-sm w-full bg-black/60 border-neutral-700/50 rounded-full pr-10 focus:border-blue-500 placeholder-neutral-400 text-white backdrop-blur-sm"
+            />
+            <button type="submit" className="absolute top-1/2 right-1 -translate-y-1/2 btn btn-ghost btn-xs btn-circle text-blue-400 hover:bg-blue-500/20" aria-label="Send message">
+              <FiSend size={16} />
+            </button>
+          </div>
+        </form>
+      );
+  }
 
   const watchers = roomParticipantsForChat.map(p => ({
     id: p.sid,
@@ -175,68 +148,30 @@ const StreamChat = ({ messages, activeTab, onTabChange, viewerCount, onSendMessa
   
   return (
     <div className="flex flex-col h-full bg-black text-white">
-      {/* Tabs */}
       <div className="flex border-b border-neutral-800 shrink-0">
-        <button
-          onClick={() => onTabChange('chat')}
-          className={`flex-1 py-2.5 text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors
-                      ${activeTab === 'chat' || activeTab === 'chat-visible-mobile' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}
-        >
+        <button onClick={() => onTabChange('chat')} className={`flex-1 py-2.5 text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'chat' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}>
           <FiMessageSquare size={14}/> Chat
         </button>
-        <button
-          onClick={() => onTabChange('watching')}
-          className={`flex-1 py-2.5 text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors
-                      ${activeTab === 'watching' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}
-        >
-          <FiUsers size={14}/> Watching ({viewerCount || 0})
+        <button onClick={() => onTabChange('watching')} className={`flex-1 py-2.5 text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'watching' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}>
+          <FiUsers size={14}/> Watching ({viewerCount})
         </button>
-        <button
-          onClick={() => onTabChange('emotion')}
-          className={`flex-1 py-2.5 text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors
-                      ${activeTab === 'emotion' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}
-        >
+        <button onClick={() => onTabChange('emotion')} className={`flex-1 py-2.5 text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'emotion' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}>
           <FiSmile size={14}/> Emotion
         </button>
       </div>
 
-      {/* Message List / Watcher List / Emotion Tracker container */}
-      <div className="relative flex-grow overflow-y-auto" ref={chatContainerRef}>
-        {/* --- Use a wrapper for chat messages to keep padding consistent --- */}
-        {(activeTab === 'chat' || activeTab === 'chat-visible-mobile') && (
-            <div className="p-2 sm:p-3 space-y-0">
-                 {messages.map(msg => (
-                    <ChatMessage key={msg.id} msg={msg} localParticipantIdentity={localParticipantIdentity} />
-                 ))}
-                 <div ref={chatEndRef} style={{ height: '1px' }} />
-            </div>
-        )}
-        {/* --- Other tabs can have their own padding --- */}
-        {activeTab === 'watching' && (
-            <div className="p-2 sm:p-3 space-y-0">
-                {watchers.map(w => <WatcherItem key={w.id} watcher={w} />)}
-            </div>
-        )}
-        {activeTab === 'emotion' && (
-            <EmotionTracker />
-        )}
-        
-        {/* --- New Messages Indicator/Button (Only for Chat Tab) --- */}
-        {newMessagesSinceScrollUp > 0 && (activeTab === 'chat' || activeTab === 'chat-visible-mobile') && (
-          <div className="sticky bottom-3 left-1/2 -translate-x-1/2 z-10 w-auto opacity-90 hover:opacity-100 transition-opacity">
-            <button
-              onClick={() => scrollToBottom("smooth")}
-              className="btn btn-xs sm:btn-sm btn-info normal-case shadow-lg bg-blue-500 hover:bg-blue-400 text-white rounded-full px-3 py-1 h-auto min-h-0"
-            >
-              <FiArrowDownCircle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              {newMessagesSinceScrollUp} New Message{newMessagesSinceScrollUp > 1 ? 's' : ''}
-            </button>
-          </div>
-        )}
+      <div className="relative flex-grow overflow-y-auto">
+        <div className="p-2 sm:p-3 space-y-0">
+          {activeTab === 'chat' && messages.map(msg => (
+            <ChatMessage key={msg.id} msg={msg} localParticipantIdentity={localParticipantIdentity} variant="full" />
+          ))}
+          {activeTab === 'watching' && watchers.map(w => <WatcherItem key={w.id} watcher={w} />)}
+          {activeTab === 'emotion' && <EmotionTracker />}
+          <div ref={chatEndRef} />
+        </div>
       </div>
 
-      {/* Input Area (Only for Chat Tab) */}
-      {(activeTab === 'chat' || activeTab === 'chat-visible-mobile') && (
+      {activeTab === 'chat' && (
         <form onSubmit={handleFormSubmit} className="p-2 sm:p-3 border-t border-neutral-800 shrink-0">
           <div className="relative">
             <input
