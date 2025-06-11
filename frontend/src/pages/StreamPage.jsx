@@ -298,53 +298,50 @@ function StreamPage() {
     }, [liveKitUrl, liveKitToken, isLoadingStreamData, handleConnectionStateChange, handleTrackSubscribed, handleParticipantConnectedEvent, handleParticipantDisconnectedEvent, handleDataReceived, handleAudioPlaybackChange]);
 
     // --- NEW: Effect 3 - Emotion Analysis ---
-    useEffect(() => {
-        const newMessages = chatMessages.filter(msg => msg.id && msg.text && !analyzedMessageIds.has(msg.id));
-        if (newMessages.length === 0) return;
+    // --- MODIFIED: Effect 3 - Emotion Analysis (Multi-Label Version) ---
+useEffect(() => {
+    const newMessages = chatMessages.filter(msg => msg.id && msg.text && !analyzedMessageIds.has(msg.id));
+    if (newMessages.length === 0) return;
 
-        const newIds = new Set(newMessages.map(m => m.id));
-        setAnalyzedMessageIds(prev => new Set([...prev, ...newIds]));
+    const newIds = new Set(newMessages.map(m => m.id));
+    setAnalyzedMessageIds(prev => new Set([...prev, ...newIds]));
 
-        console.log(`[Emotion Analysis] Found ${newMessages.length} new message(s) to analyze.`);
+    const analyze = async () => {
+        for (const message of newMessages) {
+            try {
+                const result = await emotionService.analyzeEmotion(message.text);
+                const threshold = 0.18; // The confidence threshold
 
-        const analyze = async () => {
-            for (const message of newMessages) {
-                console.log(`%c[Emotion Analysis] -> Sending to API: "${message.text}"`, 'color: #2563eb;');
-                try {
-                    const result = await emotionService.analyzeEmotion(message.text);
-                    console.log(`%c[Emotion Analysis] <- Received API response for "${message.text}":`, 'color: #16a34a;', result);
+                if (result && result.scores && typeof result.scores === 'object') {
+                    
+                    // --- NEW MULTI-LABEL LOGIC ---
+                    // 1. Filter all scores to get only those above the threshold.
+                    const detectedEmotions = Object.entries(result.scores)
+                        .filter(([name, score]) => score > threshold);
 
-                    // --- THE FIX IS HERE ---
-                    // Instead of checking for `result.top_emotion`, we check for `result.scores`
-                    // and find the top emotion ourselves.
-                    const threshold = 0.18; // The threshold we send to the API
-                    if (result && result.scores && typeof result.scores === 'object') {
+                    // 2. Check if any emotions were found.
+                    if (detectedEmotions.length > 0) {
+                        console.log(`%c[Emotion Analysis] --> Found ${detectedEmotions.length} emotion(s) above threshold for "${message.text}":`, 'color: #16a34a; font-weight: bold;', detectedEmotions.map(e => e[0]));
 
-                        // Find the emotion with the highest score in the `scores` object.
-                        const [topEmotionName, topScore] = Object.entries(result.scores).reduce(
-                            (top, current) => (current[1] > top[1] ? current : top),
-                            ['', -1] // Initial value: [name, score]
-                        );
-
-                        // Check if the top score is not empty and is above our threshold
-                        if (topEmotionName && topScore > threshold) {
-                             console.log(`%c[Emotion Analysis] --> Top emotion is "${topEmotionName}" with score ${topScore.toFixed(3)}. Incrementing store.`, 'color: #16a34a; font-weight: bold;');
-                             useEmotionStore.getState().increment(topEmotionName);
-                        } else {
-                            console.warn(`[Emotion Analysis] -> Top emotion "${topEmotionName}" with score ${topScore.toFixed(3)} did not meet threshold of ${threshold}.`);
+                        // 3. Loop through the detected emotions and increment each one.
+                        for (const [emotionName, score] of detectedEmotions) {
+                            useEmotionStore.getState().increment(emotionName);
                         }
-                       
                     } else {
-                        console.warn(`[Emotion Analysis] -> API response for "${message.text}" was valid but did not contain a 'scores' object.`);
+                        console.warn(`[Emotion Analysis] -> No emotions met the threshold of ${threshold} for "${message.text}".`);
                     }
-                } catch (error) {
-                    console.error(`%c[Emotion Analysis] !!! FAILED to analyze message ID ${message.id}:`, 'color: #dc2626;', error);
-                }
-            }
-        };
 
-        analyze();
-    }, [chatMessages, analyzedMessageIds]);
+                } else {
+                    console.warn(`[Emotion Analysis] -> API response for "${message.text}" was valid but did not contain a 'scores' object.`);
+                }
+            } catch (error) {
+                console.error(`%c[Emotion Analysis] !!! FAILED to analyze message ID ${message.id}:`, 'color: #dc2626;', error);
+            }
+        }
+    };
+
+    analyze();
+}, [chatMessages, analyzedMessageIds]);
 
     // --- Component Actions (Callbacks for children) ---
   
