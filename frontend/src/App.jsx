@@ -16,6 +16,9 @@ import MinimalStreamPage from './pages/MinimalStreamPage'; // Assuming this is y
 import ForYouPage from './pages/ForYouPage'; // Already imported
 import LivePage from './pages/LivePage';   // Already imported
 
+import { FiMessageSquare, FiAlertTriangle , FiVideo } from 'react-icons/fi';
+
+
 
 function App() {
   const initialAuthLoading = useAuthStore((state) => state.isLoading);
