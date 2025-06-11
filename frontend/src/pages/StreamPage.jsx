@@ -76,51 +76,338 @@ function StreamPage() {
         isCurrentUserStreamerRef.current = isCurrentUserStreamer;
     }, [isCurrentUserStreamer]);
 
-    // All hooks and callbacks (handleDataReceived, init, emotion analysis, etc.) remain the same.
-    // Copy the full logic from your previous, working file for this section.
-    // For brevity, I'll include just the function definitions. The implementation is unchanged.
-    const updateRoomParticipantsList = useCallback((roomInstance) => { /* ... */ });
-    const handleNewStreamerCandidate = useCallback((participant) => { /* ... */ });
-    const handleConnectionStateChange = useCallback(async (connectionState, roomInstance) => { /* ... */ });
-    const handleTrackSubscribed = useCallback((track, publication, remoteParticipant) => { /* ... */ });
-    const handleParticipantConnectedEvent = useCallback((participant) => { /* ... */ });
-    const handleParticipantDisconnectedEvent = useCallback((participant) => { /* ... */ });
-    const handleDataReceived = useCallback((payload, participant) => { /* ... */ });
-    const handleAudioPlaybackChange = useCallback((roomInstance) => { /* ... */ });
-    const sendLiveKitData = useCallback(async (type, payload) => { /* ... */ });
-    const handleAuctionAction = useCallback((action) => { /* ... */ });
-    const handleToggleLocalAudioMute = useCallback(async () => { /* ... */ });
-    const handleToggleRemoteAudioMute = useCallback(() => { /* ... */ });
-    const sendChatMessageViaLiveKit = useCallback(async (text) => { /* ... */ });
-    const handlePlaceBid = useCallback(async (auctionId, amount) => { /* ... */ });
-    const handleFollowToggle = useCallback(async () => { /* ... */ });
+    const updateRoomParticipantsList = useCallback((roomInstance) => {
+        if (!roomInstance) return;
+        const participants = [];
+        if (roomInstance.localParticipant) {
+            participants.push(roomInstance.localParticipant);
+        }
+        roomInstance.remoteParticipants.forEach(rp => participants.push(rp));
+        setRoomParticipants(participants.map(p => ({
+            sid: p.sid,
+            identity: p.identity,
+            name: p.name,
+            metadata: safeParseMetadata(p.metadata)
+        })));
+    }, []);
 
-    useEffect(() => { /* init effect */ }, [streamId, currentUser?.user_id, isAuthenticated]);
-    useEffect(() => { /* LiveKit connection effect */ }, [liveKitUrl, liveKitToken, isLoadingStreamData]);
-    useEffect(() => { /* emotion analysis effect */ }, [chatMessages, analyzedMessageIds]);
+    const handleNewStreamerCandidate = useCallback((participant) => {
+        if (!participant || !roomRef.current || isCurrentUserStreamerRef.current) return;
+        const meta = safeParseMetadata(participant.metadata);
+        if (meta.role === 'streamer' || participant.identity.includes('-streamer-')) {
+            setMainParticipant(prev => (!prev || prev.sid !== participant.sid ? participant : prev));
+        }
+    }, []);
+
+    const handleConnectionStateChange = useCallback(async (connectionState, roomInstance) => {
+        if (!roomInstance) return;
+        setStatusMessage(`LiveKit: ${connectionState}`);
+        setCanPlaybackAudio(roomInstance.canPlaybackAudio);
+        if (connectionState === ConnectionState.Connected) {
+            setLocalParticipantState(roomInstance.localParticipant);
+            roomInstance.remoteParticipants.forEach(p => handleNewStreamerCandidate(p));
+            updateRoomParticipantsList(roomInstance);
+            if (isCurrentUserStreamerRef.current && roomInstance.localParticipant) {
+                setMainParticipant(roomInstance.localParticipant);
+                try {
+                    await roomInstance.localParticipant.setCameraEnabled(true);
+                    await roomInstance.localParticipant.setMicrophoneEnabled(!isLocalAudioMuted);
+                } catch (mediaError) {
+                    setError(prev => `${prev || ''} Media Error: ${mediaError.message}. Check permissions.`);
+                }
+            }
+        } else if (connectionState === ConnectionState.Disconnected) {
+            setLocalParticipantState(null); setMainParticipant(null);
+            setRoomParticipants([]);
+        } else if (connectionState === ConnectionState.Failed) {
+            setError(prev => `${prev || ''} LiveKit connection failed.`);
+        }
+    }, [handleNewStreamerCandidate, isLocalAudioMuted, updateRoomParticipantsList]);
+
+    const handleTrackSubscribed = useCallback((track, publication, remoteParticipant) => {
+        if (!isCurrentUserStreamerRef.current) {
+             handleNewStreamerCandidate(remoteParticipant);
+        }
+    }, [handleNewStreamerCandidate]);
+
+    const handleParticipantConnectedEvent = useCallback((participant) => {
+        if (!isCurrentUserStreamerRef.current) {
+            handleNewStreamerCandidate(participant);
+        }
+        if (roomRef.current) updateRoomParticipantsList(roomRef.current);
+    }, [handleNewStreamerCandidate, updateRoomParticipantsList]);
+
+    const handleParticipantDisconnectedEvent = useCallback((participant) => {
+        if (roomRef.current) updateRoomParticipantsList(roomRef.current);
+        setMainParticipant(prevStreamer => {
+            if (prevStreamer?.sid === participant.sid) return null;
+            return prevStreamer;
+        });
+    }, [updateRoomParticipantsList]);
+
+    const handleDataReceived = useCallback((payload, participant) => {
+        try {
+            const decodedPayload = new TextDecoder().decode(payload);
+            const message = JSON.parse(decodedPayload);
+            if (participant && participant.identity === roomRef.current?.localParticipant?.identity) return;
+            if (message.senderIdentity === roomRef.current?.localParticipant?.identity) return;
+            const eventSpecificPayload = message.payload;
+            switch (message.type) {
+                case 'CHAT_MESSAGE':
+                    if (eventSpecificPayload && eventSpecificPayload.text) {
+                        setChatMessages(prevMessages => {
+                            const newMsg = {
+                                id: `lk-${participant?.sid || 'unknown'}-${Date.now()}`,
+                                user: {
+                                    username: eventSpecificPayload.username, avatar: eventSpecificPayload.avatar,
+                                    isMod: safeParseMetadata(participant?.metadata).role === 'moderator',
+                                    identity: participant?.identity || message.senderIdentity,
+                                },
+                                text: eventSpecificPayload.text, timestamp: eventSpecificPayload.timestamp,
+                            };
+                            if (prevMessages.some(m => m.text === newMsg.text && m.user.identity === newMsg.user.identity && Math.abs(new Date(m.timestamp).getTime() - new Date(newMsg.timestamp).getTime()) < 2000)) {
+                                return prevMessages;
+                            }
+                            return [...prevMessages, newMsg];
+                        });
+                    }
+                    break;
+                case 'AUCTION_STARTED':
+                case 'AUCTION_UPDATED':
+                case 'AUCTION_ENDED':
+                    setCurrentAuction(eventSpecificPayload);
+                    setAuctionError(null);
+                    break;
+                default:
+                    console.warn('[LiveKit Data RECEIVED] Unknown message type:', message.type);
+            }
+        } catch (e) {
+            console.error('[LiveKit Data RECEIVED] Error processing data message:', e);
+        }
+    }, []);
+
+    const handleAudioPlaybackChange = useCallback((roomInstance) => {
+        if (roomInstance) {
+            setCanPlaybackAudio(roomInstance.canPlaybackAudio);
+        }
+    },[]);
+
+    const sendLiveKitData = useCallback(async (type, payload) => {
+        if (roomRef.current && roomRef.current.localParticipant) {
+            try {
+                const dataToSend = { type, payload, senderIdentity: roomRef.current.localParticipant.identity };
+                const encodedPayload = new TextEncoder().encode(JSON.stringify(dataToSend));
+                await roomRef.current.localParticipant.publishData(encodedPayload, DataPacket_Kind.RELIABLE);
+            } catch (e) {
+                console.error(`[LiveKit Data SEND ERROR] Type: ${type}`, e);
+            }
+        }
+    }, []);
+
+    const handleAuctionAction = useCallback((action) => {
+        if (action.type === 'AUCTION_STARTED') {
+            const actualAuctionObject = action.payload.auction;
+            setCurrentAuction(actualAuctionObject);
+            setAuctionError(null);
+            sendLiveKitData('AUCTION_STARTED', actualAuctionObject);
+        }
+    }, [sendLiveKitData]);
+
+    const handleToggleLocalAudioMute = useCallback(async () => {
+        if (!roomRef.current?.localParticipant || !isCurrentUserStreamerRef.current) return;
+        const newMutedState = !isLocalAudioMuted;
+        await roomRef.current.localParticipant.setMicrophoneEnabled(!newMutedState);
+        setIsLocalAudioMuted(newMutedState);
+    }, [isLocalAudioMuted]);
+
+    const handleToggleRemoteAudioMute = useCallback(() => {
+        if (!isCurrentUserStreamerRef.current) {
+            setIsRemoteAudioMuted(prev => !prev);
+        }
+    }, []);
+
+    const sendChatMessageViaLiveKit = useCallback(async (text) => {
+        if (!roomRef.current?.localParticipant || !text.trim() || !currentUser || !streamId) return;
+        const clientTimestamp = new Date().toISOString();
+        const chatPayload = {
+            text: text.trim(),
+            username: currentUser.username,
+            avatar: currentUser.profile_picture_url,
+            timestamp: clientTimestamp,
+        };
+        sendLiveKitData('CHAT_MESSAGE', chatPayload);
+        setChatMessages(prev => [...prev, {
+            id: `local-${Date.now()}`,
+            user: {
+                username: currentUser.username,
+                avatar: currentUser.profile_picture_url,
+                identity: roomRef.current.localParticipant.identity,
+                isMod: false,
+            },
+            text: chatPayload.text,
+            timestamp: clientTimestamp,
+        }]);
+        try {
+            await chatService.saveChatMessage(streamId, { text: chatPayload.text, client_timestamp: clientTimestamp });
+        } catch (dbError) {
+            console.error("[StreamPage] Failed to save chat message to DB:", dbError);
+        }
+    }, [currentUser, streamId, sendLiveKitData]);
+
+    const handlePlaceBid = useCallback(async (auctionId, amount) => {
+        if (!currentUser || isCurrentUserStreamerRef.current || !currentAuction || currentAuction.status !== 'active') {
+            setAuctionError("Cannot place bid.");
+            return;
+        }
+        setIsAuctionLoading(true);
+        setAuctionError(null);
+        try {
+            const bidResult = await auctionService.placeBid(auctionId, amount);
+            if (bidResult && bidResult.auction) {
+                setCurrentAuction(bidResult.auction);
+                sendLiveKitData('AUCTION_UPDATED', bidResult.auction);
+            }
+        } catch (err) {
+            setAuctionError(err.message || "Failed to place bid.");
+        } finally {
+            setIsAuctionLoading(false);
+        }
+    }, [currentUser, currentAuction, sendLiveKitData]);
+
+    const handleFollowToggle = useCallback(async () => {
+        if (!currentUser || !streamDataFromAPI?.User || followLoading) return;
+        setFollowLoading(true);
+        const hostId = streamDataFromAPI.User.user_id;
+        try {
+            if (isFollowingHost) {
+                await userService.unfollowUser(hostId);
+                setIsFollowingHost(false);
+            } else {
+                await userService.followUser(hostId);
+                setIsFollowingHost(true);
+            }
+        } catch (err) {
+            setError(prev => `${prev || ''} Follow action failed.`);
+        } finally {
+            setFollowLoading(false);
+        }
+    }, [currentUser, streamDataFromAPI, isFollowingHost, followLoading]);
+
+    useEffect(() => {
+        if (!streamId) {
+            setError("Stream ID is missing.");
+            setIsLoadingStreamData(false);
+            return;
+        }
+        let isMounted = true;
+        useEmotionStore.getState().init(EMOTIONS_LIST);
+        setAnalyzedMessageIds(new Set());
+        const init = async () => {
+            setIsLoadingStreamData(true);
+            try {
+                const apiStreamDataResponse = await streamService.getStreamDetails(streamId);
+                if (!isMounted) return;
+                setStreamDataFromAPI(apiStreamDataResponse);
+                const streamAuctions = await auctionService.getAllAuctions({ streamId: streamId, status: 'active' }).catch(() => []);
+                if (isMounted && streamAuctions.length > 0) setCurrentAuction(streamAuctions[0]);
+                const userIsStreamerCheck = currentUser?.user_id === apiStreamDataResponse.user_id;
+                setIsCurrentUserStreamer(userIsStreamerCheck);
+                let tokenResponse = userIsStreamerCheck
+                    ? await streamService.goLiveStreamer(streamId)
+                    : await streamService.joinLiveStreamViewer(streamId);
+                if (!isMounted) return;
+                setLiveKitToken(tokenResponse.token);
+                setLiveKitUrl(tokenResponse.livekitUrl);
+                if (isMounted && currentUser && !userIsStreamerCheck) {
+                    const followStatus = await userService.getFollowingStatus(apiStreamDataResponse.user_id).catch(() => ({isFollowing: false}));
+                    if (isMounted) setIsFollowingHost(followStatus.isFollowing);
+                }
+                const history = await chatService.getChatMessages(streamId);
+                if(isMounted) {
+                    const formattedHistory = history.map(msg => ({
+                        id: `db-${msg.message_id}`,
+                        user: {
+                            username: msg.User?.username || msg.username_at_send_time,
+                            avatar: msg.User?.profile_picture_url || msg.avatar_url_at_send_time,
+                            isMod: false, identity: `user-${msg.user_id}`,
+                        },
+                        text: msg.message_text, timestamp: msg.sent_at,
+                    }));
+                    setChatMessages(formattedHistory);
+                }
+            } catch (err) {
+                if (isMounted) setError(err?.response?.data?.message || err?.message || "An error occurred.");
+            } finally {
+                if (isMounted) setIsLoadingStreamData(false);
+            }
+        };
+        init();
+        return () => { 
+            isMounted = false;
+            useEmotionStore.getState().reset();
+        };
+    }, [streamId, currentUser?.user_id, isAuthenticated]);
+
+    useEffect(() => {
+        if (!liveKitUrl || !liveKitToken || isLoadingStreamData) return;
+        if (roomRef.current && roomRef.current.url === liveKitUrl) return;
+        if (roomRef.current) roomRef.current.disconnect(true);
+        const room = new Room({ logLevel: LogLevel.info, adaptiveStream: true, dynacast: true, url: liveKitUrl });
+        roomRef.current = room;
+        room.on(RoomEvent.ConnectionStateChanged, (state) => handleConnectionStateChange(state, room));
+        room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+        room.on(RoomEvent.ParticipantConnected, handleParticipantConnectedEvent);
+        room.on(RoomEvent.ParticipantDisconnected, handleParticipantDisconnectedEvent);
+        room.on(RoomEvent.DataReceived, handleDataReceived);
+        room.on(RoomEvent.AudioPlaybackStatusChanged, () => handleAudioPlaybackChange(room));
+        room.connect(liveKitUrl, liveKitToken).catch(err => {
+            setError(prev => `${prev || ''} LiveKit Connection Failed: ${err.message}`);
+        });
+        return () => { room.disconnect(true); };
+    }, [liveKitUrl, liveKitToken, isLoadingStreamData, handleConnectionStateChange, handleTrackSubscribed, handleParticipantConnectedEvent, handleParticipantDisconnectedEvent, handleDataReceived, handleAudioPlaybackChange]);
+
+    useEffect(() => {
+        const newMessages = chatMessages.filter(msg => msg.id && msg.text && !analyzedMessageIds.has(msg.id));
+        if (newMessages.length === 0) return;
+        const newIds = new Set(newMessages.map(m => m.id));
+        setAnalyzedMessageIds(prev => new Set([...prev, ...newIds]));
+        const analyze = async () => {
+            for (const message of newMessages) {
+                try {
+                    const result = await emotionService.analyzeEmotion(message.text);
+                    const threshold = 0.18;
+                    if (result && result.scores && typeof result.scores === 'object') {
+                        const [topEmotionName, topScore] = Object.entries(result.scores).reduce(
+                            (top, current) => (current[1] > top[1] ? current : top),
+                            ['', -1]
+                        );
+                        if (topEmotionName && topScore > threshold) {
+                             useEmotionStore.getState().increment(topEmotionName);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Failed to analyze message ID ${message.id}:`, error);
+                }
+            }
+        };
+        analyze();
+    }, [chatMessages, analyzedMessageIds]);
 
     if (isLoadingStreamData) {
         return (
             <div className="flex h-screen items-center justify-center bg-black">
                 <span className="loading loading-lg loading-dots text-white"></span>
+                <p className="ml-4 text-white">Loading Stream...</p>
             </div>
         );
     }
+
     if (error) {
         return (
             <div className="flex flex-col h-screen items-center justify-center bg-neutral-900 text-white p-4 text-center">
                 <FiAlertTriangle className="w-16 h-16 text-error mb-4"/>
                 <h2 className="text-2xl font-semibold text-error mb-4">Stream Unavailable</h2>
                 <p className="mb-6 max-w-md text-red-400/80">{error}</p>
-                <button onClick={() => navigate('/')} className="btn btn-primary">Go Home</button>
-            </div>
-        );
-    }
-    if (!streamDataFromAPI) {
-         return (
-            <div className="flex flex-col h-screen items-center justify-center bg-neutral-900 text-white p-4 text-center">
-                <FiAlertTriangle className="w-16 h-16 text-warning mb-4"/>
-                <h2 className="text-2xl font-semibold text-warning mb-4">Stream Data Not Found</h2>
                 <button onClick={() => navigate('/')} className="btn btn-primary">Go Home</button>
             </div>
         );
@@ -202,7 +489,7 @@ function StreamPage() {
                             />
                         </div>
 
-                        {auctionError && <div className="alert alert-error p-2 text-xs justify-start mx-2 my-1 shadow-lg pointer-events-auto"><FiAlertTriangle className="mr-1"/><span>{auctionError}</span></div>}
+                         {auctionError && <div className="alert alert-error p-2 text-xs justify-start mx-2 my-1 shadow-lg pointer-events-auto"><FiAlertTriangle className="mr-1"/><span>{auctionError}</span></div>}
                     </div>
                 </div>
 
