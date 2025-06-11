@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import streamService from '../../services/streamService';
 import StreamTable from '../../components/streams/StreamTable'; // Path to your StreamTable
 import DeleteConfirmationModal from '../../components/common/DeleteConfirmationModal';
-import { FiPlus, FiTv, FiAlertCircle, FiInbox } from 'react-icons/fi';
+import { FiPlus, FiTv, FiAlertCircle, FiInbox, FiVideo } from 'react-icons/fi';
 
 const StreamsListPage = () => {
   const [streams, setStreams] = useState([]);
