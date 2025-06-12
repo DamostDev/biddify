@@ -5,39 +5,35 @@ import EmotionTracker from './EmotionTracker';
 const ChatMessage = ({ msg, localParticipantIdentity, variant }) => {
   const isOverlay = variant === 'overlay';
   const isOwnMessage = msg.user && msg.user.identity === localParticipantIdentity;
-  const messageEmotions = msg.emotions || []; // Get emotions array, default to empty
-
-  // Define positions for up to 3 emotion badges
-  const badgePositions = [
-    'indicator-bottom indicator-end',
-    'indicator-bottom indicator-start',
-    'indicator-top indicator-end',
-  ];
+  const messageEmotions = msg.emotions || [];
 
   const renderEmotionBadges = () => {
-    return messageEmotions.slice(0, 3).map((emotion, index) => (
-      <span
-        key={emotion}
-        className={`indicator-item badge badge-accent badge-xs capitalize ${badgePositions[index]}`}
-        title={emotion} // Show full emotion name on hover
-      >
-        {emotion.substring(0, 3)}
-      </span>
-    ));
+    if (!messageEmotions.length) return null;
+    return (
+      <div className={`flex flex-wrap gap-1 ${isOverlay ? 'mt-1 justify-start' : 'mt-1.5'}`}>
+        {messageEmotions.slice(0, 3).map((emotion) => (
+          <span
+            key={emotion}
+            className="badge badge-secondary badge-xs capitalize" // Using badge-primary, adjust color as needed
+            title={emotion}
+          >
+            {emotion}
+          </span>
+        ))}
+      </div>
+    );
   };
 
   if (isOverlay) {
     return (
       <div className={`flex items-start gap-2.5 mb-2 px-3 py-1 text-shadow-sm ${isOwnMessage ? 'justify-end' : ''}`}>
-        <div className="indicator"> {/* INDICATOR WRAPPER */}
-          {renderEmotionBadges()}
-          <div className="max-w-[85%] text-sm leading-snug break-words p-2 rounded-xl shadow-md bg-black/60 text-white backdrop-blur-sm"> {/* BUBBLE */}
+          <div className="max-w-[85%] text-sm leading-snug break-words p-2 rounded-xl shadow-md bg-black/60 text-white backdrop-blur-sm">
             {!isOwnMessage && msg.user && (
               <span className="font-semibold text-yellow-300 mr-1.5">{msg.user.username}:</span>
             )}
             {msg.text}
+            {renderEmotionBadges()} {/* Emotions directly inside the bubble */}
           </div>
-        </div>
       </div>
     );
   }
@@ -56,13 +52,11 @@ const ChatMessage = ({ msg, localParticipantIdentity, variant }) => {
     return (
       <div className="flex justify-end mb-1.5">
         <div className="flex flex-col items-end max-w-[75%] sm:max-w-[65%]">
-          <div className="indicator"> {/* INDICATOR WRAPPER */}
-            {renderEmotionBadges()}
-            <div className="bg-blue-600 text-white py-2 px-3 rounded-t-xl rounded-bl-xl shadow"> {/* BUBBLE */}
-              <p className="text-sm leading-snug break-words" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                {msg.text}
-              </p>
-            </div>
+          <div className="bg-blue-600 text-white py-2 px-3 rounded-t-xl rounded-bl-xl shadow">
+            <p className="text-sm leading-snug break-words" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+              {msg.text}
+            </p>
+            {renderEmotionBadges()} {/* Emotions inside the bubble, before timestamp */}
           </div>
           <p className="text-[10px] text-blue-200 mt-0.5 px-1">
             {formatTimestamp(msg.timestamp)}
@@ -70,7 +64,7 @@ const ChatMessage = ({ msg, localParticipantIdentity, variant }) => {
         </div>
       </div>
     );
-  } else {
+  } else { // Other users' messages
     return (
       <div className="flex items-start gap-2.5 mb-2">
         <div className="avatar placeholder shrink-0 mt-1">
@@ -82,26 +76,23 @@ const ChatMessage = ({ msg, localParticipantIdentity, variant }) => {
             )}
           </div>
         </div>
-        <div className="indicator"> {/* INDICATOR WRAPPER */}
-          {renderEmotionBadges()}
-          <div className="bg-neutral-700 text-white py-2 px-3 rounded-xl shadow max-w-[75%] sm:max-w-[65%]"> {/* BUBBLE */}
-            <p className="text-sm leading-snug break-words" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-              <span className={`font-semibold ${msg.user.isMod ? 'text-sky-400' : 'text-yellow-400'}`}>
-                {msg.user.username}:
-              </span>
-              {' '}
-              <span className="text-white">{msg.text}</span>
-            </p>
-            <p className="text-[10px] text-neutral-400 text-right mt-1 leading-none">
-              {formatTimestamp(msg.timestamp)}
-            </p>
-          </div>
+        <div className="bg-neutral-700 text-white py-2 px-3 rounded-xl shadow max-w-[75%] sm:max-w-[65%]">
+          <p className="text-sm leading-snug break-words" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+            <span className={`font-semibold ${msg.user.isMod ? 'text-sky-400' : 'text-yellow-400'}`}>
+              {msg.user.username}:
+            </span>
+            {' '}
+            <span className="text-white">{msg.text}</span>
+          </p>
+          {renderEmotionBadges()} {/* Emotions inside the bubble, before timestamp */}
+          <p className="text-[10px] text-neutral-400 text-right mt-1 leading-none">
+            {formatTimestamp(msg.timestamp)}
+          </p>
         </div>
       </div>
     );
   }
 };
-
 
 const WatcherItem = ({ watcher }) => (
     <div className="flex items-center gap-2 p-2 hover:bg-neutral-800/50 rounded">

@@ -14,6 +14,7 @@ import * as userService from '../services/userService.js';
 import chatService from '../services/chatService.js';
 import useEmotionStore from '../services/emotionStore.js';
 import emotionService from '../services/emotionService.js';
+import * as productService from '../services/productService.js';
 
 import StreamVideoPlayer from '../components/stream/StreamVideoPlayer';
 import StreamChat from '../components/stream/StreamChat';
@@ -61,6 +62,8 @@ function StreamPage() {
     const [isFollowingHost, setIsFollowingHost] = useState(false);
     const [roomParticipants, setRoomParticipants] = useState([]);
     const [analyzedMessageIds, setAnalyzedMessageIds] = useState(new Set());
+
+    const [streamerOwnedProducts, setStreamerOwnedProducts] = useState([]);
 
     // Auction State
     const [currentAuction, setCurrentAuction] = useState(null);
@@ -308,6 +311,19 @@ function StreamPage() {
                 const apiStreamDataResponse = await streamService.getStreamDetails(streamId);
                 if (!isMounted) return;
                 setStreamDataFromAPI(apiStreamDataResponse);
+                if (apiStreamDataResponse && apiStreamDataResponse.User && apiStreamDataResponse.User.user_id) {
+                    try {
+                        const streamerProds = await productService.getProductsByUserId(apiStreamDataResponse.User.user_id);
+                        if (isMounted) {
+                            setStreamerOwnedProducts(streamerProds || []);
+                        }
+                    } catch (productsError) {
+                        console.error("Failed to fetch streamer's products:", productsError);
+                        if (isMounted) setStreamerOwnedProducts([]); // Set to empty array on error
+                    }
+                } else {
+                     if (isMounted) setStreamerOwnedProducts([]);
+                }
                 const streamAuctions = await auctionService.getAllAuctions({ streamId: streamId, status: 'active' }).catch(() => []);
                 if (isMounted && streamAuctions.length > 0) setCurrentAuction(streamAuctions[0]);
                 const userIsStreamerCheck = currentUser?.user_id === apiStreamDataResponse.user_id;
@@ -454,7 +470,7 @@ function StreamPage() {
         viewerCount: roomParticipants.length,
         streamUrl: window.location.href,
     };
-    const productsForProductList = streamDataFromAPI?.Products || [];
+    
 
     return (
         <div className="flex flex-col h-screen bg-neutral-900 text-white overflow-hidden">
@@ -465,10 +481,10 @@ function StreamPage() {
             />
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex flex-col w-72 lg:w-80 xl:w-96 bg-black border-r border-neutral-800 overflow-y-auto">
-                    <StreamProductList
-                        streamTitle={streamDataFromAPI?.title || "Available Products"}
-                        products={productsForProductList}
-                    />
+                <StreamProductList
+                streamTitle={streamDataFromAPI?.title || "Available Products"}
+                products={streamerOwnedProducts} 
+            />
                     {isCurrentUserStreamer && (
                         <StreamerAuctionPanel
                             currentStreamId={streamId}

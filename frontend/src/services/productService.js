@@ -83,3 +83,12 @@ export const getProductById = async (productId) => {
       throw new Error(error.response?.data?.message || 'Failed to assign products to stream.');
     }
   };
+  export const getProductsByUserId = async (userId) => {
+    try {
+      const response = await apiClient.get(`/products/user/${userId}`);
+      return response.data; // Array of products
+    } catch (error) {
+      console.error(`Error fetching products for user ${userId}:`, error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || `Failed to fetch products for user ${userId}.`);
+    }
+  };
