@@ -367,26 +367,53 @@ function StreamPage() {
     }, [liveKitUrl, liveKitToken, isLoadingStreamData, handleConnectionStateChange, handleTrackSubscribed, handleParticipantConnectedEvent, handleParticipantDisconnectedEvent, handleDataReceived, handleAudioPlaybackChange]);
 
     useEffect(() => {
-        const newMessages = chatMessages.filter(msg => msg.id && msg.text && !analyzedMessageIds.has(msg.id));
+        const newMessages = chatMessages.filter(msg => msg.id && msg.text && !analyzedMessageIds.has(msg.id) && !msg.emotions); // Added !msg.emotions to avoid re-processing if already done
         if (newMessages.length === 0) return;
+
         const newIds = new Set(newMessages.map(m => m.id));
-        setAnalyzedMessageIds(prev => new Set([...prev, ...newIds]));
+        setAnalyzedMessageIds(prev => new Set([...Array.from(prev), ...Array.from(newIds)])); // Ensure unique IDs by converting to array first
+
         const analyze = async () => {
             for (const message of newMessages) {
                 try {
                     const result = await emotionService.analyzeEmotion(message.text);
                     const threshold = 0.18;
+                    let detectedMessageEmotions = [];
+
                     if (result && result.scores && typeof result.scores === 'object') {
-                        const [topEmotionName, topScore] = Object.entries(result.scores).reduce(
-                            (top, current) => (current[1] > top[1] ? current : top),
-                            ['', -1]
-                        );
-                        if (topEmotionName && topScore > threshold) {
-                             useEmotionStore.getState().increment(topEmotionName);
-                        }
+                        const emotionsWithScores = Object.entries(result.scores)
+                            .filter(([, score]) => score > threshold) // Get all emotions above threshold
+                            .sort(([, scoreA], [, scoreB]) => scoreB - scoreA); // Sort by score descending
+
+                        detectedMessageEmotions = emotionsWithScores.map(([name]) => name);
+
+                        // Increment global store for the EmotionTracker chart for each detected emotion
+                        detectedMessageEmotions.forEach(emotionName => {
+                            if (EMOTIONS_LIST.includes(emotionName)) { // Ensure emotion is valid
+                                useEmotionStore.getState().increment(emotionName);
+                            }
+                        });
                     }
+
+                    // Update the specific message in chatMessages state with its detected emotions
+                    setChatMessages(prevChatMessages =>
+                        prevChatMessages.map(m =>
+                            m.id === message.id
+                                ? { ...m, emotions: detectedMessageEmotions.slice(0, 3) } // Store top 3 emotions
+                                : m
+                        )
+                    );
+
                 } catch (error) {
                     console.error(`Failed to analyze message ID ${message.id}:`, error);
+                     // Add an empty emotions array to mark it as processed to avoid retries on error
+                    setChatMessages(prevChatMessages =>
+                        prevChatMessages.map(m =>
+                            m.id === message.id
+                                ? { ...m, emotions: [] }
+                                : m
+                        )
+                    );
                 }
             }
         };

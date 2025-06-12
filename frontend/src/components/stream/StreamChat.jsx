@@ -1,4 +1,3 @@
-// frontend/src/components/stream/StreamChat.jsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FiSend, FiUsers, FiMessageSquare, FiSmile, FiArrowDownCircle } from 'react-icons/fi';
 import EmotionTracker from './EmotionTracker';
@@ -6,16 +5,39 @@ import EmotionTracker from './EmotionTracker';
 const ChatMessage = ({ msg, localParticipantIdentity, variant }) => {
   const isOverlay = variant === 'overlay';
   const isOwnMessage = msg.user && msg.user.identity === localParticipantIdentity;
+  const messageEmotions = msg.emotions || []; // Get emotions array, default to empty
+
+  // Define positions for up to 3 emotion badges
+  const badgePositions = [
+    'indicator-bottom indicator-end',
+    'indicator-bottom indicator-start',
+    'indicator-top indicator-end',
+  ];
+
+  const renderEmotionBadges = () => {
+    return messageEmotions.slice(0, 3).map((emotion, index) => (
+      <span
+        key={emotion}
+        className={`indicator-item badge badge-accent badge-xs capitalize ${badgePositions[index]}`}
+        title={emotion} // Show full emotion name on hover
+      >
+        {emotion.substring(0, 3)}
+      </span>
+    ));
+  };
 
   if (isOverlay) {
     return (
-      <div className={`flex items-start gap-2.5 mb-2 px-3 py-1 rounded-full text-shadow-sm ${isOwnMessage ? 'justify-end' : ''}`}>
-          <div className="max-w-[85%] text-sm leading-snug break-words p-2 rounded-xl shadow-md bg-black/60 text-white backdrop-blur-sm">
-            {!isOwnMessage && (
+      <div className={`flex items-start gap-2.5 mb-2 px-3 py-1 text-shadow-sm ${isOwnMessage ? 'justify-end' : ''}`}>
+        <div className="indicator"> {/* INDICATOR WRAPPER */}
+          {renderEmotionBadges()}
+          <div className="max-w-[85%] text-sm leading-snug break-words p-2 rounded-xl shadow-md bg-black/60 text-white backdrop-blur-sm"> {/* BUBBLE */}
+            {!isOwnMessage && msg.user && (
               <span className="font-semibold text-yellow-300 mr-1.5">{msg.user.username}:</span>
             )}
             {msg.text}
           </div>
+        </div>
       </div>
     );
   }
@@ -34,10 +56,13 @@ const ChatMessage = ({ msg, localParticipantIdentity, variant }) => {
     return (
       <div className="flex justify-end mb-1.5">
         <div className="flex flex-col items-end max-w-[75%] sm:max-w-[65%]">
-          <div className="bg-blue-600 text-white py-2 px-3 rounded-t-xl rounded-bl-xl shadow">
-            <p className="text-sm leading-snug break-words" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-              {msg.text}
-            </p>
+          <div className="indicator"> {/* INDICATOR WRAPPER */}
+            {renderEmotionBadges()}
+            <div className="bg-blue-600 text-white py-2 px-3 rounded-t-xl rounded-bl-xl shadow"> {/* BUBBLE */}
+              <p className="text-sm leading-snug break-words" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+                {msg.text}
+              </p>
+            </div>
           </div>
           <p className="text-[10px] text-blue-200 mt-0.5 px-1">
             {formatTimestamp(msg.timestamp)}
@@ -57,22 +82,26 @@ const ChatMessage = ({ msg, localParticipantIdentity, variant }) => {
             )}
           </div>
         </div>
-        <div className="bg-neutral-700 text-white py-2 px-3 rounded-xl shadow max-w-[75%] sm:max-w-[65%]">
-          <p className="text-sm leading-snug break-words" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-            <span className={`font-semibold ${msg.user.isMod ? 'text-sky-400' : 'text-yellow-400'}`}>
-              {msg.user.username}:
-            </span>
-            {' '}
-            <span className="text-white">{msg.text}</span>
-          </p>
-          <p className="text-[10px] text-neutral-400 text-right mt-1 leading-none">
-            {formatTimestamp(msg.timestamp)}
-          </p>
+        <div className="indicator"> {/* INDICATOR WRAPPER */}
+          {renderEmotionBadges()}
+          <div className="bg-neutral-700 text-white py-2 px-3 rounded-xl shadow max-w-[75%] sm:max-w-[65%]"> {/* BUBBLE */}
+            <p className="text-sm leading-snug break-words" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+              <span className={`font-semibold ${msg.user.isMod ? 'text-sky-400' : 'text-yellow-400'}`}>
+                {msg.user.username}:
+              </span>
+              {' '}
+              <span className="text-white">{msg.text}</span>
+            </p>
+            <p className="text-[10px] text-neutral-400 text-right mt-1 leading-none">
+              {formatTimestamp(msg.timestamp)}
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 };
+
 
 const WatcherItem = ({ watcher }) => (
     <div className="flex items-center gap-2 p-2 hover:bg-neutral-800/50 rounded">
