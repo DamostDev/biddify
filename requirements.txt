@@ -1,5 +1,0 @@
-fastapi
-uvicorn
-transformers==4.45.2
-sentencepiece
-accelerate
