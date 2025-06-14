@@ -13,6 +13,18 @@ const StreamHeader = ({ streamData, onFollowToggle, isCurrentUserHost, onEndStre
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Function to truncate URL for display
+  const getTruncatedUrl = (url) => {
+    if (!url) return '';
+    // Remove protocol and www
+    let displayUrl = url.replace(/^https?:\/\/(www\.)?/, '');
+    // If still too long, truncate from the middle
+    if (displayUrl.length > 25) {
+      return displayUrl.substring(0, 12) + '...' + displayUrl.substring(displayUrl.length - 10);
+    }
+    return displayUrl;
+  };
+
   return (
     <header className="h-14 sm:h-16 bg-neutral-900 text-white flex items-center justify-between px-3 sm:px-4 border-b border-neutral-800 shrink-0">
       <div className="flex items-center gap-2 sm:gap-3">
@@ -51,12 +63,33 @@ const StreamHeader = ({ streamData, onFollowToggle, isCurrentUserHost, onEndStre
           <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
           <span>{streamData.viewerCount || 0}</span>
         </div>
-        <div className="hidden md:flex items-center bg-neutral-800 rounded-full text-xs h-8">
-          <span className="px-3 text-neutral-400 truncate max-w-[200px]">{streamData.streamUrl}</span>
-          <button onClick={handleCopyLink} className="btn btn-xs btn-neutral rounded-full h-7 px-3 normal-case">
-            {copied ? 'Copied!' : 'Copy'}
+        
+        {/* Compact URL display with copy button */}
+        <div className="hidden lg:flex items-center bg-neutral-800 rounded-full text-xs h-8 min-w-0">
+          <span 
+            className="px-3 text-neutral-400 truncate"
+            title={streamData.streamUrl} // Show full URL on hover
+            style={{ maxWidth: '120px' }}
+          >
+            {getTruncatedUrl(streamData.streamUrl)}
+          </span>
+          <button 
+            onClick={handleCopyLink} 
+            className="btn btn-xs btn-neutral rounded-full h-7 px-2 normal-case border-0 min-h-0"
+          >
+            <FiCopy size={12} />
           </button>
         </div>
+
+        {/* Mobile/tablet copy button */}
+        <button 
+          onClick={handleCopyLink}
+          className="lg:hidden btn btn-ghost btn-sm btn-circle p-0"
+          title="Copy stream link"
+        >
+          <FiCopy size={16} />
+        </button>
+
          <div className="relative"> {/* Wrapper for dropdown positioning */}
             <button
                 onClick={() => setShowMoreOptions(prev => !prev)}
@@ -70,7 +103,12 @@ const StreamHeader = ({ streamData, onFollowToggle, isCurrentUserHost, onEndStre
                     tabIndex={0}
                     className="absolute top-full right-0 mt-2 w-48 menu menu-sm dropdown-content z-[50] p-2 shadow bg-neutral-800 rounded-box border border-neutral-700"
                 >
-                    {/* Add other options here if needed */}
+                    {/* Copy link option for mobile */}
+                    <li className="lg:hidden">
+                      <a onClick={() => { handleCopyLink(); setShowMoreOptions(false); }}>
+                        <FiCopy className="mr-2"/>Copy Stream Link
+                      </a>
+                    </li>
                     <li><a onClick={() => { alert('Report feature coming soon!'); setShowMoreOptions(false); }}>Report Stream</a></li>
                     {isCurrentUserHost && onEndStream && (
                         <>
