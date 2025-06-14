@@ -1,15 +1,13 @@
 // frontend/src/components/streams/StreamTable.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiEdit, FiTrash2, FiPlayCircle, FiCalendar, FiEye, FiEyeOff, FiCopy } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiPlayCircle, FiCalendar, FiEye, FiEyeOff, FiCopy, FiVideo } from 'react-icons/fi';
 import { format } from 'date-fns'; // For formatting dates
 
 const StreamTable = ({ streams, onEdit, onDelete, onGoLive, isLoading }) => {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
-      // Maybe show a small temporary "Copied!" message
-      // For simplicity, not adding a stateful toast here
       alert("Stream Key Copied!");
     }).catch(err => {
       console.error('Failed to copy stream key: ', err);
