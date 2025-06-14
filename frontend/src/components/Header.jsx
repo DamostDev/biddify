@@ -1,8 +1,8 @@
+// frontend/src/components/Header.jsx
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import useAuthStore from '../services/authStore.js'; // Adjust path
-import { FiMenu, FiBell, FiSearch, FiUser, FiSettings, FiLogOut, FiGrid, FiHome, FiPlayCircle } from 'react-icons/fi'; 
-
+import useAuthStore from '../services/authStore.js';
+import { FiMenu, FiBell, FiSearch, FiUser, FiSettings, FiLogOut, FiGrid, FiHome, FiPlayCircle, FiVideo } from 'react-icons/fi'; // Added FiVideo
 
 const Header = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -62,15 +62,15 @@ const Header = () => {
           </Link>
         </div>
 
-        {/* --- NAVBAR CENTER (Search Bar) - MADE WIDER --- */}
-        <div className="navbar-center hidden lg:flex flex-grow px-8"> {/* Increased px-8 for more space */}
-          <form onSubmit={handleSearchSubmit} className="w-full"> {/* Removed max-width constraint */}
+        {/* --- NAVBAR CENTER (Search Bar) --- */}
+        <div className="navbar-center hidden lg:flex flex-grow px-8">
+          <form onSubmit={handleSearchSubmit} className="w-full">
             <div className="form-control relative">
               <input
                 type="text"
                 name="search"
-                placeholder="Search for anything..." // Generic placeholder
-                className="search-bar-wide input input-bordered input-primary w-full pl-10 pr-4 py-2 h-10 text-sm focus:ring-2 focus:ring-primary/50 rounded-full shadow-sm" // Back to original height but with custom class
+                placeholder="Search for anything..."
+                className="search-bar-wide input input-bordered input-primary w-full pl-10 pr-4 py-2 h-10 text-sm focus:ring-2 focus:ring-primary/50 rounded-full shadow-sm"
               />
               <button
                 type="submit"
@@ -85,7 +85,6 @@ const Header = () => {
 
         {/* --- NAVBAR END (Auth & User Menu) --- */}
         <div className="navbar-end">
-          {/* Mobile Search Icon (Optional - if you want search accessible on smaller screens) */}
           <button className="btn btn-ghost btn-circle md:hidden text-base-content hover:bg-base-content/10" aria-label="Search" onClick={() => alert("Mobile search UI not implemented yet")}>
             <FiSearch className="w-5 h-5" />
           </button>
@@ -96,12 +95,18 @@ const Header = () => {
 
           {!authLoading && isAuthenticated && user && (
             <>
-              {/* "Start Selling" or "Create" button could be here or in user dropdown */}
-              {/* Example:
-              <Link to="/dashboard/inventory/create" className="btn btn-secondary btn-sm normal-case mr-2 hidden md:flex items-center gap-1.5">
-                 <FiPlusSquare size={16}/> New Product
-              </Link>
-              */}
+              {/* --- "Go Live" Button --- */}
+              {!isOnDashboardPage && ( // Optionally hide if already in dashboard
+                <Link
+                  to="/dashboard/streams/create"
+                  className="btn btn-secondary btn-sm normal-case mr-2 hidden md:flex items-center gap-1.5 rounded-full shadow hover:shadow-md"
+                  title="Schedule a new stream"
+                >
+                  <FiVideo size={16}/> Go Live
+                </Link>
+              )}
+              {/* --- End "Go Live" Button --- */}
+
               <button className="btn btn-ghost btn-circle text-base-content hover:bg-base-content/10" aria-label="Notifications">
                 <div className="indicator">
                   <FiBell className="w-5 h-5" />
@@ -110,7 +115,7 @@ const Header = () => {
               </button>
               <div className="dropdown dropdown-end ml-2">
                 <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                  <div className="w-9 h-9 rounded-full ring-2 ring-accent ring-offset-base-100 ring-offset-2"> {/* Changed ring to accent */}
+                  <div className="w-9 h-9 rounded-full ring-2 ring-accent ring-offset-base-100 ring-offset-2">
                     {user.profile_picture_url ? (
                       <img src={user.profile_picture_url} alt={user.username || 'Avatar'} />
                     ) : (
