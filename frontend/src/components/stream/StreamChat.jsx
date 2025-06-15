@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FiSend, FiUsers, FiMessageSquare, FiSmile, FiArrowDownCircle } from 'react-icons/fi';
 import EmotionTracker from './EmotionTracker';
 
-const ChatMessage = ({ msg, localParticipantIdentity, variant }) => {
+const ChatMessage = ({ msg, localParticipantIdentity, variant, showEmotions }) => {
   const isOverlay = variant === 'overlay';
   const isOwnMessage = msg.user && msg.user.identity === localParticipantIdentity;
   const messageEmotions = msg.emotions || [];
 
   const renderEmotionBadges = () => {
-    if (!messageEmotions.length) return null;
+    if (!showEmotions || !messageEmotions.length) return null; // Conditionally render based on showEmotions
     return (
       <div className={`flex flex-wrap gap-1 ${isOverlay ? 'mt-1 justify-start' : 'mt-1.5'}`}>
         {messageEmotions.slice(0, 3).map((emotion) => (
@@ -113,7 +113,8 @@ const StreamChat = ({
     viewerCount, 
     onSendMessage, 
     localParticipantIdentity, 
-    roomParticipantsForChat = [] 
+    roomParticipantsForChat = [],
+    isCurrentUserStreamer = false // Added prop with default
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const chatEndRef = useRef(null);
@@ -134,7 +135,13 @@ const StreamChat = ({
     return (
       <div className="h-full max-h-[50vh] w-full overflow-y-auto chat-fade-mask px-2 pb-2 pointer-events-auto">
         {messages.map(msg => (
-            <ChatMessage key={msg.id} msg={msg} localParticipantIdentity={localParticipantIdentity} variant="overlay" />
+            <ChatMessage 
+                key={msg.id} 
+                msg={msg} 
+                localParticipantIdentity={localParticipantIdentity} 
+                variant="overlay" 
+                showEmotions={isCurrentUserStreamer} // Pass to ChatMessage
+            />
         ))}
         <div ref={chatEndRef} />
       </div>
@@ -175,18 +182,26 @@ const StreamChat = ({
         <button onClick={() => onTabChange('watching')} className={`flex-1 py-2.5 text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'watching' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}>
           <FiUsers size={14}/> Watching ({viewerCount})
         </button>
-        <button onClick={() => onTabChange('emotion')} className={`flex-1 py-2.5 text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'emotion' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}>
-          <FiSmile size={14}/> Emotion
-        </button>
+        {isCurrentUserStreamer && ( // Conditionally render Emotion tab
+            <button onClick={() => onTabChange('emotion')} className={`flex-1 py-2.5 text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'emotion' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}>
+                <FiSmile size={14}/> Emotion
+            </button>
+        )}
       </div>
 
       <div className="relative flex-grow overflow-y-auto">
         <div className="p-2 sm:p-3 space-y-0">
           {activeTab === 'chat' && messages.map(msg => (
-            <ChatMessage key={msg.id} msg={msg} localParticipantIdentity={localParticipantIdentity} variant="full" />
+            <ChatMessage 
+                key={msg.id} 
+                msg={msg} 
+                localParticipantIdentity={localParticipantIdentity} 
+                variant="full" 
+                showEmotions={isCurrentUserStreamer} // Pass to ChatMessage
+            />
           ))}
           {activeTab === 'watching' && watchers.map(w => <WatcherItem key={w.id} watcher={w} />)}
-          {activeTab === 'emotion' && <EmotionTracker />}
+          {activeTab === 'emotion' && isCurrentUserStreamer && <EmotionTracker />} {/* Conditionally render EmotionTracker */}
           <div ref={chatEndRef} />
         </div>
       </div>

@@ -15,16 +15,15 @@ import chatService from '../services/chatService.js';
 import useEmotionStore from '../services/emotionStore.js';
 import emotionService from '../services/emotionService.js';
 import * as productService from '../services/productService.js';
+import orderService from '../services/orderService.js'; // Import orderService
 
 import StreamVideoPlayer from '../components/stream/StreamVideoPlayer';
 import StreamChat from '../components/stream/StreamChat';
 import StreamProductList from '../components/stream/StreamProductList';
 import StreamAuctionControls from '../components/stream/StreamAuctionControls';
-// StreamHeader is now rendered inside StreamVideoPlayer
-// import StreamHeader from '../components/stream/StreamHeader'; 
 import StreamerAuctionPanel from '../components/stream/StreamerAuctionPanel';
+import ProductQuickViewModal from '../components/stream/ProductQuickViewModal';
 
-// ... (EMOTIONS_LIST, safeParseMetadata remain the same)
 const EMOTIONS_LIST = [
   'admiration', 'amusement', 'anger', 'annoyance', 'approval', 'caring',
   'confusion', 'curiosity', 'desire', 'disappointment', 'disapproval',
@@ -43,15 +42,14 @@ const safeParseMetadata = (metadataString) => {
 function StreamPage() {
     const { streamId } = useParams();
     const navigate = useNavigate();
-    const { user: currentUser, isAuthenticated } = useAuthStore();
+    const { user: currentUser, isAuthenticated, openAuthModal } = useAuthStore(); // Added openAuthModal
 
-    // ... (all existing state variables remain the same)
     const [streamDataFromAPI, setStreamDataFromAPI] = useState(null);
     const [mainParticipant, setMainParticipant] = useState(null);
     const [localParticipantState, setLocalParticipantState] = useState(null);
     const [isCurrentUserStreamer, setIsCurrentUserStreamer] = useState(false);
     const [statusMessage, setStatusMessage] = useState('Idle');
-    const [error, setError] = useState(null);
+    const [error, setError] = useState(null); // General page errors
     const [isLoadingStreamData, setIsLoadingStreamData] = useState(true);
     const [liveKitToken, setLiveKitToken] = useState(null);
     const [liveKitUrl, setLiveKitUrl] = useState(null);
@@ -68,7 +66,15 @@ function StreamPage() {
     const [isAuctionLoading, setIsAuctionLoading] = useState(false);
     const [auctionError, setAuctionError] = useState(null);
     const [followLoading, setFollowLoading] = useState(false);
-    const [isEndingStream, setIsEndingStream] = useState(false); // New state for ending stream
+    const [isEndingStream, setIsEndingStream] = useState(false);
+
+    const [isQuickViewModalOpen, setIsQuickViewModalOpen] = useState(false);
+    const [selectedProductForQuickView, setSelectedProductForQuickView] = useState(null);
+
+    // New state for "Buy Now" process
+    const [isBuyNowLoading, setIsBuyNowLoading] = useState(false);
+    const [buyNowError, setBuyNowError] = useState(null);
+
 
     const roomRef = useRef(null);
     const isCurrentUserStreamerRef = useRef(isCurrentUserStreamer);
@@ -77,11 +83,72 @@ function StreamPage() {
         isCurrentUserStreamerRef.current = isCurrentUserStreamer;
     }, [isCurrentUserStreamer]);
 
-    // ... (updateRoomParticipantsList, handleNewStreamerCandidate, handleConnectionStateChange,
-    //      handleTrackSubscribed, handleParticipantConnectedEvent, handleParticipantDisconnectedEvent,
-    //      handleDataReceived, handleAudioPlaybackChange, sendLiveKitData, handleAuctionAction,
-    //      handleToggleLocalAudioMute, handleToggleRemoteAudioMute, sendChatMessageViaLiveKit,
-    //      handlePlaceBid, handleFollowToggle all remain the same)
+    const handleOpenQuickViewModal = (product) => {
+        setSelectedProductForQuickView(product);
+        setIsQuickViewModalOpen(true);
+    };
+
+    const handleCloseQuickViewModal = () => {
+        setIsQuickViewModalOpen(false);
+        setSelectedProductForQuickView(null);
+        setBuyNowError(null); // Clear any buy now errors when modal closes
+    };
+    
+    const handleBuyNow = async (product) => {
+        if (!isAuthenticated || !currentUser) {
+            // TODO: Toast "Please log in to purchase."
+            openAuthModal('login'); // Open login modal
+            setIsQuickViewModalOpen(false); // Close quick view if auth is required
+            return;
+        }
+        if (!product || !product.product_id) {
+            setBuyNowError("Product information is missing.");
+            return;
+        }
+
+        console.log(`[StreamPage] Initiating Buy Now for product: ${product.title} (ID: ${product.product_id})`);
+        setIsBuyNowLoading(true);
+        setBuyNowError(null);
+
+        try {
+            // ---- THIS IS WHERE PAYMENT INTEGRATION WOULD START ----
+            // 1. Call backend to create a pending order / payment intent
+            //    const paymentData = await orderService.initiateBuyNow(product.product_id);
+            // 2. Use paymentData.clientSecret (if Stripe) to open Stripe Elements / Payment Modal
+            // 3. On successful payment confirmation from Stripe:
+            //    - Call another backend endpoint to finalize the order (e.g., mark as paid, update stock)
+            //    - Show success message to user
+            //    - Update product list (e.g., remove sold item or update availability)
+
+            // For now, we'll simulate a delay and success/error
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+
+            // SIMULATED SUCCESS:
+            console.log(`[StreamPage] Buy Now successful (simulated) for product: ${product.title}`);
+            alert(`Purchase successful for ${product.title}! (This is a simulation)`);
+            
+            // Refetch streamer products to update availability if item was sold
+            if (streamDataFromAPI?.User?.user_id) {
+                const streamerProds = await productService.getProductsByUserId(streamDataFromAPI.User.user_id);
+                setStreamerOwnedProducts(streamerProds || []);
+            }
+            
+            handleCloseQuickViewModal();
+
+            // SIMULATED ERROR (uncomment to test):
+            // throw new Error("Simulated payment processing error.");
+
+        } catch (err) {
+            console.error("[StreamPage] Buy Now failed:", err);
+            setBuyNowError(err.message || "Could not complete the purchase. Please try again.");
+            // TODO: Show toast notification for buyNowError
+            // Modal remains open on error for user to see message or retry
+        } finally {
+            setIsBuyNowLoading(false);
+        }
+    };
+
+
     const updateRoomParticipantsList = useCallback((roomInstance) => {
         if (!roomInstance) return;
         const participants = [];
@@ -183,6 +250,7 @@ function StreamPage() {
                 case 'AUCTION_ENDED':
                     setCurrentAuction(eventSpecificPayload);
                     setAuctionError(null);
+                    setIsAuctionLoading(false); 
                     break;
                 default:
                     console.warn('[LiveKit Data RECEIVED] Unknown message type:', message.type);
@@ -210,14 +278,32 @@ function StreamPage() {
         }
     }, []);
 
-    const handleAuctionAction = useCallback((action) => {
-        if (action.type === 'AUCTION_STARTED') {
-            const actualAuctionObject = action.payload.auction || action.payload; // Adapt if payload structure varies
-            setCurrentAuction(actualAuctionObject);
-            setAuctionError(null);
-            sendLiveKitData('AUCTION_STARTED', actualAuctionObject);
+    const handleAuctionAction = useCallback(async (action) => {
+        if (!isCurrentUserStreamerRef.current) return;
+        setAuctionError(null);
+        setIsAuctionLoading(true);
+
+        try {
+            if (action.type === 'AUCTION_STARTED') {
+                const actualAuctionObject = action.payload.auction || action.payload;
+                setCurrentAuction(actualAuctionObject);
+                sendLiveKitData('AUCTION_STARTED', actualAuctionObject);
+            } else if (action.type === 'REQUEST_AUCTION_END') {
+                const { auctionId } = action.payload;
+                if (!auctionId) throw new Error("Auction ID missing for end request.");
+                
+                const endedAuction = await auctionService.endAuction(auctionId); 
+                setCurrentAuction(endedAuction);
+                sendLiveKitData('AUCTION_ENDED', endedAuction);
+            }
+        } catch (err) {
+            console.error(`[StreamPage] Error processing auction action ${action.type}:`, err);
+            setAuctionError(err.message || `Failed to ${action.type === 'AUCTION_STARTED' ? 'start' : 'end'} auction.`);
+        } finally {
+            setIsAuctionLoading(false);
         }
-    }, [sendLiveKitData]);
+    }, [sendLiveKitData, currentAuction]);
+
 
     const handleToggleLocalAudioMute = useCallback(async () => {
         if (!roomRef.current?.localParticipant || !isCurrentUserStreamerRef.current) return;
@@ -265,7 +351,7 @@ function StreamPage() {
             setAuctionError("Cannot place bid.");
             return;
         }
-        setIsAuctionLoading(true);
+        setIsAuctionLoading(true); 
         setAuctionError(null);
         try {
             const bidResult = await auctionService.placeBid(auctionId, amount);
@@ -299,26 +385,21 @@ function StreamPage() {
         }
     }, [currentUser, streamDataFromAPI, isFollowingHost, followLoading]);
 
-
-    // --- NEW: Handle End Stream Process ---
     const handleEndStreamProcess = useCallback(async () => {
         if (!streamId || !isCurrentUserStreamerRef.current || isEndingStream) return;
         if (!window.confirm("Are you sure you want to end this stream? This action cannot be undone.")) return;
-
         setIsEndingStream(true);
         setError(null);
         try {
-            await streamService.endLiveStream(streamId); // API call to backend
+            await streamService.endLiveStream(streamId);
             if (roomRef.current) {
-                await roomRef.current.disconnect(true); // Disconnect from LiveKit
+                await roomRef.current.disconnect(true);
             }
             setStatusMessage("Stream ended.");
-            // No alert needed here, navigate will provide feedback
-            navigate('/dashboard/streams'); // Navigate after successful end
+            navigate('/dashboard/streams');
         } catch (err) {
             console.error("Error ending stream:", err);
             setError(err.message || "Could not end stream. Please try again from your dashboard.");
-            // Do not navigate if ending failed, allow retry or manual check
         } finally {
             setIsEndingStream(false);
         }
@@ -326,7 +407,6 @@ function StreamPage() {
 
 
     useEffect(() => {
-        // ... (existing init useEffect for fetching streamData, tokens, chat history, etc.)
         if (!streamId) {
             setError("Stream ID is missing.");
             setIsLoadingStreamData(false);
@@ -358,6 +438,11 @@ function StreamPage() {
                 if (isMounted && streamAuctions.length > 0) setCurrentAuction(streamAuctions[0]);
                 const userIsStreamerCheck = currentUser?.user_id === apiStreamDataResponse?.user_id;
                 setIsCurrentUserStreamer(userIsStreamerCheck);
+
+                if (!userIsStreamerCheck && activeTab === 'emotion' && isMounted) {
+                    setActiveTab('chat');
+                }
+
                 let tokenResponse = userIsStreamerCheck
                     ? await streamService.goLiveStreamer(streamId)
                     : await streamService.joinLiveStreamViewer(streamId);
@@ -392,119 +477,105 @@ function StreamPage() {
             isMounted = false;
             useEmotionStore.getState().reset();
         };
-    }, [streamId, currentUser?.user_id, isAuthenticated]); // Added isAuthenticated to re-evaluate if auth state changes
+    }, [streamId, currentUser?.user_id, isAuthenticated, activeTab]); 
 
 
     useEffect(() => {
-        // ... (existing LiveKit room connection useEffect)
         if (!liveKitUrl || !liveKitToken || isLoadingStreamData) return;
-        if (roomRef.current && roomRef.current.state !== ConnectionState.Disconnected) { // Check if already connected or connecting
+        if (roomRef.current && roomRef.current.state !== ConnectionState.Disconnected) { 
             return;
         }
-        
-        // Clear previous room instance before creating a new one
         if (roomRef.current) {
             roomRef.current.disconnect(true).catch(e => console.warn("Cleanup: Error disconnecting old room", e));
             roomRef.current.removeAllListeners();
         }
-    
         const room = new Room({ logLevel: LogLevel.info, adaptiveStream: true, dynacast: true });
         roomRef.current = room;
-    
         room.on(RoomEvent.ConnectionStateChanged, (state) => handleConnectionStateChange(state, room));
         room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
         room.on(RoomEvent.ParticipantConnected, handleParticipantConnectedEvent);
         room.on(RoomEvent.ParticipantDisconnected, handleParticipantDisconnectedEvent);
         room.on(RoomEvent.DataReceived, handleDataReceived);
         room.on(RoomEvent.AudioPlaybackStatusChanged, () => handleAudioPlaybackChange(room));
-    
         room.connect(liveKitUrl, liveKitToken)
             .then(() => console.log("Successfully connected to LiveKit room:", room.name))
             .catch(err => {
                 setError(prev => `${prev || ''} LiveKit Connection Failed: ${err.message}`);
                 console.error("LiveKit Connection Error in useEffect:", err);
         });
-    
         return () => {
             if (roomRef.current) {
                 roomRef.current.disconnect(true)
                     .then(() => console.log("LiveKit room disconnected on cleanup."))
                     .catch(e => console.warn("Error disconnecting room on cleanup:", e));
                 roomRef.current.removeAllListeners();
-                roomRef.current = null; // Ensure ref is cleared
+                roomRef.current = null;
             }
         };
     }, [liveKitUrl, liveKitToken, isLoadingStreamData, handleConnectionStateChange, handleTrackSubscribed, handleParticipantConnectedEvent, handleParticipantDisconnectedEvent, handleDataReceived, handleAudioPlaybackChange]);
 
-
-    // --- NEW: beforeunload listener ---
     useEffect(() => {
         const handleBeforeUnload = (event) => {
             if (isCurrentUserStreamerRef.current && roomRef.current && roomRef.current.state === ConnectionState.Connected) {
                 const confirmationMessage = "If you close this tab, the stream will end. Are you sure?";
-                event.preventDefault(); // Standard for most browsers
-                event.returnValue = confirmationMessage; // For older browsers
-                return confirmationMessage; // For some other browsers
+                event.preventDefault(); 
+                event.returnValue = confirmationMessage; 
+                return confirmationMessage; 
             }
         };
-
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
-    }, []); // Runs once on mount, relies on isCurrentUserStreamerRef for current state
+    }, []); 
 
-    // Emotion analysis effect (no changes needed here)
     useEffect(() => {
-        // ... (existing emotion analysis logic)
-         const newMessages = chatMessages.filter(msg => msg.id && msg.text && !analyzedMessageIds.has(msg.id) && !msg.emotions);
-        if (newMessages.length === 0) return;
-
-        const newIds = new Set(newMessages.map(m => m.id));
-        setAnalyzedMessageIds(prev => new Set([...Array.from(prev), ...Array.from(newIds)]));
-
-        const analyze = async () => {
-            for (const message of newMessages) {
-                try {
-                    const result = await emotionService.analyzeEmotion(message.text);
-                    const threshold = 0.18;
-                    let detectedMessageEmotions = [];
-
-                    if (result && result.scores && typeof result.scores === 'object') {
-                        const emotionsWithScores = Object.entries(result.scores)
-                            .filter(([, score]) => score > threshold)
-                            .sort(([, scoreA], [, scoreB]) => scoreB - scoreA);
-                        detectedMessageEmotions = emotionsWithScores.map(([name]) => name);
-                        detectedMessageEmotions.forEach(emotionName => {
-                            if (EMOTIONS_LIST.includes(emotionName)) {
-                                useEmotionStore.getState().increment(emotionName);
-                            }
-                        });
+        if (!isCurrentUserStreamerRef.current) { 
+             const newMessages = chatMessages.filter(msg => msg.id && msg.text && !analyzedMessageIds.has(msg.id) && !msg.emotions);
+            if (newMessages.length === 0) return;
+            const newIds = new Set(newMessages.map(m => m.id));
+            setAnalyzedMessageIds(prev => new Set([...Array.from(prev), ...Array.from(newIds)]));
+            const analyze = async () => {
+                for (const message of newMessages) {
+                    try {
+                        const result = await emotionService.analyzeEmotion(message.text);
+                        const threshold = 0.18;
+                        let detectedMessageEmotions = [];
+                        if (result && result.scores && typeof result.scores === 'object') {
+                            const emotionsWithScores = Object.entries(result.scores)
+                                .filter(([, score]) => score > threshold)
+                                .sort(([, scoreA], [, scoreB]) => scoreB - scoreA);
+                            detectedMessageEmotions = emotionsWithScores.map(([name]) => name);
+                            detectedMessageEmotions.forEach(emotionName => {
+                                if (EMOTIONS_LIST.includes(emotionName)) {
+                                    useEmotionStore.getState().increment(emotionName);
+                                }
+                            });
+                        }
+                        setChatMessages(prevChatMessages =>
+                            prevChatMessages.map(m =>
+                                m.id === message.id
+                                    ? { ...m, emotions: detectedMessageEmotions.slice(0, 3) }
+                                    : m
+                            )
+                        );
+                    } catch (error) {
+                        console.error(`Failed to analyze message ID ${message.id}:`, error);
+                        setChatMessages(prevChatMessages =>
+                            prevChatMessages.map(m =>
+                                m.id === message.id
+                                    ? { ...m, emotions: [] } 
+                                    : m
+                            )
+                        );
                     }
-                    setChatMessages(prevChatMessages =>
-                        prevChatMessages.map(m =>
-                            m.id === message.id
-                                ? { ...m, emotions: detectedMessageEmotions.slice(0, 3) }
-                                : m
-                        )
-                    );
-                } catch (error) {
-                    console.error(`Failed to analyze message ID ${message.id}:`, error);
-                    setChatMessages(prevChatMessages =>
-                        prevChatMessages.map(m =>
-                            m.id === message.id
-                                ? { ...m, emotions: [] }
-                                : m
-                        )
-                    );
                 }
-            }
-        };
-        analyze();
-    }, [chatMessages, analyzedMessageIds]);
+            };
+            analyze();
+        }
+    }, [chatMessages, analyzedMessageIds, isCurrentUserStreamer]); 
 
-    // Loading and Error states (no changes needed here)
-    if (isLoadingStreamData && !streamDataFromAPI) { // Show full page loader only if streamData is not yet loaded
+    if (isLoadingStreamData && !streamDataFromAPI) {
         return (
             <div className="flex h-screen items-center justify-center bg-black">
                 <span className="loading loading-lg loading-dots text-white"></span>
@@ -512,7 +583,7 @@ function StreamPage() {
             </div>
         );
     }
-    if (error && !streamDataFromAPI) { // Show full page error if streamData couldn't load
+    if (error && !streamDataFromAPI) { 
         return (
             <div className="flex flex-col h-screen items-center justify-center bg-neutral-900 text-white p-4 text-center">
                 <FiAlertTriangle className="w-16 h-16 text-error mb-4"/>
@@ -522,7 +593,7 @@ function StreamPage() {
             </div>
         );
     }
-     if (!streamDataFromAPI && !isLoadingStreamData && !error) { // Loaded, no error, but no data (e.g. stream deleted)
+     if (!streamDataFromAPI && !isLoadingStreamData && !error) { 
         return (
             <div className="flex flex-col h-screen items-center justify-center bg-neutral-900 text-white p-4 text-center">
                 <FiAlertTriangle className="w-16 h-16 text-warning mb-4"/>
@@ -533,10 +604,7 @@ function StreamPage() {
         );
     }
 
-
     const participantForVideoPlayer = isCurrentUserStreamer ? localParticipantState : mainParticipant;
-
-    // Prepare props for StreamHeader, which is now inside StreamVideoPlayer
     const streamHeaderDataForPlayer = {
         id: streamDataFromAPI?.stream_id || null,
         title: streamDataFromAPI?.title || 'Loading Stream...',
@@ -546,20 +614,19 @@ function StreamPage() {
             avatarUrl: streamDataFromAPI.User.profile_picture_url,
             rating: streamDataFromAPI.User.seller_rating || 0,
             isFollowed: isFollowingHost,
-        } : { username: 'Streamer', rating: 0, isFollowed: false }, // Provide defaults for host
-        viewerCount: roomParticipants.length || 0, // Use roomParticipants.length as a direct source or default to 0
-        streamUrl: typeof window !== 'undefined' ? window.location.href : '', // Check for window
+        } : { username: 'Streamer', rating: 0, isFollowed: false },
+        viewerCount: roomParticipants.length || 0, 
+        streamUrl: typeof window !== 'undefined' ? window.location.href : '',
     };
 
     return (
         <div className="flex flex-col h-screen bg-neutral-900 text-white overflow-hidden">
-            {/* StreamVideoPlayer now receives streamHeaderDataForPlayer */}
             <div className="flex flex-1 overflow-hidden">
-                {/* Left Sidebar */}
                 <aside className="hidden md:flex flex-col w-72 lg:w-80 xl:w-96 bg-black border-r border-neutral-800 overflow-y-auto">
                     <StreamProductList
                         streamTitle={streamDataFromAPI?.title || "Available Products"}
                         products={streamerOwnedProducts}
+                        onProductClick={handleOpenQuickViewModal}
                     />
                     {isCurrentUserStreamer && (
                         <StreamerAuctionPanel
@@ -570,7 +637,6 @@ function StreamPage() {
                     )}
                 </aside>
 
-                {/* Center Video Player Area */}
                 <div className="flex-1 flex items-center justify-center bg-black overflow-hidden relative">
                     <StreamVideoPlayer
                         mainParticipant={participantForVideoPlayer}
@@ -579,14 +645,12 @@ function StreamPage() {
                         onToggleAudioMute={isCurrentUserStreamer ? handleToggleLocalAudioMute : handleToggleRemoteAudioMute}
                         thumbnailUrl={streamDataFromAPI?.thumbnail_url}
                         currentAuctionOnVideo={currentAuction}
-                        streamHeaderData={streamHeaderDataForPlayer} // Pass the resilient object
+                        streamHeaderData={streamHeaderDataForPlayer}
                         onFollowToggleHeader={handleFollowToggle}
                         onEndStream={handleEndStreamProcess}
                     />
-                    {/* Mobile Overlays: Chat, Auction Controls, Input */}
                     <div className="absolute inset-0 flex flex-col justify-end pointer-events-none md:hidden">
-                        {/* Mobile Header (simplified) */}
-                        {streamDataFromAPI && ( // Check if streamDataFromAPI exists
+                        {streamDataFromAPI && (
                             <div className="absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/70 to-transparent z-30 pointer-events-auto">
                                 <div className="flex items-center gap-2">
                                     <Link to="/" className="btn btn-ghost btn-xs btn-circle text-white">
@@ -599,7 +663,6 @@ function StreamPage() {
                                     </div>
                                     <div>
                                         <p className="text-xs font-semibold line-clamp-1">{streamDataFromAPI.User?.username}</p>
-                                        {/* Use streamHeaderDataForPlayer.viewerCount here for consistency */}
                                         <p className="text-[10px] text-neutral-400">{streamHeaderDataForPlayer.viewerCount} watching</p>
                                     </div>
                                 </div>
@@ -611,6 +674,7 @@ function StreamPage() {
                                 variant="overlay"
                                 messages={chatMessages}
                                 localParticipantIdentity={roomRef.current?.localParticipant?.identity}
+                                isCurrentUserStreamer={isCurrentUserStreamer}
                             />
                         </div>
                         {currentAuction && currentAuction.Product && (
@@ -634,7 +698,6 @@ function StreamPage() {
                     </div>
                 </div>
 
-                {/* Right Sidebar (Chat & Desktop Auction Controls) */}
                 <aside className="hidden md:flex flex-col w-80 lg:w-96 bg-black border-l border-neutral-800 overflow-hidden">
                     {currentAuction && currentAuction.Product ? (
                         <div className="shrink-0">
@@ -643,7 +706,7 @@ function StreamPage() {
                                 onPlaceBid={handlePlaceBid}
                                 currentUserId={currentUser?.user_id}
                                 isStreamer={isCurrentUserStreamer}
-                                isLoadingBid={isAuctionLoading}
+                                isLoadingBid={isAuctionLoading} 
                             />
                         </div>
                     ) : (
@@ -656,16 +719,16 @@ function StreamPage() {
                         <StreamChat
                             variant="full"
                             messages={chatMessages} activeTab={activeTab} onTabChange={setActiveTab}
-                            viewerCount={streamHeaderDataForPlayer.viewerCount} // Now this should be safe
+                            viewerCount={streamHeaderDataForPlayer.viewerCount}
                             onSendMessage={sendChatMessageViaLiveKit}
                             localParticipantIdentity={roomRef.current?.localParticipant?.identity}
                             roomParticipantsForChat={roomParticipants}
+                            isCurrentUserStreamer={isCurrentUserStreamer}
                         />
                     </div>
                 </aside>
             </div>
 
-            {/* ... (rest of the component: audio playback prompt, ending stream loading) */}
             {!canPlaybackAudio && roomRef.current?.state === ConnectionState.Connected && (
                 <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-4 py-2 rounded-md text-sm z-50 shadow-lg animate-pulse">
                     Tap/Click page to enable audio
@@ -675,6 +738,34 @@ function StreamPage() {
                 <div className="fixed inset-0 bg-black/70 flex flex-col items-center justify-center z-[100]">
                     <span className="loading loading-lg loading-dots text-white"></span>
                     <p className="text-white mt-3">Ending stream...</p>
+                </div>
+            )}
+            {isCurrentUserStreamer && isAuctionLoading && currentAuction?.status === 'active' && (
+                 <div className="fixed inset-0 bg-black/50 flex flex-col items-center justify-center z-[100]">
+                    <span className="loading loading-lg loading-dots text-white"></span>
+                    <p className="text-white mt-3">Processing auction action...</p>
+                </div>
+            )}
+            {isBuyNowLoading && (
+                 <div className="fixed inset-0 bg-black/60 flex flex-col items-center justify-center z-[101]"> {/* Higher z-index for buy now loading */}
+                    <span className="loading loading-lg loading-dots text-white"></span>
+                    <p className="text-white mt-3">Processing purchase...</p>
+                </div>
+            )}
+
+
+            <ProductQuickViewModal
+                product={selectedProductForQuickView}
+                isOpen={isQuickViewModalOpen}
+                onClose={handleCloseQuickViewModal}
+                onBuyNow={handleBuyNow} // Pass the new handler
+            />
+            {/* Display BuyNow Error in QuickViewModal if it's open, or as a toast */}
+            {isQuickViewModalOpen && buyNowError && (
+                 <div className="toast toast-center toast-middle z-[200]"> {/* Ensure toast is above modal backdrop */}
+                    <div className="alert alert-error">
+                        <span>{buyNowError}</span>
+                    </div>
                 </div>
             )}
         </div>

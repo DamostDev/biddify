@@ -11,8 +11,8 @@ const ProductItem = ({ product, onProductClick }) => {
 
   return (
     <div 
-      className="p-3 border-b border-neutral-800 hover:bg-neutral-800/50 cursor-pointer"
-      onClick={() => onProductClick(product)}
+      className="p-3 border-b border-neutral-800 hover:bg-neutral-800/50 cursor-pointer transition-colors duration-150" // Added transition
+      onClick={() => onProductClick(product)} // Pass the full product object
     >
       <div className="flex gap-3">
         <div className="w-16 h-16 rounded-md bg-neutral-700 flex items-center justify-center overflow-hidden shrink-0">
@@ -36,20 +36,12 @@ const ProductItem = ({ product, onProductClick }) => {
   );
 };
 
-const StreamProductList = ({ streamTitle, products = [] }) => {
-  const [activeTab, setActiveTab] = useState('buyNow'); // Default to 'buyNow'
+const StreamProductList = ({ streamTitle, products = [], onProductClick }) => { // Added onProductClick prop
+  const [activeTab, setActiveTab] = useState('buyNow'); 
   const [searchTerm, setSearchTerm] = useState('');
-
-  const handleProductItemClick = (product) => {
-    console.log("Buy Now Product clicked:", product);
-    // TODO: Implement action for "Buy Now" product click (e.g., show details, add to cart)
-  };
   
   const buyNowProducts = useMemo(() => {
     if (!Array.isArray(products)) return [];
-    // Filter for active products to be shown in "Buy Now"
-    // Your backend's getProductsByUserId already filters by is_active: true if it's for public view
-    // If not, you might need to add a filter here: products.filter(p => p.is_active)
     return products; 
   }, [products]);
 
@@ -58,12 +50,9 @@ const StreamProductList = ({ streamTitle, products = [] }) => {
     if (activeTab === 'buyNow') {
       sourceProducts = buyNowProducts;
     } else if (activeTab === 'auction') {
-      // For auction tab, you'd likely get data from `currentAuction.Product` if an auction is active.
-      // Or, if you want to list items designated for auction but not yet active:
-      // sourceProducts = products.filter(p => p.isDesignatedForAuction); // Example
       sourceProducts = []; 
     } else if (activeTab === 'sold') {
-      sourceProducts = []; // Needs a separate data source for sold items
+      sourceProducts = []; 
     }
     
     if (!searchTerm) return sourceProducts;
@@ -101,7 +90,6 @@ const StreamProductList = ({ streamTitle, products = [] }) => {
       </div>
 
       <div className="flex justify-around items-center px-2 border-b border-neutral-800 shrink-0">
-        {/* Pass buyNowProducts.length for the count of Buy Now items */}
         <TabButton name="buyNow" label="Buy Now" count={buyNowProducts.length} /> 
         <TabButton name="auction" label="Auction" count={activeTab === 'auction' ? filteredDisplayProducts.length : 0} />
         <TabButton name="sold" label="Sold" count={activeTab === 'sold' ? filteredDisplayProducts.length : 0} />
@@ -122,7 +110,6 @@ const StreamProductList = ({ streamTitle, products = [] }) => {
         </div>
       )}
 
-      {/* Show product count based on the currently filtered list for the active tab */}
       <div className="px-3 text-xs text-neutral-400 mb-1 shrink-0">
         {filteredDisplayProducts.length > 0 ? `${filteredDisplayProducts.length} Product(s)` : ''}
         {filteredDisplayProducts.length > 0 && searchTerm && ` matching "${searchTerm}"`}
@@ -133,7 +120,7 @@ const StreamProductList = ({ streamTitle, products = [] }) => {
             <ProductItem 
                 key={product.product_id} 
                 product={product} 
-                onProductClick={handleProductItemClick}
+                onProductClick={onProductClick} // Use the passed prop
             />
           ))
         ) : (
