@@ -1,45 +1,76 @@
 // frontend/src/pages/HomePage.jsx
-import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../services/authStore';
 import HomeSidebar from '../components/home/HomeSidebar';
 import StreamCarousel from '../components/home/StreamCarousel';
 import CategoryPreview from '../components/home/CategoryPreview';
-import { 
-    FiZap, 
-    FiClock, 
-    FiFilm, 
-    FiChevronDown, // Added
-    FiPlayCircle,   // Added
-    FiGift,         // Added
-    FiUsers,        // Added
-    FiSearch        // Added
+import {
+    FiZap,
+    FiClock,
+    FiFilm,
+    FiChevronDown,
+    FiPlayCircle,
+    FiGift,
+    FiUsers,
+    FiSearch,
+    FiGrid, // For Explore Categories
+    FiChevronRight // For View All link
 } from 'react-icons/fi';
 import streamService from '../services/streamService';
+import { getAllCategories } from '../services/productService';
+import { format, parseISO } from 'date-fns'; // For date formatting
 
-// MOCK API for categories - replace if you have a real one
-const placeholderCategoryData = [
-  { id: 'sneakers-streetwear', name: 'Sneakers & Streetwear', imageUrl: 'https://picsum.photos/seed/cat10/300/180' },
-  { id: 'trading-card-games', name: 'Trading Card Games', imageUrl: 'https://picsum.photos/seed/cat13/300/180' },
-  { id: 'vintage-toys', name: 'Vintage Toys', imageUrl: 'https://picsum.photos/seed/cat14/300/180' },
-];
-const mockApiCall = (data, delay = 700) => new Promise(resolve => setTimeout(() => resolve(data), delay));
-const getSuggestedCategories = async () => { return mockApiCall(placeholderCategoryData); };
-// END MOCK
+// TEMPORARY: Manual mapping of category names to image URLs
+const categoryImageMap = {
+  'Electronics': 'https://images.pexels.com/photos/577560/pexels-photo-577560.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Home & Garden': 'https://images.pexels.com/photos/589/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=600',
+  'Toys & Hobbies': 'https://images.pexels.com/photos/47730/the-ball-stadion-football-the-pitch-47730.jpeg?auto=compress&cs=tinysrgb&w=600',
+  "Men's Clothing": 'https://images.pexels.com/photos/1639729/pexels-photo-1639729.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Fashion': 'https://images.pexels.com/photos/1050244/pexels-photo-1050244.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Collectibles': 'https://images.pexels.com/photos/763148/pexels-photo-763148.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Sneakers & Streetwear': 'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Trading Card Games (TCG)': 'https://images.pexels.com/photos/1629236/pexels-photo-1629236.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Vintage Toys': 'https://images.pexels.com/photos/2085739/pexels-photo-2085739.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Books, Movies & Music': 'https://images.pexels.com/photos/768125/pexels-photo-768125.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Art & Crafts': 'https://images.pexels.com/photos/1269968/pexels-photo-1269968.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Automotive Parts & Accessories': 'https://images.pexels.com/photos/164634/pexels-photo-164634.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Health & Beauty': 'https://images.pexels.com/photos/3762464/pexels-photo-3762464.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'Computers & Laptops': 'https://images.pexels.com/photos/459654/pexels-photo-459654.jpeg?auto=compress&cs=tinysrgb&w=600',
+  "Women's Clothing": 'https://images.pexels.com/photos/375880/pexels-photo-375880.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'DefaultCategory': 'https://picsum.photos/seed/defaultcat/300/180'
+};
+
 
 const LoggedInHomePage = () => {
-  const [rawLiveStreams, setRawLiveStreams] = useState([]); // Store raw API response
-  const [rawUpcomingSportsCards, setRawUpcomingSportsCards] = useState([]);
+  const [rawLiveStreams, setRawLiveStreams] = useState([]);
+  const [rawUpcomingStreams, setRawUpcomingStreams] = useState([]); // Renamed from rawUpcomingSportsCards
   const [categories, setCategories] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Combined loading state
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Memoize the transformation function if it's defined inside the component
   const transformStreamData = useCallback((stream) => {
     if (!stream || typeof stream.stream_id === 'undefined') {
-      // console.warn("transformStreamData called with invalid stream:", stream);
-      return null; // Or some default structure, but null helps filter out bad data
+      return null;
     }
+    let formattedStartTime = null;
+    if (stream.status === 'scheduled' && stream.start_time) {
+      try {
+        const dateObject = parseISO(stream.start_time);
+        formattedStartTime = format(dateObject, 'p'); // e.g., "6:00 PM"
+      } catch (e) {
+        console.error("Error parsing stream.start_time:", stream.start_time, e);
+        const fallbackDate = new Date(stream.start_time);
+        if (!isNaN(fallbackDate)) {
+            formattedStartTime = fallbackDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else {
+            formattedStartTime = "Soon"; // Default to "Soon" if parsing completely fails
+        }
+      }
+    } else if (stream.status === 'scheduled' && !stream.start_time) {
+        formattedStartTime = "Soon"; // If scheduled but no start_time, show "Soon"
+    }
+
     return {
       id: stream.stream_id,
       user: {
@@ -49,7 +80,7 @@ const LoggedInHomePage = () => {
       title: stream.title,
       category: stream.Category?.name || 'General',
       viewerCount: stream.viewer_count,
-      startTime: stream.status === 'scheduled' ? new Date(stream.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null,
+      startTime: formattedStartTime,
       isLive: stream.status === 'live',
       thumbnailUrl: stream.thumbnail_url || `https://picsum.photos/seed/${stream.stream_id}/${stream.status === 'scheduled' ? '320/400' : '300/375'}`,
       tags: stream.tags || [],
@@ -63,8 +94,8 @@ const LoggedInHomePage = () => {
       try {
         const [liveDataResult, upcomingDataResult, categoryDataResult] = await Promise.allSettled([
           streamService.getAllStreams({ status: 'live', limit: 8 }),
-          streamService.getAllStreams({ status: 'scheduled', category_id: '1', limit: 6 }), // Replace '1' with actual category ID if dynamic
-          getSuggestedCategories()
+          streamService.getAllStreams({ status: 'scheduled', limit: 6 }), // Fetches ALL upcoming streams
+          getAllCategories()
         ]);
 
         if (liveDataResult.status === 'fulfilled') {
@@ -75,14 +106,20 @@ const LoggedInHomePage = () => {
         }
 
         if (upcomingDataResult.status === 'fulfilled') {
-          setRawUpcomingSportsCards(upcomingDataResult.value || []);
+          setRawUpcomingStreams(upcomingDataResult.value || []); // Updated state variable
         } else {
           console.error("Error fetching upcoming streams:", upcomingDataResult.reason);
            setError(prev => (prev ? `${prev}, ` : '') + 'Failed to load upcoming streams.');
         }
 
         if (categoryDataResult.status === 'fulfilled') {
-          setCategories(categoryDataResult.value || []);
+          const fetchedCategories = categoryDataResult.value || [];
+          const augmentedCategories = fetchedCategories.map(cat => ({
+            ...cat,
+            imageUrl: cat.image_url || categoryImageMap[cat.name] || categoryImageMap['DefaultCategory'],
+            id: cat.category_id
+          })).filter(cat => cat.parent_category_id === null);
+          setCategories(augmentedCategories);
         } else {
           console.error("Error fetching categories:", categoryDataResult.reason);
            setError(prev => (prev ? `${prev}, ` : '') + 'Failed to load categories.');
@@ -96,36 +133,32 @@ const LoggedInHomePage = () => {
       }
     };
     fetchAllData();
-  }, []);
+  }, []); // Keep dependencies empty for single fetch on mount
 
-  // Perform transformations only when raw data is available and not loading
-  // And ensure filtering out nulls from transformStreamData if it can return null
   const liveStreamsForYou = !isLoading && rawLiveStreams.length > 0
     ? rawLiveStreams.slice(0, 4).map(transformStreamData).filter(Boolean)
     : [];
   const liveStreamsLiveNow = !isLoading && rawLiveStreams.length > 0
     ? rawLiveStreams.slice(4, 8).map(transformStreamData).filter(Boolean)
     : [];
-  const transformedUpcomingSportsCards = !isLoading && rawUpcomingSportsCards.length > 0
-    ? rawUpcomingSportsCards.map(transformStreamData).filter(Boolean)
+  const transformedUpcomingStreams = !isLoading && rawUpcomingStreams.length > 0 // Updated variable name
+    ? rawUpcomingStreams.map(transformStreamData).filter(Boolean)
     : [];
 
-  if (isLoading) { // Show a general loading state for the whole page if preferred
+  if (isLoading) {
       return (
-          <div className="flex flex-1 items-center justify-center p-10">
+          <div className="flex flex-1 items-center justify-center p-10 bg-white">
               <span className="loading loading-lg loading-dots text-primary"></span>
           </div>
       );
-  }
-
-  if (error && liveStreamsForYou.length === 0 && liveStreamsLiveNow.length === 0) {
-    return <div className="flex-1 flex items-center justify-center p-4 text-error">{error}</div>;
   }
 
   return (
     <div className="flex flex-col lg:flex-row bg-white min-h-screen">
       <HomeSidebar />
       <main className="flex-1 overflow-y-auto bg-white py-8 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 space-y-10 sm:space-y-12">
+
+        {/* 1. "For You" Stream Carousel */}
         <StreamCarousel
             title="For You"
             streams={liveStreamsForYou}
@@ -134,6 +167,28 @@ const LoggedInHomePage = () => {
             viewAllLink="/foryou"
             type="live"
         />
+
+        {/* 2. "Explore Categories" Section - MOVED HERE */}
+        {categories.length > 0 && (
+          <section className="py-6 sm:py-8 rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-900 text-neutral-content shadow-xl">
+            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center mb-5 sm:mb-6">
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+                  <FiGrid className="text-sky-400" /> Explore Categories
+                </h2>
+                <Link to="/categories/all" className="text-xs sm:text-sm font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1">
+                  View All <FiChevronRight />
+                </Link>
+              </div>
+              <CategoryPreview
+                  categories={categories.slice(0, 5)} // Show top 5 top-level categories
+                  isLoading={isLoading && categories.length === 0}
+              />
+            </div>
+          </section>
+        )}
+
+        {/* 3. "Live Now" Stream Carousel */}
         <StreamCarousel
             title="Live Now"
             streams={liveStreamsLiveNow}
@@ -142,27 +197,24 @@ const LoggedInHomePage = () => {
             viewAllLink="/live"
             type="live"
         />
-        <CategoryPreview
-            title="Categories You Might Like"
-            categories={categories}
-            isLoading={isLoading && categories.length === 0}
-        />
+
+        {/* 4. "Upcoming Streams" (All Categories) Stream Carousel */}
         <StreamCarousel
-            title="Upcoming in Sports Cards" // Make sure your backend returns a category_id that matches
-            streams={transformedUpcomingSportsCards}
-            isLoading={isLoading && transformedUpcomingSportsCards.length === 0}
+            title="Upcoming Streams" // Changed title
+            streams={transformedUpcomingStreams} // Changed data source
+            isLoading={isLoading && transformedUpcomingStreams.length === 0}
             icon={<FiClock className="text-green-600"/>}
-            viewAllLink="/upcoming/sports-cards"
+            viewAllLink="/upcoming/all" // Changed link, ensure this route/page is implemented
             type="upcoming"
         />
+
          {error && <p className="text-center text-sm text-error mt-4">{error}</p>}
       </main>
     </div>
   );
 };
 
-// ... PublicHomePage and main HomePage component remain the same
-// (ensure imports in PublicHomePage for FiZap, FiChevronDown, FiPlayCircle, FiGift, FiUsers, FiSearch are present)
+// --- Public Home Page (for logged-out users) ---
 const FeatureCard = ({ icon, title, description }) => (
   <div className="card bg-base-200 shadow-xl hover:shadow-2xl transition-all duration-300 ease-in-out group transform hover:-translate-y-1">
     <figure className="px-10 pt-10">
@@ -188,7 +240,7 @@ const PublicHomePage = () => (
             Your premier destination for live auctions, interactive shopping, and vibrant community connection. Dive into streams and uncover treasures.
           </p>
           <Link
-            to="/live" // Changed to /live or /foryou
+            to="/live"
             className="btn btn-lg btn-primary rounded-full shadow-lg hover:shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out animate-[fade-in-up_0.6s_ease-out_0.4s_forwards]"
           >
             Explore Live Streams <FiZap className="inline ml-2 h-5 w-5" />
@@ -236,7 +288,7 @@ const PublicHomePage = () => (
             Join thousands of users exploring, bidding, and discovering amazing products live. Your next favorite find is waiting!
           </p>
           <Link
-            to="/live" // Changed to /live or /foryou
+            to="/live"
             className="btn btn-lg btn-primary rounded-full shadow-lg hover:shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out"
           >
             Explore All Streams <FiSearch className="inline ml-2 h-5 w-5" />
@@ -253,12 +305,11 @@ const PublicHomePage = () => (
   </div>
 );
 
+// --- Main HomePage Component (Decides which version to show) ---
 const HomePage = () => {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const isLoadingAuth = useAuthStore(state => state.isLoading);
 
-  // Show a general loading screen for the entire app if auth is still loading
-  // This is different from the LoggedInHomePage's internal loading state for content
   if (isLoadingAuth) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-base-200">

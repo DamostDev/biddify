@@ -1,88 +1,97 @@
+// frontend/src/components/home/HomeSidebar.jsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import useAuthStore from '../../services/authStore'; // Adjust path if needed
-import { FiGlobe } from 'react-icons/fi';
+import useAuthStore from '../../services/authStore';
+import { FiUsers, FiCompass, FiGrid, FiSettings, FiLogOut, FiHelpCircle, FiGlobe } from 'react-icons/fi'; // Added icons
 
-const SidebarLink = ({ to, text, isActive }) => (
+const SidebarLink = ({ to, text, isActive, icon }) => (
   <Link
     to={to}
-    className={`block py-2.5 px-4 rounded-lg text-sm transition-colors duration-150
+    className={`flex items-center gap-3 py-2.5 px-4 rounded-lg text-sm transition-colors duration-150
                 ${isActive
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md scale-[1.02] transform' // Active link style
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md scale-[1.02] transform'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'}`}
   >
+    {icon && React.createElement(icon, { className: "w-5 h-5 opacity-80" })}
     {text}
   </Link>
 );
 
 const HomeSidebar = () => {
-  const user = useAuthStore(state => state.user);
+  const { user, logout } = useAuthStore(); // Added logout
   const location = useLocation();
 
-  // --- FULL Navigation Items ---
+  if (!user) {
+    return null; // Sidebar is for logged-in users
+  }
+
+  // Simplified main navigation
   const mainNavItems = [
-    { name: 'For You', to: '/' },
-    { name: 'Sports Cards', to: '/category/sports-cards' },
-    { name: 'Trading Card Games', to: '/category/tcg' },
-    { name: 'Sneakers', to: '/category/sneakers' },
-    { name: 'Comics & Manga', to: '/category/comics' },
-    { name: 'Vintage Clothing', to: '/category/vintage-clothing' },
-    { name: 'Funko Pops', to: '/category/funko' },
-    { name: 'Luxury Bags', to: '/category/luxury-bags' },
-    { name: 'Action Figures', to: '/category/action-figures'},
-    { name: 'Designer Toys', to: '/category/designer-toys'},
-    // Add more categories as needed, or fetch these dynamically
+    { name: 'For You', to: '/', icon: FiUsers }, // "For You" is typically the homepage for logged-in users
+    { name: 'Following', to: '/following', icon: FiUsers }, // Kept "Following"
+    { name: 'Explore Categories', to: '/categories/all', icon: FiGrid }, // Link to a dedicated page
+    // { name: 'Live Now', to: '/live', icon: FiCompass}, // Optional if you want a direct "Live" link
   ];
 
   const footerLinks = [
+    // Keep these, they are fine
     { name: 'Blog', to: '/blog' },
     { name: 'Careers', to: '/careers' },
     { name: 'About Us', to: '/about' },
     { name: 'FAQ', to: '/faq' },
-    { name: 'Whatnot Affiliates', to: '/affiliates' }, // Or Biddify Affiliates
     { name: 'Privacy', to: '/privacy' },
     { name: 'Terms', to: '/terms' },
     { name: 'Contact', to: '/contact' },
   ];
-  // --- End FULL Navigation Items ---
 
-  if (!user) {
-    // This sidebar is typically for logged-in users.
-    // If you want to show a generic sidebar for logged-out users on some pages,
-    // you'd handle that logic here or in the parent component.
-    return null;
-  }
+  const handleLogout = () => {
+    logout();
+    // Navigation to '/' or '/login' usually handled by ProtectedRoute or auth state listeners in App.jsx
+  };
 
   return (
     <aside className="hidden lg:flex flex-col w-60 xl:w-64 h-screen sticky top-0 bg-white border-r border-neutral-200/80 pt-6 px-4 space-y-6 overflow-y-auto">
       <div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-5 px-2 pt-2 tracking-tight">
-          Hi {user.username || 'There'}!
-        </h2>
-        <nav className="space-y-1">
+        {/* User Greeting / Link to Dashboard */}
+        <div className="px-2 mb-5">
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+                Hi, {user.username || 'There'}!
+            </h2>
+            <Link to="/dashboard" className="text-xs text-blue-600 hover:underline">Go to Dashboard</Link>
+        </div>
+
+        <nav className="space-y-1.5"> {/* Slightly increased spacing */}
           {mainNavItems.map(item => (
             <SidebarLink
               key={item.name}
               to={item.to}
               text={item.name}
-              isActive={ // More precise active check
-                (item.to === '/' && location.pathname === '/') || // Exact match for Home ("For You")
+              icon={item.icon}
+              isActive={
+                (item.to === '/' && location.pathname === '/') ||
                 (item.to !== '/' && location.pathname.startsWith(item.to))
               }
             />
           ))}
-          {/* Divider before secondary links */}
-          <div className="pt-4 pb-2 px-1">
-            <hr className="border-slate-200"/>
-          </div>
-          {/* Secondary navigation links */}
-          <SidebarLink to="/following" text="Following" isActive={location.pathname.startsWith('/following')} />
-          <SidebarLink to="/explore" text="Explore Categories" isActive={location.pathname.startsWith('/explore')} />
         </nav>
       </div>
 
       {/* Footer section in the sidebar */}
       <div className="mt-auto pt-8 pb-4 text-xs space-y-3">
+        {/* Settings and Logout */}
+        <div className="space-y-1 px-1">
+            <SidebarLink to="/dashboard/settings" text="Settings" icon={FiSettings} isActive={location.pathname.startsWith('/dashboard/settings')} />
+            <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 w-full text-left py-2.5 px-4 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium"
+            >
+                <FiLogOut className="w-5 h-5 opacity-80" />
+                Logout
+            </button>
+        </div>
+         <div className="pt-3 pb-1 px-1">
+            <hr className="border-slate-200"/>
+        </div>
         <div className="flex flex-wrap gap-x-3 gap-y-1.5 px-2">
           {footerLinks.map(link => (
             <Link key={link.name} to={link.to} className="text-slate-500 hover:text-blue-600 hover:underline">
