@@ -42,14 +42,14 @@ const safeParseMetadata = (metadataString) => {
 function StreamPage() {
     const { streamId } = useParams();
     const navigate = useNavigate();
-    const { user: currentUser, isAuthenticated, openAuthModal } = useAuthStore(); // Added openAuthModal
+    const { user: currentUser, isAuthenticated, openAuthModal } = useAuthStore();
 
     const [streamDataFromAPI, setStreamDataFromAPI] = useState(null);
     const [mainParticipant, setMainParticipant] = useState(null);
     const [localParticipantState, setLocalParticipantState] = useState(null);
     const [isCurrentUserStreamer, setIsCurrentUserStreamer] = useState(false);
     const [statusMessage, setStatusMessage] = useState('Idle');
-    const [error, setError] = useState(null); // General page errors
+    const [error, setError] = useState(null);
     const [isLoadingStreamData, setIsLoadingStreamData] = useState(true);
     const [liveKitToken, setLiveKitToken] = useState(null);
     const [liveKitUrl, setLiveKitUrl] = useState(null);
@@ -70,11 +70,8 @@ function StreamPage() {
 
     const [isQuickViewModalOpen, setIsQuickViewModalOpen] = useState(false);
     const [selectedProductForQuickView, setSelectedProductForQuickView] = useState(null);
-
-    // New state for "Buy Now" process
     const [isBuyNowLoading, setIsBuyNowLoading] = useState(false);
     const [buyNowError, setBuyNowError] = useState(null);
-
 
     const roomRef = useRef(null);
     const isCurrentUserStreamerRef = useRef(isCurrentUserStreamer);
@@ -91,76 +88,44 @@ function StreamPage() {
     const handleCloseQuickViewModal = () => {
         setIsQuickViewModalOpen(false);
         setSelectedProductForQuickView(null);
-        setBuyNowError(null); // Clear any buy now errors when modal closes
+        setBuyNowError(null);
     };
     
     const handleBuyNow = async (product) => {
         if (!isAuthenticated || !currentUser) {
-            // TODO: Toast "Please log in to purchase."
-            openAuthModal('login'); // Open login modal
-            setIsQuickViewModalOpen(false); // Close quick view if auth is required
+            openAuthModal('login');
+            setIsQuickViewModalOpen(false);
             return;
         }
         if (!product || !product.product_id) {
             setBuyNowError("Product information is missing.");
             return;
         }
-
-        console.log(`[StreamPage] Initiating Buy Now for product: ${product.title} (ID: ${product.product_id})`);
         setIsBuyNowLoading(true);
         setBuyNowError(null);
-
         try {
-            // ---- THIS IS WHERE PAYMENT INTEGRATION WOULD START ----
-            // 1. Call backend to create a pending order / payment intent
-            //    const paymentData = await orderService.initiateBuyNow(product.product_id);
-            // 2. Use paymentData.clientSecret (if Stripe) to open Stripe Elements / Payment Modal
-            // 3. On successful payment confirmation from Stripe:
-            //    - Call another backend endpoint to finalize the order (e.g., mark as paid, update stock)
-            //    - Show success message to user
-            //    - Update product list (e.g., remove sold item or update availability)
-
-            // For now, we'll simulate a delay and success/error
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-
-            // SIMULATED SUCCESS:
+            await new Promise(resolve => setTimeout(resolve, 2000));
             console.log(`[StreamPage] Buy Now successful (simulated) for product: ${product.title}`);
             alert(`Purchase successful for ${product.title}! (This is a simulation)`);
-            
-            // Refetch streamer products to update availability if item was sold
             if (streamDataFromAPI?.User?.user_id) {
                 const streamerProds = await productService.getProductsByUserId(streamDataFromAPI.User.user_id);
                 setStreamerOwnedProducts(streamerProds || []);
             }
-            
             handleCloseQuickViewModal();
-
-            // SIMULATED ERROR (uncomment to test):
-            // throw new Error("Simulated payment processing error.");
-
         } catch (err) {
-            console.error("[StreamPage] Buy Now failed:", err);
             setBuyNowError(err.message || "Could not complete the purchase. Please try again.");
-            // TODO: Show toast notification for buyNowError
-            // Modal remains open on error for user to see message or retry
         } finally {
             setIsBuyNowLoading(false);
         }
     };
 
-
     const updateRoomParticipantsList = useCallback((roomInstance) => {
         if (!roomInstance) return;
         const participants = [];
-        if (roomInstance.localParticipant) {
-            participants.push(roomInstance.localParticipant);
-        }
+        if (roomInstance.localParticipant) participants.push(roomInstance.localParticipant);
         roomInstance.remoteParticipants.forEach(rp => participants.push(rp));
         setRoomParticipants(participants.map(p => ({
-            sid: p.sid,
-            identity: p.identity,
-            name: p.name,
-            metadata: safeParseMetadata(p.metadata)
+            sid: p.sid, identity: p.identity, name: p.name, metadata: safeParseMetadata(p.metadata)
         })));
     }, []);
 
@@ -190,8 +155,7 @@ function StreamPage() {
                 }
             }
         } else if (connectionState === ConnectionState.Disconnected) {
-            setLocalParticipantState(null); setMainParticipant(null);
-            setRoomParticipants([]);
+            setLocalParticipantState(null); setMainParticipant(null); setRoomParticipants([]);
         } else if (connectionState === ConnectionState.Failed) {
             setError(prev => `${prev || ''} LiveKit connection failed.`);
         }
@@ -204,18 +168,13 @@ function StreamPage() {
     }, [handleNewStreamerCandidate]);
 
     const handleParticipantConnectedEvent = useCallback((participant) => {
-        if (!isCurrentUserStreamerRef.current) {
-            handleNewStreamerCandidate(participant);
-        }
+        if (!isCurrentUserStreamerRef.current) handleNewStreamerCandidate(participant);
         if (roomRef.current) updateRoomParticipantsList(roomRef.current);
     }, [handleNewStreamerCandidate, updateRoomParticipantsList]);
 
     const handleParticipantDisconnectedEvent = useCallback((participant) => {
         if (roomRef.current) updateRoomParticipantsList(roomRef.current);
-        setMainParticipant(prevStreamer => {
-            if (prevStreamer?.sid === participant.sid) return null;
-            return prevStreamer;
-        });
+        setMainParticipant(prevStreamer => (prevStreamer?.sid === participant.sid ? null : prevStreamer));
     }, [updateRoomParticipantsList]);
 
     const handleDataReceived = useCallback((payload, participant) => {
@@ -231,12 +190,8 @@ function StreamPage() {
                         setChatMessages(prevMessages => {
                             const newMsg = {
                                 id: `lk-${participant?.sid || 'unknown'}-${Date.now()}`,
-                                user: {
-                                    username: eventSpecificPayload.username, avatar: eventSpecificPayload.avatar,
-                                    isMod: safeParseMetadata(participant?.metadata).role === 'moderator',
-                                    identity: participant?.identity || message.senderIdentity,
-                                },
-                                text: eventSpecificPayload.text, timestamp: eventSpecificPayload.timestamp,
+                                user: { username: eventSpecificPayload.username, avatar: eventSpecificPayload.avatar, isMod: safeParseMetadata(participant?.metadata).role === 'moderator', identity: participant?.identity || message.senderIdentity },
+                                text: eventSpecificPayload.text, timestamp: eventSpecificPayload.timestamp, emotions: [] // Initialize emotions for received messages
                             };
                             if (prevMessages.some(m => m.text === newMsg.text && m.user.identity === newMsg.user.identity && Math.abs(new Date(m.timestamp).getTime() - new Date(newMsg.timestamp).getTime()) < 2000)) {
                                 return prevMessages;
@@ -245,25 +200,16 @@ function StreamPage() {
                         });
                     }
                     break;
-                case 'AUCTION_STARTED':
-                case 'AUCTION_UPDATED':
-                case 'AUCTION_ENDED':
-                    setCurrentAuction(eventSpecificPayload);
-                    setAuctionError(null);
-                    setIsAuctionLoading(false); 
+                case 'AUCTION_STARTED': case 'AUCTION_UPDATED': case 'AUCTION_ENDED':
+                    setCurrentAuction(eventSpecificPayload); setAuctionError(null); setIsAuctionLoading(false); 
                     break;
-                default:
-                    console.warn('[LiveKit Data RECEIVED] Unknown message type:', message.type);
+                default: console.warn('[LiveKit Data RECEIVED] Unknown message type:', message.type);
             }
-        } catch (e) {
-            console.error('[LiveKit Data RECEIVED] Error processing data message:', e);
-        }
+        } catch (e) { console.error('[LiveKit Data RECEIVED] Error processing data message:', e); }
     }, []);
 
     const handleAudioPlaybackChange = useCallback((roomInstance) => {
-        if (roomInstance) {
-            setCanPlaybackAudio(roomInstance.canPlaybackAudio);
-        }
+        if (roomInstance) setCanPlaybackAudio(roomInstance.canPlaybackAudio);
     },[]);
 
     const sendLiveKitData = useCallback(async (type, payload) => {
@@ -272,38 +218,27 @@ function StreamPage() {
                 const dataToSend = { type, payload, senderIdentity: roomRef.current.localParticipant.identity };
                 const encodedPayload = new TextEncoder().encode(JSON.stringify(dataToSend));
                 await roomRef.current.localParticipant.publishData(encodedPayload, DataPacket_Kind.RELIABLE);
-            } catch (e) {
-                console.error(`[LiveKit Data SEND ERROR] Type: ${type}`, e);
-            }
+            } catch (e) { console.error(`[LiveKit Data SEND ERROR] Type: ${type}`, e); }
         }
     }, []);
 
     const handleAuctionAction = useCallback(async (action) => {
         if (!isCurrentUserStreamerRef.current) return;
-        setAuctionError(null);
-        setIsAuctionLoading(true);
-
+        setAuctionError(null); setIsAuctionLoading(true);
         try {
             if (action.type === 'AUCTION_STARTED') {
                 const actualAuctionObject = action.payload.auction || action.payload;
-                setCurrentAuction(actualAuctionObject);
-                sendLiveKitData('AUCTION_STARTED', actualAuctionObject);
+                setCurrentAuction(actualAuctionObject); sendLiveKitData('AUCTION_STARTED', actualAuctionObject);
             } else if (action.type === 'REQUEST_AUCTION_END') {
                 const { auctionId } = action.payload;
                 if (!auctionId) throw new Error("Auction ID missing for end request.");
-                
                 const endedAuction = await auctionService.endAuction(auctionId); 
-                setCurrentAuction(endedAuction);
-                sendLiveKitData('AUCTION_ENDED', endedAuction);
+                setCurrentAuction(endedAuction); sendLiveKitData('AUCTION_ENDED', endedAuction);
             }
         } catch (err) {
-            console.error(`[StreamPage] Error processing auction action ${action.type}:`, err);
             setAuctionError(err.message || `Failed to ${action.type === 'AUCTION_STARTED' ? 'start' : 'end'} auction.`);
-        } finally {
-            setIsAuctionLoading(false);
-        }
-    }, [sendLiveKitData, currentAuction]);
-
+        } finally { setIsAuctionLoading(false); }
+    }, [sendLiveKitData]);
 
     const handleToggleLocalAudioMute = useCallback(async () => {
         if (!roomRef.current?.localParticipant || !isCurrentUserStreamerRef.current) return;
@@ -313,57 +248,35 @@ function StreamPage() {
     }, [isLocalAudioMuted]);
 
     const handleToggleRemoteAudioMute = useCallback(() => {
-        if (!isCurrentUserStreamerRef.current) {
-            setIsRemoteAudioMuted(prev => !prev);
-        }
+        if (!isCurrentUserStreamerRef.current) setIsRemoteAudioMuted(prev => !prev);
     }, []);
 
     const sendChatMessageViaLiveKit = useCallback(async (text) => {
         if (!roomRef.current?.localParticipant || !text.trim() || !currentUser || !streamId) return;
         const clientTimestamp = new Date().toISOString();
-        const chatPayload = {
-            text: text.trim(),
-            username: currentUser.username,
-            avatar: currentUser.profile_picture_url,
-            timestamp: clientTimestamp,
-        };
+        const chatPayload = { text: text.trim(), username: currentUser.username, avatar: currentUser.profile_picture_url, timestamp: clientTimestamp };
         sendLiveKitData('CHAT_MESSAGE', chatPayload);
         setChatMessages(prev => [...prev, {
             id: `local-${Date.now()}`,
-            user: {
-                username: currentUser.username,
-                avatar: currentUser.profile_picture_url,
-                identity: roomRef.current.localParticipant.identity,
-                isMod: false,
-            },
-            text: chatPayload.text,
-            timestamp: clientTimestamp,
+            user: { username: currentUser.username, avatar: currentUser.profile_picture_url, identity: roomRef.current.localParticipant.identity, isMod: false },
+            text: chatPayload.text, timestamp: clientTimestamp, emotions: [] // Initialize emotions for local message
         }]);
-        try {
-            await chatService.saveChatMessage(streamId, { text: chatPayload.text, client_timestamp: clientTimestamp });
-        } catch (dbError) {
-            console.error("[StreamPage] Failed to save chat message to DB:", dbError);
-        }
+        try { await chatService.saveChatMessage(streamId, { text: chatPayload.text, client_timestamp: clientTimestamp }); }
+        catch (dbError) { console.error("[StreamPage] Failed to save chat message to DB:", dbError); }
     }, [currentUser, streamId, sendLiveKitData]);
 
     const handlePlaceBid = useCallback(async (auctionId, amount) => {
         if (!currentUser || isCurrentUserStreamerRef.current || !currentAuction || currentAuction.status !== 'active') {
-            setAuctionError("Cannot place bid.");
-            return;
+            setAuctionError("Cannot place bid."); return;
         }
-        setIsAuctionLoading(true); 
-        setAuctionError(null);
+        setIsAuctionLoading(true); setAuctionError(null);
         try {
             const bidResult = await auctionService.placeBid(auctionId, amount);
             if (bidResult && bidResult.auction) {
-                setCurrentAuction(bidResult.auction);
-                sendLiveKitData('AUCTION_UPDATED', bidResult.auction);
+                setCurrentAuction(bidResult.auction); sendLiveKitData('AUCTION_UPDATED', bidResult.auction);
             }
-        } catch (err) {
-            setAuctionError(err.message || "Failed to place bid.");
-        } finally {
-            setIsAuctionLoading(false);
-        }
+        } catch (err) { setAuctionError(err.message || "Failed to place bid."); }
+        finally { setIsAuctionLoading(false); }
     }, [currentUser, currentAuction, sendLiveKitData]);
 
     const handleFollowToggle = useCallback(async () => {
@@ -371,47 +284,26 @@ function StreamPage() {
         setFollowLoading(true);
         const hostId = streamDataFromAPI.User.user_id;
         try {
-            if (isFollowingHost) {
-                await userService.unfollowUser(hostId);
-                setIsFollowingHost(false);
-            } else {
-                await userService.followUser(hostId);
-                setIsFollowingHost(true);
-            }
-        } catch (err) {
-            setError(prev => `${prev || ''} Follow action failed.`);
-        } finally {
-            setFollowLoading(false);
-        }
+            if (isFollowingHost) { await userService.unfollowUser(hostId); setIsFollowingHost(false); }
+            else { await userService.followUser(hostId); setIsFollowingHost(true); }
+        } catch (err) { setError(prev => `${prev || ''} Follow action failed.`); }
+        finally { setFollowLoading(false); }
     }, [currentUser, streamDataFromAPI, isFollowingHost, followLoading]);
 
     const handleEndStreamProcess = useCallback(async () => {
         if (!streamId || !isCurrentUserStreamerRef.current || isEndingStream) return;
         if (!window.confirm("Are you sure you want to end this stream? This action cannot be undone.")) return;
-        setIsEndingStream(true);
-        setError(null);
+        setIsEndingStream(true); setError(null);
         try {
             await streamService.endLiveStream(streamId);
-            if (roomRef.current) {
-                await roomRef.current.disconnect(true);
-            }
-            setStatusMessage("Stream ended.");
-            navigate('/dashboard/streams');
-        } catch (err) {
-            console.error("Error ending stream:", err);
-            setError(err.message || "Could not end stream. Please try again from your dashboard.");
-        } finally {
-            setIsEndingStream(false);
-        }
+            if (roomRef.current) await roomRef.current.disconnect(true);
+            setStatusMessage("Stream ended."); navigate('/dashboard/streams');
+        } catch (err) { setError(err.message || "Could not end stream."); }
+        finally { setIsEndingStream(false); }
     }, [streamId, navigate, isEndingStream]);
 
-
     useEffect(() => {
-        if (!streamId) {
-            setError("Stream ID is missing.");
-            setIsLoadingStreamData(false);
-            return;
-        }
+        if (!streamId) { setError("Stream ID is missing."); setIsLoadingStreamData(false); return; }
         let isMounted = true;
         useEmotionStore.getState().init(EMOTIONS_LIST);
         setAnalyzedMessageIds(new Set());
@@ -421,34 +313,22 @@ function StreamPage() {
                 const apiStreamDataResponse = await streamService.getStreamDetails(streamId);
                 if (!isMounted) return;
                 setStreamDataFromAPI(apiStreamDataResponse);
-                if (apiStreamDataResponse && apiStreamDataResponse.User && apiStreamDataResponse.User.user_id) {
-                    try {
-                        const streamerProds = await productService.getProductsByUserId(apiStreamDataResponse.User.user_id);
-                        if (isMounted) {
-                            setStreamerOwnedProducts(streamerProds || []);
-                        }
-                    } catch (productsError) {
-                        console.error("Failed to fetch streamer's products:", productsError);
-                        if (isMounted) setStreamerOwnedProducts([]);
-                    }
-                } else {
-                     if (isMounted) setStreamerOwnedProducts([]);
-                }
+                if (apiStreamDataResponse?.User?.user_id) {
+                    const streamerProds = await productService.getProductsByUserId(apiStreamDataResponse.User.user_id).catch(() => []);
+                    if (isMounted) setStreamerOwnedProducts(streamerProds || []);
+                } else if (isMounted) setStreamerOwnedProducts([]);
+                
                 const streamAuctions = await auctionService.getAllAuctions({ streamId: streamId, status: 'active' }).catch(() => []);
                 if (isMounted && streamAuctions.length > 0) setCurrentAuction(streamAuctions[0]);
+                
                 const userIsStreamerCheck = currentUser?.user_id === apiStreamDataResponse?.user_id;
                 setIsCurrentUserStreamer(userIsStreamerCheck);
+                if (!userIsStreamerCheck && activeTab === 'emotion' && isMounted) setActiveTab('chat');
 
-                if (!userIsStreamerCheck && activeTab === 'emotion' && isMounted) {
-                    setActiveTab('chat');
-                }
-
-                let tokenResponse = userIsStreamerCheck
-                    ? await streamService.goLiveStreamer(streamId)
-                    : await streamService.joinLiveStreamViewer(streamId);
+                let tokenResponse = userIsStreamerCheck ? await streamService.goLiveStreamer(streamId) : await streamService.joinLiveStreamViewer(streamId);
                 if (!isMounted) return;
-                setLiveKitToken(tokenResponse.token);
-                setLiveKitUrl(tokenResponse.livekitUrl);
+                setLiveKitToken(tokenResponse.token); setLiveKitUrl(tokenResponse.livekitUrl);
+
                 if (isMounted && currentUser && !userIsStreamerCheck && apiStreamDataResponse?.User?.user_id) {
                     const followStatus = await userService.getFollowingStatus(apiStreamDataResponse.User.user_id).catch(() => ({isFollowing: false}));
                     if (isMounted) setIsFollowingHost(followStatus.isFollowing);
@@ -457,38 +337,23 @@ function StreamPage() {
                 if(isMounted) {
                     const formattedHistory = history.map(msg => ({
                         id: `db-${msg.message_id}`,
-                        user: {
-                            username: msg.User?.username || msg.username_at_send_time,
-                            avatar: msg.User?.profile_picture_url || msg.avatar_url_at_send_time,
-                            isMod: false, identity: `user-${msg.user_id}`,
-                        },
-                        text: msg.message_text, timestamp: msg.sent_at,
+                        user: { username: msg.User?.username || msg.username_at_send_time, avatar: msg.User?.profile_picture_url || msg.avatar_url_at_send_time, isMod: false, identity: `user-${msg.user_id}` },
+                        text: msg.message_text, timestamp: msg.sent_at, emotions: [] // Initialize emotions for history
                     }));
                     setChatMessages(formattedHistory);
                 }
-            } catch (err) {
-                if (isMounted) setError(err?.response?.data?.message || err?.message || "An error occurred loading stream data.");
-            } finally {
-                if (isMounted) setIsLoadingStreamData(false);
-            }
+            } catch (err) { if (isMounted) setError(err?.response?.data?.message || err?.message || "Error loading stream data."); }
+            finally { if (isMounted) setIsLoadingStreamData(false); }
         };
         init();
-        return () => { 
-            isMounted = false;
-            useEmotionStore.getState().reset();
-        };
-    }, [streamId, currentUser?.user_id, isAuthenticated, activeTab]); 
+        return () => { isMounted = false; useEmotionStore.getState().reset(); };
+    }, [streamId, currentUser?.user_id, isAuthenticated]); 
 
-
-    useEffect(() => {
+    useEffect(() => { // LiveKit Connection Effect
         if (!liveKitUrl || !liveKitToken || isLoadingStreamData) return;
-        if (roomRef.current && roomRef.current.state !== ConnectionState.Disconnected) { 
-            return;
-        }
-        if (roomRef.current) {
-            roomRef.current.disconnect(true).catch(e => console.warn("Cleanup: Error disconnecting old room", e));
-            roomRef.current.removeAllListeners();
-        }
+        if (roomRef.current && roomRef.current.state !== ConnectionState.Disconnected) return;
+        if (roomRef.current) { roomRef.current.disconnect(true).catch(console.warn); roomRef.current.removeAllListeners(); }
+        
         const room = new Room({ logLevel: LogLevel.info, adaptiveStream: true, dynacast: true });
         roomRef.current = room;
         room.on(RoomEvent.ConnectionStateChanged, (state) => handleConnectionStateChange(state, room));
@@ -497,277 +362,131 @@ function StreamPage() {
         room.on(RoomEvent.ParticipantDisconnected, handleParticipantDisconnectedEvent);
         room.on(RoomEvent.DataReceived, handleDataReceived);
         room.on(RoomEvent.AudioPlaybackStatusChanged, () => handleAudioPlaybackChange(room));
+        
         room.connect(liveKitUrl, liveKitToken)
-            .then(() => console.log("Successfully connected to LiveKit room:", room.name))
-            .catch(err => {
-                setError(prev => `${prev || ''} LiveKit Connection Failed: ${err.message}`);
-                console.error("LiveKit Connection Error in useEffect:", err);
-        });
-        return () => {
-            if (roomRef.current) {
-                roomRef.current.disconnect(true)
-                    .then(() => console.log("LiveKit room disconnected on cleanup."))
-                    .catch(e => console.warn("Error disconnecting room on cleanup:", e));
-                roomRef.current.removeAllListeners();
-                roomRef.current = null;
-            }
-        };
+            .then(() => console.log("LiveKit connected:", room.name))
+            .catch(err => { setError(prev => `${prev || ''} LK Connect Fail: ${err.message}`); console.error("LK Connect Error:", err); });
+        return () => { if (roomRef.current) { roomRef.current.disconnect(true).catch(console.warn); roomRef.current.removeAllListeners(); roomRef.current = null; }};
     }, [liveKitUrl, liveKitToken, isLoadingStreamData, handleConnectionStateChange, handleTrackSubscribed, handleParticipantConnectedEvent, handleParticipantDisconnectedEvent, handleDataReceived, handleAudioPlaybackChange]);
 
-    useEffect(() => {
+    useEffect(() => { // beforeunload listener
         const handleBeforeUnload = (event) => {
             if (isCurrentUserStreamerRef.current && roomRef.current && roomRef.current.state === ConnectionState.Connected) {
-                const confirmationMessage = "If you close this tab, the stream will end. Are you sure?";
-                event.preventDefault(); 
-                event.returnValue = confirmationMessage; 
-                return confirmationMessage; 
+                event.preventDefault(); event.returnValue = "Ending stream by closing tab?"; return event.returnValue; 
             }
         };
         window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, []); 
 
-    useEffect(() => {
-        if (!isCurrentUserStreamerRef.current) { 
-             const newMessages = chatMessages.filter(msg => msg.id && msg.text && !analyzedMessageIds.has(msg.id) && !msg.emotions);
+    useEffect(() => { // Emotion Analysis Effect
+        if (isCurrentUserStreamerRef.current) { // Check if current user is the streamer
+            const newMessages = chatMessages.filter(msg => msg.id && msg.text && !analyzedMessageIds.has(msg.id) && (!msg.emotions || msg.emotions.length === 0));
             if (newMessages.length === 0) return;
             const newIds = new Set(newMessages.map(m => m.id));
             setAnalyzedMessageIds(prev => new Set([...Array.from(prev), ...Array.from(newIds)]));
+            
             const analyze = async () => {
                 for (const message of newMessages) {
                     try {
                         const result = await emotionService.analyzeEmotion(message.text);
-                        const threshold = 0.18;
                         let detectedMessageEmotions = [];
-                        if (result && result.scores && typeof result.scores === 'object') {
-                            const emotionsWithScores = Object.entries(result.scores)
+                        const threshold = 0.18;
+
+                        // Handle Hugging Face API format: [[{"label": "joy", "score": 0.9}, ...]] or [{"label": "joy", ...}]
+                        let emotionDataToParse = [];
+                        if (Array.isArray(result) && result.length > 0 && Array.isArray(result[0]) && typeof result[0][0] === 'object' && result[0][0].hasOwnProperty('label')) {
+                            emotionDataToParse = result[0]; // Handles [[{"label": "joy", ...}]]
+                        } else if (Array.isArray(result) && result.length > 0 && typeof result[0] === 'object' && result[0].hasOwnProperty('label')) {
+                            emotionDataToParse = result; // Handles [{"label": "joy", ...}]
+                        }
+                        // Fallback for old structure (if still possible from your service)
+                        else if (result && result.scores && typeof result.scores === 'object') {
+                           const oldFormatEmotions = Object.entries(result.scores)
                                 .filter(([, score]) => score > threshold)
-                                .sort(([, scoreA], [, scoreB]) => scoreB - scoreA);
-                            detectedMessageEmotions = emotionsWithScores.map(([name]) => name);
+                                .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
+                                .map(([name]) => name.toLowerCase());
+                            detectedMessageEmotions = oldFormatEmotions;
+                        }
+                        
+                        if (emotionDataToParse.length > 0 && detectedMessageEmotions.length === 0) { // Only parse if not already populated by fallback
+                             const emotionsWithScores = emotionDataToParse
+                                .filter(item => item && typeof item.label === 'string' && typeof item.score === 'number' && item.score > threshold)
+                                .sort((a, b) => b.score - a.score);
+                            detectedMessageEmotions = emotionsWithScores.map(item => item.label.toLowerCase());
+                        }
+
+                        if (detectedMessageEmotions.length > 0) {
                             detectedMessageEmotions.forEach(emotionName => {
                                 if (EMOTIONS_LIST.includes(emotionName)) {
                                     useEmotionStore.getState().increment(emotionName);
+                                } else {
+                                     console.warn(`[EmotionAnalysis] Detected emotion "${emotionName}" not in pre-defined EMOTIONS_LIST.`);
                                 }
                             });
                         }
-                        setChatMessages(prevChatMessages =>
-                            prevChatMessages.map(m =>
-                                m.id === message.id
-                                    ? { ...m, emotions: detectedMessageEmotions.slice(0, 3) }
-                                    : m
-                            )
-                        );
+                        setChatMessages(prev => prev.map(m => m.id === message.id ? { ...m, emotions: detectedMessageEmotions.slice(0, 3) } : m ));
                     } catch (error) {
                         console.error(`Failed to analyze message ID ${message.id}:`, error);
-                        setChatMessages(prevChatMessages =>
-                            prevChatMessages.map(m =>
-                                m.id === message.id
-                                    ? { ...m, emotions: [] } 
-                                    : m
-                            )
-                        );
+                        setChatMessages(prev => prev.map(m => m.id === message.id ? { ...m, emotions: [] } : m ));
                     }
                 }
             };
             analyze();
         }
-    }, [chatMessages, analyzedMessageIds, isCurrentUserStreamer]); 
+    }, [chatMessages, analyzedMessageIds]); // Removed isCurrentUserStreamer from deps as ref is used
 
-    if (isLoadingStreamData && !streamDataFromAPI) {
-        return (
-            <div className="flex h-screen items-center justify-center bg-black">
-                <span className="loading loading-lg loading-dots text-white"></span>
-                <p className="ml-4 text-white">Loading Stream...</p>
-            </div>
-        );
-    }
-    if (error && !streamDataFromAPI) { 
-        return (
-            <div className="flex flex-col h-screen items-center justify-center bg-neutral-900 text-white p-4 text-center">
-                <FiAlertTriangle className="w-16 h-16 text-error mb-4"/>
-                <h2 className="text-2xl font-semibold text-error mb-4">Stream Unavailable</h2>
-                <p className="mb-6 max-w-md text-red-400/80">{error}</p>
-                <button onClick={() => navigate('/')} className="btn btn-primary">Go Home</button>
-            </div>
-        );
-    }
-     if (!streamDataFromAPI && !isLoadingStreamData && !error) { 
-        return (
-            <div className="flex flex-col h-screen items-center justify-center bg-neutral-900 text-white p-4 text-center">
-                <FiAlertTriangle className="w-16 h-16 text-warning mb-4"/>
-                <h2 className="text-2xl font-semibold text-warning mb-4">Stream Not Found</h2>
-                <p className="mb-6 max-w-md">This stream may have ended or does not exist.</p>
-                <button onClick={() => navigate('/')} className="btn btn-primary">Go Home</button>
-            </div>
-        );
-    }
+    // --- Render Logic ---
+    if (isLoadingStreamData && !streamDataFromAPI) return <div className="flex h-screen items-center justify-center bg-black"><span className="loading loading-lg loading-dots text-white"></span><p className="ml-4 text-white">Loading Stream...</p></div>;
+    if (error && !streamDataFromAPI) return <div className="flex flex-col h-screen items-center justify-center bg-neutral-900 text-white p-4 text-center"><FiAlertTriangle className="w-16 h-16 text-error mb-4"/><h2 className="text-2xl font-semibold text-error mb-4">Stream Unavailable</h2><p className="mb-6 max-w-md text-red-400/80">{error}</p><button onClick={() => navigate('/')} className="btn btn-primary">Go Home</button></div>;
+    if (!streamDataFromAPI && !isLoadingStreamData && !error) return <div className="flex flex-col h-screen items-center justify-center bg-neutral-900 text-white p-4 text-center"><FiAlertTriangle className="w-16 h-16 text-warning mb-4"/><h2 className="text-2xl font-semibold text-warning mb-4">Stream Not Found</h2><p className="mb-6 max-w-md">This stream may have ended or does not exist.</p><button onClick={() => navigate('/')} className="btn btn-primary">Go Home</button></div>;
 
     const participantForVideoPlayer = isCurrentUserStreamer ? localParticipantState : mainParticipant;
     const streamHeaderDataForPlayer = {
-        id: streamDataFromAPI?.stream_id || null,
-        title: streamDataFromAPI?.title || 'Loading Stream...',
-        host: streamDataFromAPI?.User ? {
-            user_id: streamDataFromAPI.User.user_id,
-            username: streamDataFromAPI.User.username || 'Streamer',
-            avatarUrl: streamDataFromAPI.User.profile_picture_url,
-            rating: streamDataFromAPI.User.seller_rating || 0,
-            isFollowed: isFollowingHost,
-        } : { username: 'Streamer', rating: 0, isFollowed: false },
-        viewerCount: roomParticipants.length || 0, 
-        streamUrl: typeof window !== 'undefined' ? window.location.href : '',
+        id: streamDataFromAPI?.stream_id || null, title: streamDataFromAPI?.title || 'Loading Stream...',
+        host: streamDataFromAPI?.User ? { user_id: streamDataFromAPI.User.user_id, username: streamDataFromAPI.User.username || 'Streamer', avatarUrl: streamDataFromAPI.User.profile_picture_url, rating: streamDataFromAPI.User.seller_rating || 0, isFollowed: isFollowingHost } : { username: 'Streamer', rating: 0, isFollowed: false },
+        viewerCount: roomParticipants.length || 0, streamUrl: typeof window !== 'undefined' ? window.location.href : '',
     };
 
     return (
         <div className="flex flex-col h-screen bg-neutral-900 text-white overflow-hidden">
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex flex-col w-72 lg:w-80 xl:w-96 bg-black border-r border-neutral-800 overflow-y-auto">
-                    <StreamProductList
-                        streamTitle={streamDataFromAPI?.title || "Available Products"}
-                        products={streamerOwnedProducts}
-                        onProductClick={handleOpenQuickViewModal}
-                    />
-                    {isCurrentUserStreamer && (
-                        <StreamerAuctionPanel
-                            currentStreamId={streamId}
-                            onAuctionAction={handleAuctionAction}
-                            currentAuction={currentAuction}
-                        />
-                    )}
+                    <StreamProductList streamTitle={streamDataFromAPI?.title || "Products"} products={streamerOwnedProducts} onProductClick={handleOpenQuickViewModal}/>
+                    {isCurrentUserStreamer && <StreamerAuctionPanel currentStreamId={streamId} onAuctionAction={handleAuctionAction} currentAuction={currentAuction}/>}
                 </aside>
-
                 <div className="flex-1 flex items-center justify-center bg-black overflow-hidden relative">
-                    <StreamVideoPlayer
-                        mainParticipant={participantForVideoPlayer}
-                        isLocalStreamer={isCurrentUserStreamer && participantForVideoPlayer === localParticipantState}
-                        isAudioMuted={isCurrentUserStreamer ? isLocalAudioMuted : isRemoteAudioMuted}
-                        onToggleAudioMute={isCurrentUserStreamer ? handleToggleLocalAudioMute : handleToggleRemoteAudioMute}
-                        thumbnailUrl={streamDataFromAPI?.thumbnail_url}
-                        currentAuctionOnVideo={currentAuction}
-                        streamHeaderData={streamHeaderDataForPlayer}
-                        onFollowToggleHeader={handleFollowToggle}
-                        onEndStream={handleEndStreamProcess}
-                    />
+                    <StreamVideoPlayer mainParticipant={participantForVideoPlayer} isLocalStreamer={isCurrentUserStreamer && participantForVideoPlayer === localParticipantState} isAudioMuted={isCurrentUserStreamer ? isLocalAudioMuted : isRemoteAudioMuted} onToggleAudioMute={isCurrentUserStreamer ? handleToggleLocalAudioMute : handleToggleRemoteAudioMute} thumbnailUrl={streamDataFromAPI?.thumbnail_url} currentAuctionOnVideo={currentAuction} streamHeaderData={streamHeaderDataForPlayer} onFollowToggleHeader={handleFollowToggle} onEndStream={handleEndStreamProcess}/>
                     <div className="absolute inset-0 flex flex-col justify-end pointer-events-none md:hidden">
                         {streamDataFromAPI && (
                             <div className="absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/70 to-transparent z-30 pointer-events-auto">
                                 <div className="flex items-center gap-2">
-                                    <Link to="/" className="btn btn-ghost btn-xs btn-circle text-white">
-                                        <FiArrowLeft size={18}/>
-                                    </Link>
-                                    <div className="avatar">
-                                        <div className="w-7 h-7 rounded-full bg-neutral-700">
-                                            {streamDataFromAPI.User?.profile_picture_url ? <img src={streamDataFromAPI.User.profile_picture_url} alt={streamDataFromAPI.User.username} /> : streamDataFromAPI.User?.username?.charAt(0).toUpperCase()}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-semibold line-clamp-1">{streamDataFromAPI.User?.username}</p>
-                                        <p className="text-[10px] text-neutral-400">{streamHeaderDataForPlayer.viewerCount} watching</p>
-                                    </div>
+                                    <Link to="/" className="btn btn-ghost btn-xs btn-circle text-white"><FiArrowLeft size={18}/></Link>
+                                    <div className="avatar"><div className="w-7 h-7 rounded-full bg-neutral-700">{streamDataFromAPI.User?.profile_picture_url ? <img src={streamDataFromAPI.User.profile_picture_url} alt={streamDataFromAPI.User.username} /> : streamDataFromAPI.User?.username?.charAt(0).toUpperCase()}</div></div>
+                                    <div><p className="text-xs font-semibold line-clamp-1">{streamDataFromAPI.User?.username}</p><p className="text-[10px] text-neutral-400">{streamHeaderDataForPlayer.viewerCount} watching</p></div>
                                 </div>
                             </div>
                         )}
-
                         <div className="flex-grow flex flex-col-reverse overflow-hidden">
-                            <StreamChat
-                                variant="overlay"
-                                messages={chatMessages}
-                                localParticipantIdentity={roomRef.current?.localParticipant?.identity}
-                                isCurrentUserStreamer={isCurrentUserStreamer}
-                            />
+                            <StreamChat variant="overlay" messages={chatMessages} localParticipantIdentity={roomRef.current?.localParticipant?.identity} isCurrentUserStreamer={isCurrentUserStreamer}/>
                         </div>
-                        {currentAuction && currentAuction.Product && (
-                             <div className="pointer-events-auto">
-                                <StreamAuctionControls
-                                    auctionData={currentAuction}
-                                    onPlaceBid={handlePlaceBid}
-                                    currentUserId={currentUser?.user_id}
-                                    isStreamer={isCurrentUserStreamer}
-                                    isLoadingBid={isAuctionLoading}
-                                />
-                             </div>
-                        )}
-                        <div className="pointer-events-auto">
-                            <StreamChat
-                                variant="input_only"
-                                onSendMessage={sendChatMessageViaLiveKit}
-                            />
-                        </div>
-                         {auctionError && <div className="alert alert-error p-2 text-xs justify-start mx-2 my-1 shadow-lg pointer-events-auto"><FiAlertTriangle className="mr-1"/><span>{auctionError}</span></div>}
+                        {currentAuction && currentAuction.Product && (<div className="pointer-events-auto"><StreamAuctionControls auctionData={currentAuction} onPlaceBid={handlePlaceBid} currentUserId={currentUser?.user_id} isStreamer={isCurrentUserStreamer} isLoadingBid={isAuctionLoading}/></div>)}
+                        <div className="pointer-events-auto"><StreamChat variant="input_only" onSendMessage={sendChatMessageViaLiveKit}/></div>
+                        {auctionError && <div className="alert alert-error p-2 text-xs justify-start mx-2 my-1 shadow-lg pointer-events-auto"><FiAlertTriangle className="mr-1"/><span>{auctionError}</span></div>}
                     </div>
                 </div>
-
                 <aside className="hidden md:flex flex-col w-80 lg:w-96 bg-black border-l border-neutral-800 overflow-hidden">
-                    {currentAuction && currentAuction.Product ? (
-                        <div className="shrink-0">
-                            <StreamAuctionControls
-                                auctionData={currentAuction}
-                                onPlaceBid={handlePlaceBid}
-                                currentUserId={currentUser?.user_id}
-                                isStreamer={isCurrentUserStreamer}
-                                isLoadingBid={isAuctionLoading} 
-                            />
-                        </div>
-                    ) : (
-                         <div className="bg-neutral-900 p-3 sm:p-4 border-t border-neutral-800 text-neutral-500 text-sm text-center shrink-0">
-                            No active auction.
-                         </div>
-                    )}
+                    {currentAuction && currentAuction.Product ? (<div className="shrink-0"><StreamAuctionControls auctionData={currentAuction} onPlaceBid={handlePlaceBid} currentUserId={currentUser?.user_id} isStreamer={isCurrentUserStreamer} isLoadingBid={isAuctionLoading}/></div>) : (<div className="bg-neutral-900 p-3 sm:p-4 border-t border-neutral-800 text-neutral-500 text-sm text-center shrink-0">No active auction.</div>)}
                     {auctionError && <div className="alert alert-error p-2 text-xs justify-start mx-2 my-1 shadow-lg"><FiAlertTriangle className="mr-1"/><span>{auctionError}</span></div>}
-                    <div className="flex-grow overflow-y-auto">
-                        <StreamChat
-                            variant="full"
-                            messages={chatMessages} activeTab={activeTab} onTabChange={setActiveTab}
-                            viewerCount={streamHeaderDataForPlayer.viewerCount}
-                            onSendMessage={sendChatMessageViaLiveKit}
-                            localParticipantIdentity={roomRef.current?.localParticipant?.identity}
-                            roomParticipantsForChat={roomParticipants}
-                            isCurrentUserStreamer={isCurrentUserStreamer}
-                        />
-                    </div>
+                    <div className="flex-grow overflow-y-auto"><StreamChat variant="full" messages={chatMessages} activeTab={activeTab} onTabChange={setActiveTab} viewerCount={streamHeaderDataForPlayer.viewerCount} onSendMessage={sendChatMessageViaLiveKit} localParticipantIdentity={roomRef.current?.localParticipant?.identity} roomParticipantsForChat={roomParticipants} isCurrentUserStreamer={isCurrentUserStreamer}/></div>
                 </aside>
             </div>
-
-            {!canPlaybackAudio && roomRef.current?.state === ConnectionState.Connected && (
-                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-4 py-2 rounded-md text-sm z-50 shadow-lg animate-pulse">
-                    Tap/Click page to enable audio
-                </div>
-            )}
-            {isEndingStream && (
-                <div className="fixed inset-0 bg-black/70 flex flex-col items-center justify-center z-[100]">
-                    <span className="loading loading-lg loading-dots text-white"></span>
-                    <p className="text-white mt-3">Ending stream...</p>
-                </div>
-            )}
-            {isCurrentUserStreamer && isAuctionLoading && currentAuction?.status === 'active' && (
-                 <div className="fixed inset-0 bg-black/50 flex flex-col items-center justify-center z-[100]">
-                    <span className="loading loading-lg loading-dots text-white"></span>
-                    <p className="text-white mt-3">Processing auction action...</p>
-                </div>
-            )}
-            {isBuyNowLoading && (
-                 <div className="fixed inset-0 bg-black/60 flex flex-col items-center justify-center z-[101]"> {/* Higher z-index for buy now loading */}
-                    <span className="loading loading-lg loading-dots text-white"></span>
-                    <p className="text-white mt-3">Processing purchase...</p>
-                </div>
-            )}
-
-
-            <ProductQuickViewModal
-                product={selectedProductForQuickView}
-                isOpen={isQuickViewModalOpen}
-                onClose={handleCloseQuickViewModal}
-                onBuyNow={handleBuyNow} // Pass the new handler
-            />
-            {/* Display BuyNow Error in QuickViewModal if it's open, or as a toast */}
-            {isQuickViewModalOpen && buyNowError && (
-                 <div className="toast toast-center toast-middle z-[200]"> {/* Ensure toast is above modal backdrop */}
-                    <div className="alert alert-error">
-                        <span>{buyNowError}</span>
-                    </div>
-                </div>
-            )}
+            {!canPlaybackAudio && roomRef.current?.state === ConnectionState.Connected && (<div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-4 py-2 rounded-md text-sm z-50 shadow-lg animate-pulse">Tap/Click page to enable audio</div>)}
+            {isEndingStream && (<div className="fixed inset-0 bg-black/70 flex flex-col items-center justify-center z-[100]"><span className="loading loading-lg loading-dots text-white"></span><p className="text-white mt-3">Ending stream...</p></div>)}
+            {isCurrentUserStreamer && isAuctionLoading && currentAuction?.status === 'active' && (<div className="fixed inset-0 bg-black/50 flex flex-col items-center justify-center z-[100]"><span className="loading loading-lg loading-dots text-white"></span><p className="text-white mt-3">Processing auction action...</p></div>)}
+            {isBuyNowLoading && (<div className="fixed inset-0 bg-black/60 flex flex-col items-center justify-center z-[101]"><span className="loading loading-lg loading-dots text-white"></span><p className="text-white mt-3">Processing purchase...</p></div>)}
+            <ProductQuickViewModal product={selectedProductForQuickView} isOpen={isQuickViewModalOpen} onClose={handleCloseQuickViewModal} onBuyNow={handleBuyNow}/>
+            {isQuickViewModalOpen && buyNowError && (<div className="toast toast-center toast-middle z-[200]"><div className="alert alert-error"><span>{buyNowError}</span></div></div>)}
         </div>
     );
 }
